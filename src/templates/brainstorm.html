@@ -2,8 +2,8 @@
 
 {% block question_content %}
 <div id='consent'>
-    {% block consent %}
-    {% endblock %}
+    {% include "consent.html" %}
+
     <label class="radio">
         <input type="radio" name="consentRadio" id="consentRadioAccept" value="consentAccept">
         Yes
