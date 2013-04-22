@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block question_content %}
+<div id='consent'>
+    {% block consent %}
+    {% endblock %}
+    <label class="radio">
+        <input type="radio" name="consentRadio" id="consentRadioAccept" value="consentAccept">
+        Yes
+    </label>
+    <label class="radio">
+        <input type="radio" name="consentRadio" id="consentRadioReject" value="consentReject">
+        No
+    </label>
+    <button class="btn" type="button" onclick="fromConsent();">Next</button>
+</div>
+
+<div id='task' style="display:none;">
+    <div id='instructions'>
+        <p>This is a <i>brainstorming></i> task. There are a few rules for brbrainstorming:</p>
+        <ol>
+            <li>There are no bad ideas. Don't criticise your choices.</li>
+            <li>Wild ideas and building off old ideas are okay.</li>
+            <li>Quantity of ideas is prioritized.</li>
+            <li>Combinations of ideas count as new ideas.</li>
+        </ol>
+    </div>
+
+    <div id='thumbs' class='description' style="display:none;">
+        Imagine you woke up with an extra opposable thumb on each hand. List benefits and drawbacks.
+    </div>
+    <div id='coathanger' class='description' style="display:none;">
+        List unusual uses for a coat hanger.
+    </div>
+    <div id='covariate' class='description' style="display:none;">
+        List things that could cause change in a person's body weight.
+    </div>
+    <input type="hidden" id="problem" name="problem" value="None" />
+
+    <div id='responses'>
+        <ol>
+        {% for index in range(num_responses) %}
+            <li>     
+                <input type="text" name="brainstorm_response" placeholder="Idea here...">
+            </li>
+        {% endfor %}
+        </ol>
+    </div>
+
+    <button class="btn" type="button" onclick="fromTask();">Next</button>
+</div>
+
+<div id='feedback' style="display:none;">
+    {% include "feedback.html" %}
+
+    <p>If you have any comments regarding this HIT, or found the instructions hard to understand, please let us know in the box below. We will use this information to improve the task in the future.</p>
+    <textarea class='input-xxlarge' name='feedback' id='feedback' rows="5"></textarea>
+    <input class='btn btn-primary' type='submit' id='submitButton' />
+</div>
+{% endblock %}
+
+{% block postjavascript %}
+{{ super() }}
+<script language='Javascript'>
+    // Randomize the task
+    $(document).ready(function() {
+        rnd = Math.floor((Math.random()*3)+1);
+        if(rnd == 1) {
+            $('#thumbs').css('display', 'block');
+            $('#problem').val('thumbs');
+        } else if(rnd == 2) {
+            $('#coathanger').css('display', 'block');
+            $('#problem').val('coathanger');
+        } else if(rnd == 3) {
+            $('#covariate').css('display', 'block');
+            $('#problem').val('covariate');
+        }
+    });
+
+    // progress through pages
+    function fromConsent() {
+        c = $('input[name=consentRadio]:checked', '#mturk_form').val();
+        $('#consent').css('display', 'none');
+        if(c == 'consentAccept') {
+            $('#task').css('display', 'block');
+        } else {
+            $('#feedback').css('display', 'block');
+        }
+    }
+
+    function fromTask() {
+        $('#task').css('display', 'none');
+        $('#feedback').css('display', 'block');
+    }
+</script>
+{% endblock %}
