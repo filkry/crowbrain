@@ -94,7 +94,7 @@ def initialize_from_cmd(script_identifier = "noscript"):
     print("Using experiment file %s" % (exp_location))
 
     tc = TurkConnection(args.id[0], db_location, not args.live, args.reset,
-            extra_files=['templates/bootstrap.css', 'templates/main.css'],
+            extra_files=['templates/Mop.svg.png', 'templates/bootstrap.css', 'templates/main.css'],
             us_only=args.usa)
 
     # Initialize
