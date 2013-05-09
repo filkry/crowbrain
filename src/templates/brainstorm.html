@@ -17,7 +17,7 @@
 
 <div id='task' style="display:none;">
     <div id='instructions'>
-        <p>This is a <i>brainstorming></i> task. There are a few rules for brbrainstorming:</p>
+        <p>This is a <i>brainstorming</i> task. There are a few rules for brainstorming:</p>
         <ol>
             <li>There are no bad ideas. Don't criticise your choices.</li>
             <li>Wild ideas and building off old ideas are okay.</li>
@@ -27,13 +27,13 @@
     </div>
 
     <div id='thumbs' class='description' style="display:none;">
-        Imagine you woke up with an extra opposable thumb on each hand. List benefits and drawbacks.
+        <p>Imagine you woke up with an extra opposable thumb on each hand. List benefits and drawbacks.</p>
     </div>
     <div id='coathanger' class='description' style="display:none;">
-        List unusual uses for a coat hanger.
+        <p>List unusual uses for a coat hanger.</p>
     </div>
     <div id='covariate' class='description' style="display:none;">
-        List things that could cause change in a person's body weight.
+        <p>List things that could cause change in a person's body weight.</p>
     </div>
     <input type="hidden" id="problem" name="problem" value="None" />
 
@@ -64,7 +64,10 @@
 <script language='Javascript'>
     // Randomize the task
     $(document).ready(function() {
-        rnd = Math.floor((Math.random()*3)+1);
+        r0 = Math.random() * 3;
+        console.log(r0);
+        rnd = Math.floor(r0+1);
+        console.log(rnd);
         if(rnd == 1) {
             $('#thumbs').css('display', 'block');
             $('#problem').val('thumbs');

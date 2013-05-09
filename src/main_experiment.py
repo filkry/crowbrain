@@ -4,7 +4,7 @@ from common import *
 script_name = __file__
 
 if __name__=='__main__':
-    variable, exp_location, schema, expid, tc = initialize_from_cmd(script_name)
+    exp_location, schema, expid, tc = initialize_from_cmd(script_name)
 
     with sl.Experiment(exp_location, schema, expid) as exp:
         fives_key = start_trial(tc, RandomStorm(5), exp,'fives')

@@ -28,15 +28,20 @@ env = Environment(autoescape=guess_autoescape,
 
 class RandomStorm(TurkHITType):
     def __init__(self, num_responses):
+        self.num_responses = num_responses
+
+        template = env.get_template("consent_plaintext")
+        description = template.render({'num_responses': num_responses})
+
         TurkHITType.__init__(self,
-            "Brainstorm %i ideas for a classic brainstorming problem." % (num_responeses),
+            "Brainstorm %i ideas for a classic brainstorming problem." % (num_responses),
             string.split('research, brainstorming'),
+            description = description,
             duration = (10 + num_responses) * 60,
             max_assignments = 300,
             annotation = 'brainstorm',
             reward = 0.50 if num_responses <= 15 else 1.00,
-            env = env,
-            num_responses = num_responses)
+            env = env)
 
 # Results processing
 
@@ -109,6 +114,6 @@ def initialize_from_cmd(script_identifier = "noscript"):
              ('accept_times', 'text'),
              ('submit_times', 'text')])
 
-    return (variable, exp_location, schema, expid, tc)
+    return (exp_location, schema, expid, tc)
 
 
