@@ -37,10 +37,10 @@ class RandomStorm(TurkHITType):
             "Brainstorm %i ideas for a classic brainstorming problem." % (num_responses),
             string.split('research, brainstorming'),
             description = description,
-            duration = (10 + num_responses) * 60,
+            duration = (5 + num_responses) * 60,
             max_assignments = 300,
             annotation = 'brainstorm',
-            reward = 0.50 if num_responses <= 15 else 1.00,
+            reward = (num_responses + 5.0) / 100.0,
             env = env)
 
 # Results processing
