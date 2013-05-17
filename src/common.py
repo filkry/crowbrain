@@ -40,7 +40,7 @@ class RandomStorm(TurkHITType):
             duration = (5 + num_responses) * 60,
             max_assignments = 300,
             annotation = 'brainstorm',
-            reward = (num_responses + 5.0) / 100.0,
+            reward = (8 if num_responses == 5 else (15 if num_responses == 10 else 25)) * 0.01,
             env = env)
 
 # Results processing
