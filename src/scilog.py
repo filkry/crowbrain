@@ -136,4 +136,4 @@ if __name__ == '__main__':
         mytrial("filip", "kry")
         experiment.finish_trial("test_exp_id", "key", [("resultrow1", 1000)])
 
-        print "Done"
+        print("Done")
