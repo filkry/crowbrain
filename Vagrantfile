@@ -36,7 +36,8 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   config.vm.synced_folder "~/", "/home/host"
-  config.vm.synced_folder "~/enc_projects/crowbrain/data", "/data"
+  config.vm.synced_folder "~/enc_projects/crowbrain/raw_data", "/raw_data"
+  config.vm.synced_folder "~/enc_projects/crowbrain/processed_data", "/processed_data"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
