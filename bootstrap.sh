@@ -2,7 +2,8 @@
 
 apt-get update
 apt-get install -y python-pip python-dev build-essential sqlite3 libfreetype6-dev libpng-dev
-pip install turkflow pyzmq tornado ipython matplotlib
+pip install numpy turkflow pyzmq tornado ipython
+pip install matplotlib
 
 ln -s -f /home/host/.boto /home/vagrant/.boto
 
