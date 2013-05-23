@@ -7,4 +7,7 @@ pip install turkflow pyzmq tornado ipython matplotlib
 ln -s -f /home/host/.boto /home/vagrant/.boto
 
 mkdir -p /home/vagrant/.ipython
-ln -s -f /vagrant/ipython_profile_server /home/vagrant/.ipython/profile_server
+
+if [[ ! -e /home/vagrant/.ipython/profile_server ]]; then
+	ln -s -f /vagrant/ipython_profile_server /home/vagrant/.ipython/profile_server
+fi
