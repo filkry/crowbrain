@@ -129,7 +129,7 @@
 
         // Record first focus gain time
         $('input[name="brainstorm_response"]').focus(function() {
-            str = this.next('input[name="brainstorm_response_start"]');
+            str = $(this).next('input[name="brainstorm_response_start"]');
             if(str.val() == "") {
                 str.val(new Date().getTime());
             }
@@ -137,8 +137,8 @@
 
         // Record last focus loss time
         $('input[name="brainstorm_response"]').blur(function() {
-            end = this.next('input[name="brainstorm_response_end"]');
-            end.val(new Date().getTime());
+            console.log("happens");
+            end = $(this).siblings('input[name="brainstorm_response_end"]').val(new Date().getTime());
         });
     });
 
