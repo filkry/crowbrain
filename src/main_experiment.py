@@ -44,19 +44,25 @@ if __name__=='__main__':
         fives_aid = "%s_fives" % (expid)
         r = add_jobs(admin_url, fives_aid, jobs, 'chicoritastranglelemon', timeout=700)
         print r
-        fives_key = start_trial(tc, RandomStorm(5, 10, admin_url, fives_aid), exp,'fives')
+        fives_key = start_trial(tc, RandomStorm(5, 30, admin_url, fives_aid), exp,'fives')
 
         tens_aid = "%s_tens" % (expid)
         r = add_jobs(admin_url, tens_aid, jobs, 'chicoritastranglelemon', timeout=1000)
         print r
-        tens_key = start_trial(tc, RandomStorm(10, 10, admin_url, tens_aid), exp,'tens')
+        tens_key = start_trial(tc, RandomStorm(10, 30, admin_url, tens_aid), exp,'tens')
 
         twenties_aid = "%s_twenties" % (expid)
         r = add_jobs(admin_url, twenties_aid, jobs, 'chicoritastranglelemon', timeout=1600)
         print r
-        twenties_key = start_trial(tc, RandomStorm(20, 10, admin_url, twenties_aid), exp,'twenties')
+        twenties_key = start_trial(tc, RandomStorm(20, 30, admin_url, twenties_aid), exp,'twenties')
+
+        fifties_aid = "%s_fifties" % (expid)
+        r = add_jobs(admin_url, fifties_aid, jobs, 'chicoritastranglelemon', timeout=3400)
+        print r
+        fifties_keys = start_trial(tc, RandomStorm(50, 30, admin_url, fifties_aid), exp,'fifties')
 
         fives_results = attempt_finish_trial(tc, exp, fives_key)
         tens_results = attempt_finish_trial(tc, exp, tens_key)
         twenties_results = attempt_finish_trial(tc, exp, twenties_key)
+        fifties_results = attempt_finish_trial(tc, exp, fifties_keys)
 

@@ -35,6 +35,16 @@ class RandomStorm(TurkHITType):
         template = env.get_template("consent_plaintext")
         description = template.render({'num_responses': num_responses})
 
+        reward = 0
+        if num_responses ==5:
+            reward = 10
+        elif num_responses == 10:
+            reward = 15
+        elif num_responses == 20:
+            reward = 25
+        elif num_responses == 50:
+            reward = 55
+
         TurkHITType.__init__(self,
             "Brainstorm %i ideas for a classic brainstorming problem." % (num_responses),
             string.split('research, brainstorming'),
@@ -42,7 +52,7 @@ class RandomStorm(TurkHITType):
             duration = (5 + num_responses) * 60,
             max_assignments = max_assignments,
             annotation = 'brainstorm',
-            reward = (8 if num_responses == 5 else (15 if num_responses == 10 else 25)) * 0.01,
+            reward = reward * 0.01,
             env = env)
 
 # Results processing
