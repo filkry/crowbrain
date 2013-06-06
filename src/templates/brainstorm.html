@@ -26,15 +26,12 @@
         </ol>
     </div>
 
-    <div id='thumbs' class='description' style="display:none;">
-        <p>Imagine you woke up with an extra opposable thumb on each hand. List benefits and drawbacks.</p>
+    <div id='wait' class='description' style="display:block;">
+        <p>Please wait while we generate a brainstorming question...</p>
     </div>
-    <div id='mop' class='description' style="display:none;">
-        <p>List unusual uses for a mop.</p>
-        <img src='Mop.svg.png'>
-    </div>
-    <div id='covariate' class='description' style="display:none;">
-        <p>List things that could cause change in a person's body weight.</p>
+
+    <div id='question' class='description' style="display:none;">
+        <p id='question_text'></p>
     </div>
     <input type="hidden" id="problem" name="problem" value="None" />
 
@@ -63,23 +60,70 @@
 {% block postjavascript %}
 {{ super() }}
 <script language='Javascript'>
+
+    job_id = null;
+
+    function get_question(data, textStatus, jqXHR) {
+        console.log("get succeeded");
+        console.log(data);
+
+        job_id = data["job_id"]
+        console.log("Job ID")
+        console.log(job_id)
+        question = data["payload"]["question"]
+        console.log(question)
+
+        // Change the HIT
+        $('#question_text').text(question);
+        $('#problem').val(question);
+        $('#wait').css('display', 'none');
+        $('#question').css('display', 'block');
+    }
+
+    function get_question_err(jqXHR, textStatus, errorThrown ) {
+        console.log("Error status");
+        console.log(textStatus)
+
+        // Change the message
+        $('#wait').text("Error getting a question. Please proceed to end of HIT.");
+        $('#problem').val(errorThrown);
+        // Hide the input boxes
+        $('#responses').css('display', 'none');
+    }
+
     // Randomize the task
     $(document).ready(function() {
-        r0 = Math.random() * 3;
-        console.log(r0);
-        //rnd = Math.floor(r0+1);
-        rnd = 3;
-        console.log(rnd);
-        if(rnd == 1) {
-            $('#thumbs').css('display', 'block');
-            $('#problem').val('thumbs');
-        } else if(rnd == 2) {
-            $('#mop').css('display', 'block');
-            $('#problem').val('mop');
-        } else if(rnd == 3) {
-            $('#covariate').css('display', 'block');
-            $('#problem').val('covariate');
+        // Check if they have accepted or previewed
+        console.log("Submit button val");
+        console.log($('#submitButton').val());
+
+        // TODO: this test should be on the assignment variable
+        if($('#submitButton').val().indexOf("You must ACCEPT the HIT") == -1) {
+            // Get a brainstorming question from server
+            $.ajax ({
+                url: "http://{{ admin_url }}/get",
+                type: "POST",
+                data: JSON.stringify({administrator_id:"{{ admin_id }}"}),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: get_question,
+                error: get_question_err,
+            });
+        } else {
+            $('#wait').text("(If you accept the HIT, your question will appear here)");
         }
+
+        $('#mturk_form').submit(function() {
+            $.ajax ({
+                url: "http://{{ admin_url }}/confirm",
+                type: "POST",
+                data: JSON.stringify({administrator_id:"{{ admin_id }}",
+                                      job_id: job_id}),
+                contentType: "application/json; charset=utf-8",
+                async: false,
+            });
+            return true;
+        });
     });
 
     // progress through pages
