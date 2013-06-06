@@ -40,6 +40,8 @@
         {% for index in range(num_responses) %}
             <li>     
                 <input type="text" name="brainstorm_response" placeholder="Idea here...">
+                <input type="hidden" name="brainstorm_response_start">
+                <input type="hidden" name="brainstorm_response_end">
             </li>
         {% endfor %}
         </ol>
@@ -123,6 +125,20 @@
                 async: false,
             });
             return true;
+        });
+
+        // Record first focus gain time
+        $('input[name="brainstorm_response"]').focus(function() {
+            str = this.next('input[name="brainstorm_response_start"]');
+            if(str.val() == "") {
+                str.val(new Date().getTime());
+            }
+        });
+
+        // Record last focus loss time
+        $('input[name="brainstorm_response"]').blur(function() {
+            end = this.next('input[name="brainstorm_response_end"]');
+            end.val(new Date().getTime());
         });
     });
 
