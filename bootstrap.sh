@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apt-get update
-apt-get install -y python-pip python-dev build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib
+apt-get install -y python-pip python-dev python-requests build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib
 pip install --upgrade ipython
 pip install turkflow
 
