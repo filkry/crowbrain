@@ -64,6 +64,7 @@
 <script language='Javascript'>
 
     job_id = null;
+    ready_to_submit = false;
 
     function get_question(data, textStatus, jqXHR) {
         console.log("get succeeded");
@@ -116,15 +117,18 @@
         }
 
         $('#mturk_form').submit(function() {
-            $.ajax ({
-                url: "http://{{ admin_url }}/confirm",
-                type: "POST",
-                data: JSON.stringify({administrator_id:"{{ admin_id }}",
-                                      job_id: job_id}),
-                contentType: "application/json; charset=utf-8",
-                async: false,
-            });
-            return true;
+            console.log(ready_to_submit);
+            if(ready_to_submit) {
+                $.ajax ({
+                    url: "http://{{ admin_url }}/confirm",
+                    type: "POST",
+                    data: JSON.stringify({administrator_id:"{{ admin_id }}",
+                                          job_id: job_id}),
+                    contentType: "application/json; charset=utf-8",
+                    async: false,
+                });
+            }
+            return ready_to_submit;
         });
 
         // Record first focus gain time
@@ -149,12 +153,14 @@
             $('#task').css('display', 'block');
         } else {
             $('#feedback').css('display', 'block');
+            ready_to_submit = true;
         }
     }
 
     function fromTask() {
         $('#task').css('display', 'none');
         $('#feedback').css('display', 'block');
+        ready_to_submit = true;
     }
 </script>
 {% endblock %}
