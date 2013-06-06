@@ -137,7 +137,6 @@
 
         // Record last focus loss time
         $('input[name="brainstorm_response"]').blur(function() {
-            console.log("happens");
             end = $(this).siblings('input[name="brainstorm_response_end"]').val(new Date().getTime());
         });
     });
