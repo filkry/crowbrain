@@ -27,8 +27,10 @@ env = Environment(autoescape=guess_autoescape,
 ###
 
 class RandomStorm(TurkHITType):
-    def __init__(self, num_responses):
+    def __init__(self, num_responses, max_assignments, admin_url, admin_id):
         self.num_responses = num_responses
+        self.admin_url = admin_url
+        self.admin_id = admin_id
 
         template = env.get_template("consent_plaintext")
         description = template.render({'num_responses': num_responses})
@@ -38,7 +40,7 @@ class RandomStorm(TurkHITType):
             string.split('research, brainstorming'),
             description = description,
             duration = (5 + num_responses) * 60,
-            max_assignments = 10,
+            max_assignments = max_assignments,
             annotation = 'brainstorm',
             reward = (8 if num_responses == 5 else (15 if num_responses == 10 else 25)) * 0.01,
             env = env)
@@ -82,6 +84,8 @@ def initialize_from_cmd(script_identifier = "noscript"):
             help='The location to store database of outstanding hits. Program will hang if folder does not exist!')
     parser.add_argument('-r', '--reset', metavar='RESET_PHASE', action='store', type=float,
             help='Reset the experiment, removing all prior hits. If using, pass a stupid reset phase thingy')
+    parser.add_argument('admin_url', metavar='AURL', nargs=1,
+            help='URL of the server running administrator')
 
     args = parser.parse_args()
 
@@ -114,6 +118,6 @@ def initialize_from_cmd(script_identifier = "noscript"):
              ('accept_times', 'text'),
              ('submit_times', 'text')])
 
-    return (exp_location, schema, expid, tc)
+    return (exp_location, schema, expid, tc, args.admin_url[0])
 
 
