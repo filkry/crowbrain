@@ -37,10 +37,10 @@
     <input type="hidden" id="job_id" name="job_id" value="None" />
 
     <div id='responses'>
-        <ol>
+        <ol id='responses_ol'>
         {% for index in range(num_responses) %}
-            <li>     
-                <input type="text" name="brainstorm_response" placeholder="Idea here...">
+            <li>
+                <input type="text" class='response' name="brainstorm_response" placeholder="Idea here...">
                 <input type="hidden" name="brainstorm_response_start">
                 <input type="hidden" name="brainstorm_response_end">
             </li>
@@ -66,6 +66,12 @@
 
     job_id = null;
     ready_to_submit = false;
+
+    idea_html = '<li> \
+                    <input type="text" name="brainstorm_response" placeholder="Idea here..."> \
+                    <input type="hidden" name="brainstorm_response_start"> \
+                    <input type="hidden" name="brainstorm_response_end"> \
+                </li>'
 
     function get_question(data, textStatus, jqXHR) {
         console.log("get succeeded");
@@ -94,6 +100,17 @@
         $('#problem').val(errorThrown);
         // Hide the input boxes
         $('#responses').css('display', 'none');
+    }
+
+    function focus_function() {
+        str = $(this).next('input[name="brainstorm_response_start"]');
+        if(str.val() == "") {
+            str.val(new Date().getTime());
+        }
+    }
+
+    function blur_function() {
+        end = $(this).siblings('input[name="brainstorm_response_end"]').val(new Date().getTime());
     }
 
     // Randomize the task
@@ -134,17 +151,21 @@
         });
 
         // Record first focus gain time
-        $('input[name="brainstorm_response"]').focus(function() {
-            str = $(this).next('input[name="brainstorm_response_start"]');
-            if(str.val() == "") {
-                str.val(new Date().getTime());
-            }
-        });
+        $('input[name="brainstorm_response"]').focus(focus_function);
 
         // Record last focus loss time
-        $('input[name="brainstorm_response"]').blur(function() {
-            end = $(this).siblings('input[name="brainstorm_response_end"]').val(new Date().getTime());
-        });
+        $('input[name="brainstorm_response"]').blur(blur_function);
+
+        // Allow appending
+        {% if append_ideas is defined %}
+            $('#responses_ol').on('focus', 'li:last-child input[name="brainstorm_response"]', function() {
+                console.log("last");
+                new_response = $(idea_html);
+                new_response.children().focus(focus_function);
+                new_response.children().blur(blur_function);
+                $('#responses_ol').append(new_response);
+            });
+        {% endif %}
     });
 
     // progress through pages

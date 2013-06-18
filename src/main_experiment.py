@@ -61,6 +61,11 @@ if __name__=='__main__':
         print r
         fifties_keys = start_trial(tc, RandomStorm(50, 30, admin_url, fifties_aid), exp,'fifties')
 
+        infini_aid = "%s_infini" % (expid)
+        r = add_jobs(admin_url, infini_aid, jobs, 'chicoritastranglelemon', timeout=6800)
+        print r
+        infini_keys = start_trial(tc, RandomStorm(10, 30, admin_url, infini_aid, True), exp,'infini')
+
         fives_results = attempt_finish_trial(tc, exp, fives_key)
         tens_results = attempt_finish_trial(tc, exp, tens_key)
         twenties_results = attempt_finish_trial(tc, exp, twenties_key)
