@@ -161,8 +161,8 @@
             $('#responses_ol').on('focus', 'li:last-child input[name="brainstorm_response"]', function() {
                 console.log("last");
                 new_response = $(idea_html);
-                new_response.focus(focus_function);
-                new_response.blur(blur_function);
+                new_response.children().focus(focus_function);
+                new_response.children().blur(blur_function);
                 $('#responses_ol').append(new_response);
             });
         {% endif %}
