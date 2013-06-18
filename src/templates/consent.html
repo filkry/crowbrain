@@ -1,4 +1,8 @@
-<p>In this task, you will be asked to come up with {{ num_responses }} ideas for a classic brainstorming problem.<p>
+{% if append_ideas is defined %}
+	<p>In this task, you will be asked to come up with as many ideas as you can for a classic brainstorming problem.</p>
+{% else %}
+	<p>In this task, you will be asked to come up with {{ num_responses }} ideas for a classic brainstorming problem.<p>
+{% endif %}
 
 <p>This HIT has been generated as part of a study being conducted by Filip Krynicki at the Human-Computer Interaction Lab in the University of Waterloo Cheriton School of Computer Science. Filip is supervised by Dr. Michael Terry.</p>
 
