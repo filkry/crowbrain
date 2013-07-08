@@ -49,7 +49,7 @@ def post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, quest
     print r
     key = start_trial(tc,
                       RandomStorm(num_responses,
-                                  num_assignments_per_question,
+                                  num_assignments_per_question * len(questions),
                                   reward,
                                   administrator_URL,
                                   administrator_id,
