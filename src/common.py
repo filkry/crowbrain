@@ -28,7 +28,7 @@ env = Environment(autoescape=guess_autoescape,
 
 class RandomStorm(TurkHITType):
     def __init__(self, num_responses, max_assignments, reward, admin_url, admin_id, append_ideas = False):
-        self.num_responses = num_responses
+        self.num_responses = 10 if num_responses is None else num_responses
         self.admin_url = admin_url
         self.admin_id = admin_id
 

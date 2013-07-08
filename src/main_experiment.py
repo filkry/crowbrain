@@ -30,7 +30,7 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
 
 
 def get_questions_for_n(n):
-    n = "as many as possible" is n is None else "%i" % (n)
+    n = "as many as possible" if n is None else "%i" % (n)
 
     question = ["Please brainstorm %s ways that Mechanical Turk could be improved for workers. Be as specific as possible in your descriptions." % (n),
                 "Please brainstorm %s different public events that could be used to raise money for Alzheimer's research. Be as specific as possible in your descriptions." % (n),
@@ -59,9 +59,11 @@ def post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, quest
     return key
 
 def curry_post_jobs_for_n_responses(administrator_URL, num_assignments_per_question, tc, exp):
-    return lambda administrator_id, HIT_id, questions, num_responses, reward:
-         return post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, questions,
+    def post(administrator_id, HIT_id, questions, num_responses, reward):
+        return post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, questions,
             num_assignments_per_question, num_responses, reward, tc, exp)
+
+    return post
 
 if __name__=='__main__':
     exp_location, schema, expid, tc, admin_url = initialize_from_cmd(script_name)
