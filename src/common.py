@@ -27,8 +27,8 @@ env = Environment(autoescape=guess_autoescape,
 ###
 
 class RandomStorm(TurkHITType):
-    def __init__(self, num_responses, max_assignments, admin_url, admin_id, append_ideas = False):
-        self.num_responses = num_responses
+    def __init__(self, num_responses, max_assignments, reward, admin_url, admin_id, append_ideas = False):
+        self.num_responses = 10 if num_responses is None else num_responses
         self.admin_url = admin_url
         self.admin_id = admin_id
 
@@ -38,16 +38,6 @@ class RandomStorm(TurkHITType):
         template = env.get_template("consent_plaintext")
         description = template.render({'num_responses': num_responses})
 
-        reward = 0
-        if num_responses ==5:
-            reward = 10
-        elif num_responses == 10:
-            reward = 15
-        elif num_responses == 20:
-            reward = 25
-        elif num_responses == 50:
-            reward = 55
-
         title = ("Brainstorm %i ideas for a classic brainstorming \
             problem." % (num_responses)) if not append_ideas else "Brainstorm \
             as many ideas as you can for a classic brainstorming problem"
@@ -56,10 +46,10 @@ class RandomStorm(TurkHITType):
             title,
             string.split('research, brainstorming'),
             description = description,
-            duration = (5 + num_responses) * 60,
+            duration = 18 * 60 * 60,
             max_assignments = max_assignments,
             annotation = 'brainstorm',
-            reward = reward * 0.01,
+            reward = reward,
             env = env)
 
 # Results processing
