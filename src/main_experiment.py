@@ -97,7 +97,7 @@ if __name__=='__main__':
 
         #fives_key = post("%s_fives" % (expid), 'fives', get_questions_for_n(5), 5, 0.18)
         #tens_key = post("%s_tens" % (expid), 'tens', get_questions_for_n(10), 10, 0.35)
-        twenties_key = post("%s_twenties" % (expid), 'twenties', get_questions_for_n(20), 20, 0.75)
+        twenties_key = post("%s_twenties" % (expid), 'twenties', get_questions_for_n(20), 20, 0.70)
         #fifties_key = post("%s_fifties" % (expid), 'fifties', get_questions_for_n(50), 50, 1.75)
         #infini_key = post("%s_infini" % (expid), 'infini', get_questions_for_n(None), None, 1.75)
 
