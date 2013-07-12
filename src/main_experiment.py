@@ -32,27 +32,30 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
 def get_questions_for_n(n):
     n = "as many as possible" if n is None else "%i" % (n)
 
-    charity_question = """The Electronic Frontier Foundation (EFF, https://www.eff.org)
+    charity_question = """<p>The Electronic Frontier Foundation (EFF, <a href="https://www.eff.org">https://www.eff.org</a>)
       is a nonprofit whose goal is to protect individual and consumer rights with respect
       to digital technologies. For example, EFF filed and settled a class-action lawsuit
       against Sony after Sony sold music CDs that installed software on a person's computer
       that prevented them from copying CDs. It is now bringing a lawsuit against the US
       government to limit the degree to which it spies on its citizens through secret NSA
-      programs.\n\nWhile EFF is doing important work, it is relatively unknown to the
+      programs.</p>
+      <p>While EFF is doing important work, it is relatively unknown to the
       public, and relies on donations from the public. Brainstorm %s ways to raise funds
       for the EFF, where the fundraising also increases awareness of the need to protect
-      digital rights."""
+      digital rights.</p>"""
 
-    turk_question = """Mechanical Turk currently lacks a dedicated interface for
+    turk_question = """<p>Mechanical Turk currently lacks a dedicated interface for
       smartphones (iPhone, Androids, etc.) and tablets (e.g., the iPad). While some HITs
       may be more difficult to perform on a mobile device (e.g., those that require lots of
       typing), some may be easier. For example, the unique features of mobile devices
       (their extreme mobility, built-in cameras, multi-touch interfaces, built-in GPS, built-in
       microphones, ability to call others) may make it possible to perform some tasks that are
-      impossible or extremely difficult with normal computers.\n\nBrainstorm %s different types
+      impossible or extremely difficult with normal computers.</p>
+
+      <p>Brainstorm %s different types
       of HITs that could be performed with mobile devices that cannot be performed with a
       regular computer, or which are much easier on mobile devices. Be as specific as possible
-      in your ideas."""
+      in your ideas.</p>"""
 
     question = [charity_question % (n),
                 turk_question % (n)]

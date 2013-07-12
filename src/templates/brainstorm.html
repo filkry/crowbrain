@@ -31,7 +31,6 @@
     </div>
 
     <div id='question' class='description' style="display:none;">
-        <p id='question_text'></p>
     </div>
     <input type="hidden" id="problem" name="problem" value="None" />
     <input type="hidden" id="job_id" name="job_id" value="None" />
@@ -84,7 +83,7 @@
         console.log(question)
 
         // Change the HIT
-        $('#question_text').text(question);
+        $('#question').html(question);
         $('#job_id').val(job_id);
         $('#problem').val(question);
         $('#wait').css('display', 'none');
