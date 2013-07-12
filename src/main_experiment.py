@@ -32,10 +32,30 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
 def get_questions_for_n(n):
     n = "as many as possible" if n is None else "%i" % (n)
 
-    question = ["Please brainstorm %s ways that Mechanical Turk could be improved for workers. Be as specific as possible in your descriptions." % (n),
-                "Please brainstorm %s different public events that could be used to raise money for Alzheimer's research. Be as specific as possible in your descriptions." % (n),
-                "Many people have old iPods or MP3 players that they no longer use. Please brainstorm %s uses for old iPods/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may *not* have displays. Be as specific as possible in your descriptions." % (n),
-                "Imagine you are in a social setting and you have forgotten the name of somebody you know. Brainstorm %s ways you could learn their name without directly asking them. Be as specific as possible in your descriptions." % (n)]
+    charity_question = """The Electronic Frontier Foundation (EFF, https://www.eff.org)
+      is a nonprofit whose goal is to protect individual and consumer rights with respect
+      to digital technologies. For example, EFF filed and settled a class-action lawsuit
+      against Sony after Sony sold music CDs that installed software on a person's computer
+      that prevented them from copying CDs. It is now bringing a lawsuit against the US
+      government to limit the degree to which it spies on its citizens through secret NSA
+      programs.\n\nWhile EFF is doing important work, it is relatively unknown to the
+      public, and relies on donations from the public. Brainstorm %s ways to raise funds
+      for the EFF, where the fundraising also increases awareness of the need to protect
+      digital rights."""
+
+    turk_question = """Mechanical Turk currently lacks a dedicated interface for
+      smartphones (iPhone, Androids, etc.) and tablets (e.g., the iPad). While some HITs
+      may be more difficult to perform on a mobile device (e.g., those that require lots of
+      typing), some may be easier. For example, the unique features of mobile devices
+      (their extreme mobility, built-in cameras, multi-touch interfaces, built-in GPS, built-in
+      microphones, ability to call others) may make it possible to perform some tasks that are
+      impossible or extremely difficult with normal computers.\n\nBrainstorm %s different types
+      of HITs that could be performed with mobile devices that cannot be performed with a
+      regular computer, or which are much easier on mobile devices. Be as specific as possible
+      in your ideas."""
+
+    question = [charity_question % (n),
+                turk_question % (n)]
 
     return question
 
@@ -75,14 +95,14 @@ if __name__=='__main__':
                                                tc=tc,
                                                exp=exp)
 
-        fives_key = post("%s_fives" % (expid), 'fives', get_questions_for_n(5), 5, 0.18)
-        tens_key = post("%s_tens" % (expid), 'tens', get_questions_for_n(10), 10, 0.35)
-        twenties_key = post("%s_twenties" % (expid), 'twenties', get_questions_for_n(20), 20, 0.88)
-        fifties_key = post("%s_fifties" % (expid), 'fifties', get_questions_for_n(50), 50, 1.75)
-        infini_key = post("%s_infini" % (expid), 'infini', get_questions_for_n(None), None, 1.75)
+        #fives_key = post("%s_fives" % (expid), 'fives', get_questions_for_n(5), 5, 0.18)
+        #tens_key = post("%s_tens" % (expid), 'tens', get_questions_for_n(10), 10, 0.35)
+        twenties_key = post("%s_twenties" % (expid), 'twenties', get_questions_for_n(20), 20, 0.70)
+        #fifties_key = post("%s_fifties" % (expid), 'fifties', get_questions_for_n(50), 50, 1.75)
+        #infini_key = post("%s_infini" % (expid), 'infini', get_questions_for_n(None), None, 1.75)
 
-        fives_results = attempt_finish_trial(tc, exp, fives_key)
-        tens_results = attempt_finish_trial(tc, exp, tens_key)
+        #fives_results = attempt_finish_trial(tc, exp, fives_key)
+        #tens_results = attempt_finish_trial(tc, exp, tens_key)
         twenties_results = attempt_finish_trial(tc, exp, twenties_key)
-        fifties_results = attempt_finish_trial(tc, exp, fifties_keys)
+        #fifties_results = attempt_finish_trial(tc, exp, fifties_keys)
 
