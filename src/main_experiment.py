@@ -53,7 +53,7 @@ def get_questions_for_responses(n):
     return question
 
 def get_response_rewards(expid):
-    return [(10, 0.30, "%s_tens" % expid, "tens")]
+    return [(10, 0.35, "%s_tens" % expid, "tens")]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
               num_assignments_per_condition, tc, exp, random_type = False):
@@ -77,13 +77,13 @@ def post_jobs(administrator_URL, responses_rewards, duration,
         if not random_type:
             num_assignments_total = num_assignments_per_condition * len(questions)
 
-        hit =  RandomStorm(num_responses,
+        hit =  RandomStorm(responses,
                   num_assignments_total,
                   reward,
                   administrator_URL,
                   admin_id,
                   duration = duration,
-                  append_ideas = num_responses is None)
+                  append_ideas = responses is None)
 
         key = start_trial(tc, hit, exp, HIT_id)
         keys.append(key)
@@ -100,4 +100,3 @@ if __name__=='__main__':
                   tc=tc, exp=exp, random_type = True)
 
         results = [attempt_finish_trial(tc, exp, key) for key in keys]
-        
