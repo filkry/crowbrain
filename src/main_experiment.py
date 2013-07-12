@@ -3,6 +3,7 @@ from common import *
 import itertools
 import requests
 import json
+import random
 
 script_name = __file__
 
@@ -28,84 +29,74 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
     jobs = [gen_jobs_for_question(q, num_assignments_per_question) for q in questions]
     return list(itertools.chain.from_iterable(jobs))
 
+def gen_jobs_random(questions, num_assignments):
+    return [{"question": random.choice(questions)} for i in range(num_assignments)]
 
-def get_questions_for_n(n):
+def get_questions_for_responses(n):
     n = "as many as possible" if n is None else "%i" % (n)
 
-    charity_question = """<p>The Electronic Frontier Foundation (EFF, <a href="https://www.eff.org">https://www.eff.org</a>)
-      is a nonprofit whose goal is to protect individual and consumer rights with respect
-      to digital technologies. For example, EFF filed and settled a class-action lawsuit
-      against Sony after Sony sold music CDs that installed software on a person's computer
-      that prevented them from copying CDs. It is now bringing a lawsuit against the US
-      government to limit the degree to which it spies on its citizens through secret NSA
-      programs.</p>
-      <p>While EFF is doing important work, it is relatively unknown to the
-      public, and relies on donations from the public. Brainstorm %s ways to raise funds
-      for the EFF, where the fundraising also increases awareness of the need to protect
-      digital rights.</p>"""
+    charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
+      <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, affiliate programs with Amazon, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
 
-    turk_question = """<p>Mechanical Turk currently lacks a dedicated interface for
-      smartphones (iPhone, Androids, etc.) and tablets (e.g., the iPad). While some HITs
-      may be more difficult to perform on a mobile device (e.g., those that require lots of
-      typing), some may be easier. For example, the unique features of mobile devices
-      (their extreme mobility, built-in cameras, multi-touch interfaces, built-in GPS, built-in
-      microphones, ability to call others) may make it possible to perform some tasks that are
-      impossible or extremely difficult with normal computers.</p>
+    turk_question = """<p>Mechanical Turk currently lacks a dedicated mobile app for performing HITs on smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).</p>
+      <p>Brainstorm %s features for a mobile app to Mechanical Turk that would improve the worker's experience when performing HITs on mobile devices. Be as specific as possible in your responses.</p>"""
 
-      <p>Brainstorm %s different types
-      of HITs that could be performed with mobile devices that cannot be performed with a
-      regular computer, or which are much easier on mobile devices. Be as specific as possible
-      in your ideas.</p>"""
+    mp3_question = """<p>Many people have old iPods or MP3 players that they no longer use. Please brainstorm %s uses for old iPods/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may <em>not</em> have displays. Be as specific as possible in your descriptions.</p>"""
+
+    forgot_question = """<p>Imagine you are in a social setting and you have forgotten the name of somebody you know. Brainstorm %s ways you could learn their name without directly asking them. Be as specific as possible in your descriptions.</p>"""
 
     question = [charity_question % (n),
-                turk_question % (n)]
+                turk_question % (n),
+                mp3_question %(n),
+                forgot_question %(n)]
 
     return question
 
-def post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, questions,
-                              num_assignments_per_question, num_responses, reward, tc, exp):
-    r = add_jobs(administrator_URL,
-                 administrator_id,
-                 gen_jobs_for_all_questions(questions, num_assignments_per_question),
-                 'chicoritastranglelemon',
-                 timeout=60*60*18 + 60)
-    print r
-    key = start_trial(tc,
-                      RandomStorm(num_responses,
-                                  num_assignments_per_question * len(questions),
-                                  reward,
-                                  administrator_URL,
-                                  administrator_id,
-                                  num_responses is None),
-                      exp,
-                      HIT_id)
-    return key
+def get_response_rewards(expid):
+    return [(10, 0.35, "%s_tens" % expid, "tens")]
 
-def curry_post_jobs_for_n_responses(administrator_URL, num_assignments_per_question, tc, exp):
-    def post(administrator_id, HIT_id, questions, num_responses, reward):
-        return post_jobs_for_n_responses(administrator_URL, administrator_id, HIT_id, questions,
-            num_assignments_per_question, num_responses, reward, tc, exp)
+def post_jobs(administrator_URL, responses_rewards, duration,
+              num_assignments_per_condition, tc, exp, random_type = False):
 
-    return post
+    keys = []
+
+    for responses, reward, admin_id, HIT_id in responses_rewards:
+        questions = get_questions_for_responses(responses)
+
+        jobs = None
+        if random_type:
+            jobs = gen_jobs_random(questions, num_assignments_per_condition)
+        else:
+            jobs = gen_jobs_for_all_questions(questions, num_assignments_per_condition)
+
+        r = add_jobs(administrator_URL, admin_id, jobs,
+            'chicoritastranglelemon', timeout=duration + 60)
+        print r
+
+        num_assignments_total = num_assignments_per_condition
+        if not random_type:
+            num_assignments_total = num_assignments_per_condition * len(questions)
+
+        hit =  RandomStorm(responses,
+                  num_assignments_total,
+                  reward,
+                  administrator_URL,
+                  admin_id,
+                  duration = duration,
+                  append_ideas = responses is None)
+
+        key = start_trial(tc, hit, exp, HIT_id)
+        keys.append(key)
+
+    return keys
 
 if __name__=='__main__':
     exp_location, schema, expid, tc, admin_url = initialize_from_cmd(script_name)
 
     with sl.Experiment(exp_location, schema, expid) as exp:
 
-        post = curry_post_jobs_for_n_responses(administrator_URL=admin_url,
-                                               num_assignments_per_question=5,
-                                               tc=tc,
-                                               exp=exp)
+        keys = post_jobs(admin_url, get_response_rewards(expid), 60*60*2,
+                  num_assignments_per_condition = 5,
+                  tc=tc, exp=exp, random_type = True)
 
-        #fives_key = post("%s_fives" % (expid), 'fives', get_questions_for_n(5), 5, 0.18)
-        #tens_key = post("%s_tens" % (expid), 'tens', get_questions_for_n(10), 10, 0.35)
-        twenties_key = post("%s_twenties" % (expid), 'twenties', get_questions_for_n(20), 20, 0.70)
-        #fifties_key = post("%s_fifties" % (expid), 'fifties', get_questions_for_n(50), 50, 1.75)
-        #infini_key = post("%s_infini" % (expid), 'infini', get_questions_for_n(None), None, 1.75)
-
-        #fives_results = attempt_finish_trial(tc, exp, fives_key)
-        #tens_results = attempt_finish_trial(tc, exp, tens_key)
-        twenties_results = attempt_finish_trial(tc, exp, twenties_key)
-        #fifties_results = attempt_finish_trial(tc, exp, fifties_keys)
-
+        results = [attempt_finish_trial(tc, exp, key) for key in keys]
