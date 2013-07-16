@@ -53,14 +53,19 @@ def get_questions_for_responses(n):
     return question
 
 def get_response_rewards(expid):
-    return [(20, 0.70, "%s_twenties" % expid, "twenties")]
+    return [(5, 0.18, "%s_fives" % expid, "fives", False),
+            (10, 0.35, "%s_tens" % expid, "tens", False),
+            (20, 0.70, "%s_twenties" % expid, "twenties", False),
+            (50, 1.75, "%s_fifties" % expid, "fifties", False),
+            (10, 0.50, "%s_infinis" % expid, "infinis", True),
+            ]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
               num_assignments_per_condition, tc, exp, random_type = False):
 
     keys = []
 
-    for responses, reward, admin_id, HIT_id in responses_rewards:
+    for responses, reward, admin_id, HIT_id, append in responses_rewards:
         questions = get_questions_for_responses(responses)
 
         jobs = None
@@ -85,7 +90,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
                   administrator_URL,
                   admin_id,
                   duration = duration,
-                  append_ideas = responses is None)
+                  append_ideas = append)
 
         key = start_trial(tc, hit, exp, HIT_id)
         keys.append(key)
