@@ -36,7 +36,7 @@ def get_questions_for_responses(n):
     n = "as many as possible" if n is None else "%i" % (n)
 
     charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
-      <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, affiliate programs with Amazon, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
+      <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
 
     turk_question = """<p>Mechanical Turk currently lacks a dedicated mobile app for performing HITs on smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).</p>
       <p>Brainstorm %s features for a mobile app to Mechanical Turk that would improve the worker's experience when performing HITs on mobile devices. Be as specific as possible in your responses.</p>"""
@@ -53,7 +53,7 @@ def get_questions_for_responses(n):
     return question
 
 def get_response_rewards(expid):
-    return [(10, 0.35, "%s_tens" % expid, "tens")]
+    return [(20, 0.70, "%s_twenties" % expid, "twenties")]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
               num_assignments_per_condition, tc, exp, random_type = False):
@@ -68,6 +68,8 @@ def post_jobs(administrator_URL, responses_rewards, duration,
             jobs = gen_jobs_random(questions, num_assignments_per_condition)
         else:
             jobs = gen_jobs_for_all_questions(questions, num_assignments_per_condition)
+
+        print len(jobs)
 
         r = add_jobs(administrator_URL, admin_id, jobs,
             'chicoritastranglelemon', timeout=duration + 60)
@@ -95,8 +97,8 @@ if __name__=='__main__':
 
     with sl.Experiment(exp_location, schema, expid) as exp:
 
-        keys = post_jobs(admin_url, get_response_rewards(expid), 60*60*2,
+        keys = post_jobs(admin_url, get_response_rewards(expid), 60*60*18,
                   num_assignments_per_condition = 5,
-                  tc=tc, exp=exp, random_type = True)
+                  tc=tc, exp=exp, random_type = False)
 
         results = [attempt_finish_trial(tc, exp, key) for key in keys]
