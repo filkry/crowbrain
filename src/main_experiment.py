@@ -32,8 +32,8 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
 def gen_jobs_random(questions, num_assignments):
     return [{"question": random.choice(questions)} for i in range(num_assignments)]
 
-def get_questions_for_responses(n):
-    n = "as many as possible" if n is None else "%i" % (n)
+def get_questions_for_responses(n, append=False):
+    n = "as many as possible" if not append else "%i" % (n)
 
     charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
       <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
@@ -66,7 +66,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
     keys = []
 
     for responses, reward, admin_id, HIT_id, append in responses_rewards:
-        questions = get_questions_for_responses(responses)
+        questions = get_questions_for_responses(responses, append)
 
         jobs = None
         if random_type:
