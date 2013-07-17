@@ -23,7 +23,17 @@ def add_jobs(admin_url, admin_id, jobs, password, timeout):
         return str(e)
 
 def gen_jobs_for_question(question, num):
-    return [{"question": question} for i in range(num)]
+    job_type = None
+    if 'EFF' in question:
+      job_type = 'charity'
+    elif 'Turk' in question:
+      job_type = 'turk'
+    elif 'MP3' in question:
+      job_type = 'mp3'
+    elif 'social' in question:
+      job_type = 'forgot'
+
+    return [{"question": question, "job_type": job_type} for i in range(num)]
 
 def gen_jobs_for_all_questions(questions, num_assignments_per_question):
     jobs = [gen_jobs_for_question(q, num_assignments_per_question) for q in questions]
@@ -32,8 +42,8 @@ def gen_jobs_for_all_questions(questions, num_assignments_per_question):
 def gen_jobs_random(questions, num_assignments):
     return [{"question": random.choice(questions)} for i in range(num_assignments)]
 
-def get_questions_for_responses(n):
-    n = "as many as possible" if n is None else "%i" % (n)
+def get_questions_for_responses(n, append=False):
+    n = "as many as possible" if not append else "%i" % (n)
 
     charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
       <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
@@ -53,15 +63,20 @@ def get_questions_for_responses(n):
     return question
 
 def get_response_rewards(expid):
-    return [(20, 0.70, "%s_twenties" % expid, "twenties")]
+    return [(5, 0.18, "%s_fives" % expid, "fives", False),
+            (10, 0.35, "%s_tens" % expid, "tens", False),
+            (20, 0.70, "%s_twenties" % expid, "twenties", False),
+            (50, 1.75, "%s_fifties" % expid, "fifties", False),
+            (10, 0.50, "%s_infinis" % expid, "infinis", True),
+            ]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
               num_assignments_per_condition, tc, exp, random_type = False):
 
     keys = []
 
-    for responses, reward, admin_id, HIT_id in responses_rewards:
-        questions = get_questions_for_responses(responses)
+    for responses, reward, admin_id, HIT_id, append in responses_rewards:
+        questions = get_questions_for_responses(responses, append)
 
         jobs = None
         if random_type:
@@ -85,7 +100,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
                   administrator_URL,
                   admin_id,
                   duration = duration,
-                  append_ideas = responses is None)
+                  append_ideas = append)
 
         key = start_trial(tc, hit, exp, HIT_id)
         keys.append(key)
