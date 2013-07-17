@@ -23,7 +23,17 @@ def add_jobs(admin_url, admin_id, jobs, password, timeout):
         return str(e)
 
 def gen_jobs_for_question(question, num):
-    return [{"question": question} for i in range(num)]
+    job_type = None
+    if 'EFF' in question:
+      job_type = 'charity'
+    elif 'Turk' in question:
+      job_type = 'turk'
+    elif 'MP3' in question:
+      job_type = 'mp3'
+    elif 'social' in question:
+      job_type = 'forgot'
+
+    return [{"question": question, "job_type": job_type} for i in range(num)]
 
 def gen_jobs_for_all_questions(questions, num_assignments_per_question):
     jobs = [gen_jobs_for_question(q, num_assignments_per_question) for q in questions]
