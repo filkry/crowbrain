@@ -43,7 +43,7 @@ def gen_jobs_random(questions, num_assignments):
     return [{"question": random.choice(questions)} for i in range(num_assignments)]
 
 def get_questions_for_responses(n, append=False):
-    n = "as many as possible" if not append else "%i" % (n)
+    n = "as many as possible" if append else "%i" % (n)
 
     charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
       <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
@@ -63,11 +63,7 @@ def get_questions_for_responses(n, append=False):
     return question
 
 def get_response_rewards(expid):
-    return [(5, 0.18, "%s_fives" % expid, "fives", False),
-            (10, 0.35, "%s_tens" % expid, "tens", False),
-            (20, 0.70, "%s_twenties" % expid, "twenties", False),
-            (50, 1.75, "%s_fifties" % expid, "fifties", False),
-            (10, 0.50, "%s_infinis" % expid, "infinis", True),
+    return [(10, 0.50, "%s_infinis" % expid, "infinis", True),
             ]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
@@ -89,6 +85,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
         r = add_jobs(administrator_URL, admin_id, jobs,
             'chicoritastranglelemon', timeout=duration + 60)
         print r
+        print r.headers
 
         num_assignments_total = num_assignments_per_condition
         if not random_type:
