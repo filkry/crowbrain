@@ -158,26 +158,41 @@ class QuestionSet:
   # Returns a list of (similarity_score, Answer, Answer) tuples,
   # ordered from most to least similar ideas
   # Uses the Answer similarity() method to determine similarity
+  # def get_sorted_answer_pairs(self):
+  #   if len(self.sorted_answer_pairs) == len(self.answers)/2+len(self.answers)%2:
+  #     return self.sorted_answer_pairs[:]
+  #   self.sorted_answer_pairs = []
+  #   temp_answers = self.answers[:]
+  #   while len(temp_answers) > 1:
+  #     a1 = temp_answers.pop(0)
+  #     scores = [a1.similarity(b, self) for b in temp_answers]
+  #     best_score = -1
+  #     best_match = -1
+  #     for i in range(len(scores)):
+  #       if scores[i] > best_score:
+  #         best_score = scores[i]
+  #         best_match = i
+  #     self.sorted_answer_pairs.append([best_score, a1, temp_answers.pop(best_match)])
+  #   if temp_answers:
+  #     self.sorted_answer_pairs.append([0.0, temp_answers[0], temp_answers[0]])
+  #   self.sorted_answer_pairs.sort(lambda x,y: cmp(x[0],y[0]))
+  #   self.sorted_answer_pairs.reverse()
+  #   return self.sorted_answer_pairs[:]
+
+
+  # Version of the above function that returns all <= n^2 pairs
   def get_sorted_answer_pairs(self):
-    if len(self.sorted_answer_pairs) == len(self.answers)/2+len(self.answers)%2:
-      return self.sorted_answer_pairs[:]
-    self.sorted_answer_pairs = []
-    temp_answers = self.answers[:]
-    while len(temp_answers) > 1:
-      a1 = temp_answers.pop(0)
-      scores = [a1.similarity(b, self) for b in temp_answers]
-      best_score = -1
-      best_match = -1
-      for i in range(len(scores)):
-        if scores[i] > best_score:
-          best_score = scores[i]
-          best_match = i
-      self.sorted_answer_pairs.append([best_score, a1, temp_answers.pop(best_match)])
-    if temp_answers:
-      self.sorted_answer_pairs.append([0.0, temp_answers[0], temp_answers[0]])
-    self.sorted_answer_pairs.sort(lambda x,y: cmp(x[0],y[0]))
-    self.sorted_answer_pairs.reverse()
-    return self.sorted_answer_pairs[:]
+    if len(self.sorted_answer_pairs) == 0:
+      for i, a in enumerate(self.answers[:-1]):
+        for b in self.answers[i + 1:]:
+          score = a.similarity(b, self)
+          self.sorted_answer_pairs.append([score, a, b])
+
+      self.sorted_answer_pairs.sort(lambda x, y: cmp(x[0], y[0]))
+      self.sorted_answer_pairs.reverse()
+
+    return self.sorted_answer_pairs
+
 # This is dumb clustering that doesn't really work that well
   def get_idea_clusters(self):
     sorted_answers = self.get_sorted_answer_pairs()
@@ -188,7 +203,10 @@ class QuestionSet:
                             if s >= 0.5)
 
     solver = pcc.solver(G)
-    return list(solver.run())
+
+    print len(G), len(G.edges())
+    clusters = solver.run()
+    return sorted(clusters, lambda x,y: cmp(len(x), len(y)))[::-1]
 
   def get_ideas_sorted_by_uniqueness(self):
     unique_answers = self.answers[:]
@@ -277,13 +295,14 @@ for qs in question_sets:
   qs.print_top_n_grams()
   # Each of the "with open" sections below writes out a different report
   # for this question set
-  with open('out/' + qs.question_code+'_scores.csv', 'w') as fout:
-    csv_out = csv.writer(fout, dialect='excel')
-    csv_out.writerow(['score', 'first_answer', 'second_answer', 'first_answer_num', 'second_answer_num', 'from_same_person', 'first_worker_id', 'second_worker_id', 'first_post_date', 'second_post_date', 'first_num_answers_requested', 'second_num_answers_requested', 'question_code'])
-    for scores in qs.get_sorted_answer_pairs():
-      score,l,r = scores
-      row = [score, l.answer, r.answer, l.answer_num, r.answer_num, l.answer_set.worker_id == r.answer_set.worker_id, l.answer_set.worker_id, r.answer_set.worker_id, l.answer_set.post_date, r.answer_set.post_date, l.answer_set.num_answers_requested, r.answer_set.num_answers_requested, l.answer_set.question_code]
-      csv_out.writerow(row)
+  # with open('out/' + qs.question_code+'_scores.csv', 'w') as fout:
+  #   csv_out = csv.writer(fout, dialect='excel')
+  #   csv_out.writerow(['score', 'first_answer', 'second_answer', 'first_answer_num', 'second_answer_num', 'from_same_person', 'first_worker_id', 'second_worker_id', 'first_post_date', 'second_post_date', 'first_num_answers_requested', 'second_num_answers_requested', 'question_code'])
+  #   for scores in qs.get_sorted_answer_pairs():
+  #     score,l,r = scores
+  #     row = [score, l.answer, r.answer, l.answer_num, r.answer_num, l.answer_set.worker_id == r.answer_set.worker_id, l.answer_set.worker_id, r.answer_set.worker_id, l.answer_set.post_date, r.answer_set.post_date, l.answer_set.num_answers_requested, r.answer_set.num_answers_requested, l.answer_set.question_code]
+  #     csv_out.writerow(row)
+  print "Generating clusters"
   with open('out/' + qs.question_code+'_clusters.csv', 'w') as fout:
     csv_out = csv.writer(fout, dialect='excel')
     csv_out.writerow(['cluster_num', 'answer', 'answer_num', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
@@ -293,20 +312,20 @@ for qs in question_sets:
       for answer in cluster:
         row = [str(cluster_num+1), answer.answer, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
         csv_out.writerow(row)
-  with open('out/' + qs.question_code+'_by_uniqueness.csv', 'w') as fout:
-    csv_out = csv.writer(fout, dialect='excel')
-    csv_out.writerow(['answer', 'answer_num', 'question_prob', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
-    answers = qs.get_ideas_sorted_by_uniqueness()
-    for answer in answers:
-      row = [answer.answer, answer.answer_num, answer.uniqueness_score, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
-      csv_out.writerow(row)
-  with open('out/' + qs.question_code+'_similarity_scores_uniqueness.csv', 'w') as fout:
-    csv_out = csv.writer(fout, dialect='excel')
-    csv_out.writerow(['score', 'uniqueness', 'first_answer', 'second_answer', 'first_answer_num', 'second_answer_num', 'from_same_person', 'first_worker_id', 'second_worker_id', 'first_post_date', 'second_post_date', 'first_num_answers_requested', 'second_num_answers_requested', 'question_code'])
-    for scores in qs.get_ideas_sorted_by_similarity_uniqueness():
-      score,l,r,uniqueness = scores
-      row = [score, uniqueness, l.answer, r.answer, l.answer_num, r.answer_num, l.answer_set.worker_id == r.answer_set.worker_id, l.answer_set.worker_id, r.answer_set.worker_id, l.answer_set.post_date, r.answer_set.post_date, l.answer_set.num_answers_requested, r.answer_set.num_answers_requested, l.answer_set.question_code]
-      csv_out.writerow(row)
+  # with open('out/' + qs.question_code+'_by_uniqueness.csv', 'w') as fout:
+  #   csv_out = csv.writer(fout, dialect='excel')
+  #   csv_out.writerow(['answer', 'answer_num', 'question_prob', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
+  #   answers = qs.get_ideas_sorted_by_uniqueness()
+  #   for answer in answers:
+  #     row = [answer.answer, answer.answer_num, answer.uniqueness_score, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
+  #     csv_out.writerow(row)
+  # with open('out/' + qs.question_code+'_similarity_scores_uniqueness.csv', 'w') as fout:
+  #   csv_out = csv.writer(fout, dialect='excel')
+  #   csv_out.writerow(['score', 'uniqueness', 'first_answer', 'second_answer', 'first_answer_num', 'second_answer_num', 'from_same_person', 'first_worker_id', 'second_worker_id', 'first_post_date', 'second_post_date', 'first_num_answers_requested', 'second_num_answers_requested', 'question_code'])
+  #   for scores in qs.get_ideas_sorted_by_similarity_uniqueness():
+  #     score,l,r,uniqueness = scores
+  #     row = [score, uniqueness, l.answer, r.answer, l.answer_num, r.answer_num, l.answer_set.worker_id == r.answer_set.worker_id, l.answer_set.worker_id, r.answer_set.worker_id, l.answer_set.post_date, r.answer_set.post_date, l.answer_set.num_answers_requested, r.answer_set.num_answers_requested, l.answer_set.question_code]
+  #     csv_out.writerow(row)
     
 #qs = question_sets[0]
 #a = qs.answers[0]
