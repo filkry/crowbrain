@@ -3,7 +3,7 @@
 apt-get update
 apt-get install -y python-pip python-dev python-requests build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib python-tornado python-zmq
 pip install --upgrade ipython
-pip install turkflow
+pip install turkflow numpy pyyaml nltk
 
 ln -s -f /home/host/.boto /home/vagrant/.boto
 
