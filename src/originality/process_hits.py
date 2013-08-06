@@ -13,10 +13,13 @@ from nltk.corpus import wordnet as wn
 import naive_bayes as nb
 import networkx as nx
 import numpy as np
+from collections import defaultdict
 
-base_dir = '/home/fil/Dropbox/crowbrain_share/experiments'
+base_dirs = ['/home/fil/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18',
+             '/home/fil/Dropbox/crowbrain_share/experiments/pilot12-2013.07.16',
+             '/home/fil/Dropbox/crowbrain_share/experiments/pilot11-2013.07.15',]
 
-fixed_clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.08.01'
+fixed_clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.08.01/'
 #base_dir = '/home/mterry/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18'
 cache_file = './cache.bin'
 alzheimers_file_date = '2013.07.07'
@@ -36,14 +39,15 @@ class FullDataSet:
     self.update_stem_counts()
     for qs in self.question_sets:
       print "Question code:", qs.question_code, "total num responses:", len(qs.answers)
-  def _read_data(self, dir):
-    for f in os.listdir(dir):
-      full_name = os.path.join(dir,f)
-      if os.path.isdir(full_name):
-        self._read_data(full_name)
-      else:
-        if f == 'answers.csv':
-          self._read_file(full_name)
+  def _read_data(self, dirs):
+    for d in dirs:
+      for f in os.listdir(d):
+        full_name = os.path.join(d,f)
+        if os.path.isdir(full_name):
+          self._read_data(full_name)
+        else:
+          if f == 'answers.csv':
+            self._read_file(full_name)
   def _read_file(self, f):
     with open(f) as fin:
       l = fin.readline()
@@ -176,12 +180,18 @@ class QuestionSet:
     if self.similarity_matrix is None:
       self.similarity_matrix = np.zeros((len(self.answers), len(self.answers)))
 
-      for i, a in enumerate(self.answers[:-1]):
-        self.similarity_matrix[i, i] = 1
-        for j, b in enumerate(self.answers[i+1:]):
+      # for i, a in enumerate(self.answers[:-1]):
+      #   self.similarity_matrix[i, i] = 1
+      #   for j, b in enumerate(self.answers[i+1:]):
+      #     score = a.similarity(b, self)
+      #     self.similarity_matrix[i, j] = score
+      #     self.similarity_matrix[j, i] = score
+
+      # I seem to be stupid, so do double the work to be safe
+      for i, a in enumerate(self.answers):
+        for j, b in (enumerate(self.answers)):
           score = a.similarity(b, self)
           self.similarity_matrix[i, j] = score
-          self.similarity_matrix[j, i] = score
 
     return self.similarity_matrix
 
@@ -255,21 +265,30 @@ class Answer:
   def __repr__(self):
     return ' '.join([self.answer_set.worker_id, self.answer_set.question_code, str(self.answer_num), self.answer])
 
-def get_full_data_set(base_dir, cache_file):
+def get_full_data_set(base_dirs, cache_file):
   if os.path.exists(cache_file):
     with open(cache_file, 'rb') as f:
       return pickle.load(f)
-  full_data_set = FullDataSet(base_dir)
+  full_data_set = FullDataSet(base_dirs)
   with open(cache_file, 'wb') as f:
     pickle.dump(full_data_set, f)
   return full_data_set  
 
 # The caching can screw things up, so remember to delete it if things don't seem to be updating properly
-data = get_full_data_set(base_dir, cache_file)
+data = get_full_data_set(base_dirs, cache_file)
 #data = FullDataSet(base_dir)
 question_sets = data.question_sets
 for qs in question_sets:
   qs.print_top_n_grams()
+
+  cluster_sizes = defaultdict(int)
+  answer_cluster = dict()
+
+  with open(fixed_clusters_dir + qs.question_code + '_clusters.csv') as fixed_clusters:
+    csv_in = csv.reader(fixed_clusters)
+    for cluster_num, answer, answer_num, worker_id, post_date, num_requested, question_code in csv_in:
+      cluster_sizes[cluster_num] += 1
+      answer_cluster[answer] = cluster_num # all answers with identical text should be in same cluster anyway
 
   similarity_matrix = qs.get_similarity_matrix()
 
@@ -279,6 +298,11 @@ for qs in question_sets:
     csv_out.writerow(['answer', 'uniqueness', 'inverse_sum_similarity', 'inverse_cluster_size', 'answer_num', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
 
     for i, answer in enumerate(qs.answers):
-      inverse_sum_similarity = 1.0 / (sum(similarity_matrix[i]) - 1.0) # subtract one for the similarity to self
-      row = [answer.answer, answer.uniqueness_score, inverse_sum_similarity, 0.0, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
+      if sum(similarity_matrix[i]) < 1.0:
+        print similarity_matrix[i]
+      inverse_sum_similarity = 1.0 / sum(similarity_matrix[i]) # subtract one for the similarity to self
+
+      inverse_cluster_size = 1.0 / cluster_sizes[answer_cluster[answer.answer]]
+
+      row = [answer.answer, answer.uniqueness_score, inverse_sum_similarity, inverse_cluster_size, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
       csv_out.writerow(row)
