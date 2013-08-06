@@ -14,12 +14,14 @@ import naive_bayes as nb
 import networkx as nx
 import numpy as np
 from collections import defaultdict
+from scipy.stats.stats import pearsonr
 
 base_dirs = ['/home/fil/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18',
              '/home/fil/Dropbox/crowbrain_share/experiments/pilot12-2013.07.16',
              '/home/fil/Dropbox/crowbrain_share/experiments/pilot11-2013.07.15',]
 
 fixed_clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.08.01/'
+mike_scores_file = '/home/fil/Dropbox/crowbrain_share/data/originality-scores-2013.08.06/mike-scores.csv'
 #base_dir = '/home/mterry/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18'
 cache_file = './cache.bin'
 alzheimers_file_date = '2013.07.07'
@@ -284,6 +286,18 @@ for qs in question_sets:
   cluster_sizes = defaultdict(int)
   answer_cluster = dict()
 
+  mike_scores = dict()
+
+  with open(mike_scores_file) as ms:
+    csv_in = csv.reader(ms)
+    for i, row in enumerate(csv_in):
+      if i == 0:
+        continue
+      answer = row[7]
+      score = (2.0 - int(row[8])) / 2.0
+
+      mike_scores[answer] = score
+
   with open(fixed_clusters_dir + qs.question_code + '_clusters.csv') as fixed_clusters:
     csv_in = csv.reader(fixed_clusters)
     for cluster_num, answer, answer_num, worker_id, post_date, num_requested, question_code in csv_in:
@@ -291,6 +305,10 @@ for qs in question_sets:
       answer_cluster[answer] = cluster_num # all answers with identical text should be in same cluster anyway
 
   similarity_matrix = qs.get_similarity_matrix()
+
+  mike_score_list = []
+  inverse_sum_similarity_score_list = []
+  inverse_cluster_size_score_list = []
 
   print "Computing originality"
   with open('out/' + qs.question_code+'_originality.csv', 'w') as fout:
@@ -306,3 +324,12 @@ for qs in question_sets:
 
       row = [answer.answer, answer.uniqueness_score, inverse_sum_similarity, inverse_cluster_size, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
       csv_out.writerow(row)
+
+      if answer.answer in mike_scores:
+        mike_score_list.append(mike_scores[answer.answer])
+        inverse_sum_similarity_score_list.append(inverse_sum_similarity)
+        inverse_cluster_size_score_list.append(inverse_cluster_size)
+
+  print "Number of samples manually scored", len(mike_score_list)
+  print "Pearson R Mike/sum similarity:", pearsonr(mike_score_list, inverse_sum_similarity_score_list)
+  print "Pearson R Mike/cluster:", pearsonr(mike_score_list, inverse_cluster_size_score_list)
