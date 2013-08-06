@@ -14,7 +14,9 @@ import naive_bayes as nb
 import networkx as nx
 import py_correlation_clustering as pcc
 
-base_dir = '/home/fil/Dropbox/crowbrain_share/experiments'
+base_dirs = ['/home/fil/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18',
+             '/home/fil/Dropbox/crowbrain_share/experiments/pilot12-2013.07.16',
+             '/home/fil/Dropbox/crowbrain_share/experiments/pilot11-2013.07.15',]
 #base_dir = '/home/mterry/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18'
 cache_file = './cache.bin'
 alzheimers_file_date = '2013.07.07'
@@ -23,25 +25,26 @@ alzheimers_file_date = '2013.07.07'
 # Manages references to all of the QuestionSets
 # Maintains counts of all stems across all sessions
 class FullDataSet:
-  def __init__(self, base_dir):
+  def __init__(self, base_dirs):
     self.runs = [] # List of BrainstormingRun objects
     self.question_sets = [] # List of QuestionSet objects
     self.question_sets_by_code = {}
     self.corpus_stem_counts = {} # Word stem counts across all data read in
     self.total_stems = 0 # Total number of word stems
-    self._read_data(base_dir)
+    self._read_data(base_dirs)
     self.question_sets = self.question_sets_by_code.values()
     self.update_stem_counts()
     for qs in self.question_sets:
       print "Question code:", qs.question_code, "total num responses:", len(qs.answers)
-  def _read_data(self, dir):
-    for f in os.listdir(dir):
-      full_name = os.path.join(dir,f)
-      if os.path.isdir(full_name):
-        self._read_data(full_name)
-      else:
-        if f == 'answers.csv':
-          self._read_file(full_name)
+  def _read_data(self, dirs):
+    for d in dirs:
+      for f in os.listdir(d):
+        full_name = os.path.join(d,f)
+        if os.path.isdir(full_name):
+          self._read_data(full_name)
+        else:
+          if f == 'answers.csv':
+            self._read_file(full_name)
   def _read_file(self, f):
     with open(f) as fin:
       l = fin.readline()
@@ -278,17 +281,17 @@ class Answer:
   def __repr__(self):
     return ' '.join([self.answer_set.worker_id, self.answer_set.question_code, str(self.answer_num), self.answer])
 
-def get_full_data_set(base_dir, cache_file):
+def get_full_data_set(base_dirs, cache_file):
   if os.path.exists(cache_file):
     with open(cache_file, 'rb') as f:
       return pickle.load(f)
-  full_data_set = FullDataSet(base_dir)
+  full_data_set = FullDataSet(base_dirs)
   with open(cache_file, 'wb') as f:
     pickle.dump(full_data_set, f)
   return full_data_set  
 
 # The caching can screw things up, so remember to delete it if things don't seem to be updating properly
-data = get_full_data_set(base_dir, cache_file)
+data = get_full_data_set(base_dirs, cache_file)
 #data = FullDataSet(base_dir)
 question_sets = data.question_sets
 for qs in question_sets:
