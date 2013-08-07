@@ -9,6 +9,7 @@ import re
 import math
 import cPickle as pickle
 import nltk
+import nltk.probability as nltkp
 from nltk.corpus import wordnet as wn
 import naive_bayes as nb
 import networkx as nx
@@ -310,7 +311,15 @@ for qs in question_sets:
   inverse_sum_similarity_score_list = []
   inverse_cluster_size_score_list = []
 
-  print "Computing originality"
+  cluster_samples = reduce(operator.add,
+                           [[i for j in range(cluster_sizes[ck])] for i, ck in enumerate(cluster_sizes)])
+
+  fd = nltkp.FreqDist(cluster_samples)
+  sgt = nltkp.SimpleGoodTuringProbDist(fd)
+
+  N1 = reduce(operator.add, [1 for key in cluster_sizes if cluster_sizes[key] == 1])
+  p_0 = float(N1) / len(cluster_samples)
+  
   with open('out/' + qs.question_code+'_originality.csv', 'w') as fout:
     csv_out = csv.writer(fout, dialect='excel')
     csv_out.writerow(['answer', 'uniqueness', 'inverse_sum_similarity', 'inverse_cluster_size', 'answer_num', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
@@ -330,6 +339,10 @@ for qs in question_sets:
         inverse_sum_similarity_score_list.append(inverse_sum_similarity)
         inverse_cluster_size_score_list.append(inverse_cluster_size)
 
+
+  print qs.question_code
   print "Number of samples manually scored", len(mike_score_list)
   print "Pearson R Mike/sum similarity:", pearsonr(mike_score_list, inverse_sum_similarity_score_list)
   print "Pearson R Mike/cluster:", pearsonr(mike_score_list, inverse_cluster_size_score_list)
+  print "p0", p_0
+  print "Nrs", sgt.smoothedNr(1), sgt.smoothedNr(2), sgt.smoothedNr(3), sgt.smoothedNr(4)
