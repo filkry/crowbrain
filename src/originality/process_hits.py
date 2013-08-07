@@ -14,6 +14,7 @@ from nltk.corpus import wordnet as wn
 import naive_bayes as nb
 import networkx as nx
 import numpy as np
+import random
 from collections import defaultdict
 from scipy.stats.stats import pearsonr
 
@@ -341,8 +342,40 @@ for qs in question_sets:
 
 
   print qs.question_code
-  print "Number of samples manually scored", len(mike_score_list)
-  print "Pearson R Mike/sum similarity:", pearsonr(mike_score_list, inverse_sum_similarity_score_list)
-  print "Pearson R Mike/cluster:", pearsonr(mike_score_list, inverse_cluster_size_score_list)
-  print "p0", p_0
-  print "Nrs", sgt.smoothedNr(1), sgt.smoothedNr(2), sgt.smoothedNr(3), sgt.smoothedNr(4)
+  print "\tNumber of samples manually scored", len(mike_score_list)
+  print "\tPearson R Mike/sum similarity:", pearsonr(mike_score_list, inverse_sum_similarity_score_list)
+  print "\tPearson R Mike/cluster:", pearsonr(mike_score_list, inverse_cluster_size_score_list)
+  print "\tp0", p_0
+  print "\tNrs", sgt.smoothedNr(1), sgt.smoothedNr(2), sgt.smoothedNr(3), sgt.smoothedNr(4)
+
+  # HEre, I want to take a subset of the ideas, then compute p0, and then see how that compares to rest of the data
+  # Re-using all the code from above, sorry! I should really make this into functions
+
+  for i in range(1, 10):
+
+    cutoff = len(cluster_samples)/10 * i
+
+    random.shuffle(cluster_samples)
+    subset = cluster_samples[:cutoff]
+    rest = cluster_samples[cutoff + 1:]
+
+    fd = nltkp.FreqDist(subset)
+    sgt = nltkp.SimpleGoodTuringProbDist(fd)
+
+    cluster_sizes = defaultdict(int)
+    for cluster_num in subset:
+        cluster_sizes[cluster_num] += 1
+
+    N1 = reduce(operator.add, [1 for key in subset if cluster_sizes[key] == 1])
+    p0 = float(N1) / len(cluster_samples)
+
+    print "\tsubset p0 size", i, "/10:", p0
+
+    # if i == 9:
+    #   print sorted(subset)
+    #   print sorted(rest)
+
+    actual_p0 = float(sum(1 for cid in rest if not cid in subset)) / len(rest)
+
+    print "\trest p0", actual_p0
+
