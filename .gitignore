@@ -1,5 +1,6 @@
 *.swp
 *.pyc
 .vagrant
+ipython_profile_server/security
 
 history.sqlite
