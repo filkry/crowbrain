@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apt-get update
-apt-get install -y python-pip python-dev python-requests build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib python-tornado python-zmq python-nltk python-pandas
+apt-get install -y python-pip python-dev python-requests build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib python-tornado python-zmq python-nltk python-pandas pandoc
 pip install --upgrade ipython
 pip install turkflow numpy pyyaml
 
