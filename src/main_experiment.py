@@ -63,7 +63,8 @@ def get_questions_for_responses(n, append=False):
     return question
 
 def get_response_rewards(expid):
-    return [(10, 0.50, "%s_infinis" % expid, "infinis", True),
+    return [(75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
+            (100, 3.50, "%s_hundreds" % expid, "hundreds", False),
             ]
 
 def post_jobs(administrator_URL, responses_rewards, duration,
