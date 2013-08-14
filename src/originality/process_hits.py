@@ -366,7 +366,7 @@ for qs in question_sets:
     for cluster_num in subset:
         cluster_sizes[cluster_num] += 1
 
-    N1 = reduce(operator.add, [1 for key in subset if cluster_sizes[key] == 1])
+    N1 = len(key for key in subset if cluster_sizes[key] == 1)
     p0 = float(N1) / len(cluster_samples)
 
     print "\tsubset p0 size", i, "/10:", p0
@@ -374,8 +374,9 @@ for qs in question_sets:
     # if i == 9:
     #   print sorted(subset)
     #   print sorted(rest)
+    #   print sorted(cid for cid in rest if not cid in subset)
 
-    actual_p0 = float(sum(1 for cid in rest if not cid in subset)) / len(rest)
+    actual_p0 = float(len(cid for cid in rest if not cid in subset)) / len(rest)
 
     print "\trest p0", actual_p0
 
