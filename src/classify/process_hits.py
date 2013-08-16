@@ -14,7 +14,8 @@ import naive_bayes as nb
 import networkx as nx
 import py_correlation_clustering as pcc
 
-base_dirs = ['/home/fil/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18',
+base_dirs = ['/home/fil/Dropbox/crowbrain_share/experiments/pilot14-2013.08.16',
+             '/home/fil/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18',
              '/home/fil/Dropbox/crowbrain_share/experiments/pilot12-2013.07.16',
              '/home/fil/Dropbox/crowbrain_share/experiments/pilot11-2013.07.15',]
 #base_dir = '/home/mterry/Dropbox/crowbrain_share/experiments/pilot13-2013-07-18'
