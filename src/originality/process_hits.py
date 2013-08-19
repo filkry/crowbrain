@@ -272,6 +272,7 @@ class Answer:
 
 def get_full_data_set(base_dirs, cache_file):
   if os.path.exists(cache_file):
+    print "Using cache"
     with open(cache_file, 'rb') as f:
       return pickle.load(f)
   full_data_set = FullDataSet(base_dirs)
@@ -309,9 +310,6 @@ for qs in question_sets:
 
   similarity_matrix = qs.get_similarity_matrix()
 
-  mike_score_list = []
-  inverse_sum_similarity_score_list = []
-  inverse_cluster_size_score_list = []
 
   cluster_samples = reduce(operator.add,
                            [[i for j in range(cluster_sizes[ck])] for i, ck in enumerate(cluster_sizes)])
@@ -324,60 +322,12 @@ for qs in question_sets:
   
   with open('out/' + qs.question_code+'_originality.csv', 'w') as fout:
     csv_out = csv.writer(fout, dialect='excel')
-    csv_out.writerow(['answer', 'uniqueness', 'inverse_sum_similarity', 'inverse_cluster_size', 'answer_num', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
+    csv_out.writerow(['answer', 'uniqueness', 'inverse_sum_similarity', 'answer_num', 'worker_id', 'post_date', 'num_answers_requested', 'question_code'])
 
     for i, answer in enumerate(qs.answers):
       if sum(similarity_matrix[i]) < 1.0:
         print similarity_matrix[i]
       inverse_sum_similarity = 1.0 / sum(similarity_matrix[i]) # subtract one for the similarity to self
 
-      inverse_cluster_size = 1.0 / cluster_sizes[answer_cluster[answer.answer]]
-
-      row = [answer.answer, answer.uniqueness_score, inverse_sum_similarity, inverse_cluster_size, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
+      row = [answer.answer, answer.uniqueness_score, inverse_sum_similarity, answer.answer_num, answer.answer_set.worker_id, answer.answer_set.post_date, answer.answer_set.num_answers_requested, answer.answer_set.question_code]
       csv_out.writerow(row)
-
-      if answer.answer in mike_scores:
-        mike_score_list.append(mike_scores[answer.answer])
-        inverse_sum_similarity_score_list.append(inverse_sum_similarity)
-        inverse_cluster_size_score_list.append(inverse_cluster_size)
-
-
-  print qs.question_code
-  print "\tNumber of samples manually scored", len(mike_score_list)
-  print "\tPearson R Mike/sum similarity:", pearsonr(mike_score_list, inverse_sum_similarity_score_list)
-  print "\tPearson R Mike/cluster:", pearsonr(mike_score_list, inverse_cluster_size_score_list)
-  print "\tp0", p_0
-  print "\tNrs", sgt.smoothedNr(1), sgt.smoothedNr(2), sgt.smoothedNr(3), sgt.smoothedNr(4)
-
-  # HEre, I want to take a subset of the ideas, then compute p0, and then see how that compares to rest of the data
-  # Re-using all the code from above, sorry! I should really make this into functions
-
-  for i in range(1, 10):
-
-    cutoff = len(cluster_samples)/10 * i
-
-    random.shuffle(cluster_samples)
-    subset = cluster_samples[:cutoff]
-    rest = cluster_samples[cutoff + 1:]
-
-    fd = nltkp.FreqDist(subset)
-    sgt = nltkp.SimpleGoodTuringProbDist(fd)
-
-    cluster_sizes = defaultdict(int)
-    for cluster_num in subset:
-        cluster_sizes[cluster_num] += 1
-
-    N1 = len(key for key in subset if cluster_sizes[key] == 1)
-    p0 = float(N1) / len(cluster_samples)
-
-    print "\tsubset p0 size", i, "/10:", p0
-
-    # if i == 9:
-    #   print sorted(subset)
-    #   print sorted(rest)
-    #   print sorted(cid for cid in rest if not cid in subset)
-
-    actual_p0 = float(len(cid for cid in rest if not cid in subset)) / len(rest)
-
-    print "\trest p0", actual_p0
-
