@@ -212,6 +212,13 @@ By both manual and ISS orignality scores, the turk and forgot_name questions gen
 
 Should we be computing probability based on all responses to all questions, or on a per-question basis?
 
+### problem -> time spent per ideas
+
+Doesn't look like there is any effect
+
+### number requested -> time spent per idea
+
+There might be an affect here. We see a small decrease from 5 -> 10 -> 20 conditions, but after that it is "flat" with some bumps due to likely outliers.
 
 ### number of runs -> run: number of category leaves
 
