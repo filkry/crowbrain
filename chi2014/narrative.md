@@ -41,10 +41,10 @@ questions
 	+ **problem -> originality**
 	+ **problem -> completion time**
 	+ **problem -> remix**
-	+ problem -> utility
+	+ **problem -> utility**
 	+ problem -> creativity
 	+ **problem -> run: number of category leaves**
-	+ problem -> run: number of category parents
+	+ **problem -> run: number of category parents**
 	+ **number of responses solicited -> originality**
 	+ **number of responses solicited -> completion time**
 	+ **number of responses solicited -> remixing**
@@ -206,6 +206,14 @@ Run-scale:
 ## 3. How does manipulating a parameterization of (1) affect an output's position in (2)?
 
 Increasing the *number of responses requested* has an increasing effect on originality, even normalized. Allowing people to choose their own number of responses results in poor responses regardless of reward (for fixed rewards, we did not try scaling).
+
+### problem -> number of cluster categories
+
+From the charts, there doesn't seem to be a link between these two.
+
+### problem -> utility
+
+As you would expect, different problems are more likely to generate responses of utility than others.
 
 ### problem -> originality
 By both manual and ISS orignality scores, the turk and forgot_name questions generate significantly less original responses than the other two questions. This does not show up in the h-cluster o-score measure (probably because these o-scores are normalized to probability of response given question, not overall probability
