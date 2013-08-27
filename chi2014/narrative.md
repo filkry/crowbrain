@@ -38,7 +38,7 @@ questions
 1. **What is the design space of a brainstorming task?**
 2. **What is the output space of a brainstorming task?**
 3. How does manipulating a parameterization of (1) affect an output's position in (2)?
-	+ problem -> originality
+	+ **problem -> originality**
 	+ **problem -> completion time**
 	+ **problem -> remix**
 	+ problem -> utility
@@ -153,6 +153,11 @@ New terminology: inmix/outmix
 	+ this process was difficult and error prone, and we are developing a rool to speed it up
 + attempted Good Turing frequency estimation on the idea pool to try and predict probability of seeing a new idea. First pass at this failed spectacularly
 
+## Pilot 14
+
++ thought there was a linear relationship between originality and number of responses requested; convinced this had to fall off somewhere
++ requested old questions with 75/100 responses
++ coded this data and previous in heirarchical clusters
 
 our answers
 ===========
@@ -201,6 +206,12 @@ Run-scale:
 ## 3. How does manipulating a parameterization of (1) affect an output's position in (2)?
 
 Increasing the *number of responses requested* has an increasing effect on originality, even normalized. Allowing people to choose their own number of responses results in poor responses regardless of reward (for fixed rewards, we did not try scaling).
+
+### problem -> originality
+By both manual and ISS orignality scores, the turk and forgot_name questions generate significantly less original responses than the other two questions. This does not show up in the h-cluster o-score measure (probably because these o-scores are normalized to probability of response given question, not overall probability
+
+Should we be computing probability based on all responses to all questions, or on a per-question basis?
+
 
 ### number of runs -> run: number of category leaves
 
