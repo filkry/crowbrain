@@ -48,8 +48,8 @@ questions
 	+ **number of responses solicited -> originality**
 	+ **number of responses solicited -> completion time**
 	+ **number of responses solicited -> remixing**
-	+ number of responses solicited -> utility
-	+ number of responses solicited -> realisticness
+	+ **number of responses solicited -> utility**
+	+ **number of responses solicited -> realisticness**
 	+ number of responses solicited -> creativity
 	+ number of responses solicited -> run: number of category leaves
 	+ number of responses solicited -> run: number of category parents
@@ -210,6 +210,19 @@ Increasing the *number of responses requested* has an increasing effect on origi
 ### problem -> number of cluster categories
 
 From the charts, there doesn't seem to be a link between these two.
+
+## problem -> realisticness
+
+Interestingly, the problems which generated the least original repsonses also seem to generate the most realistic. Realisticness correlates negatively with three different measures of originality: manual (weak), ISS, and hierarchical cluster oscore (high)
+
+## number responses -> realisticness
+
+Nothing looks interesting here
+
+### number responses -> utility
+
+Based purely on our manual coding, utility goes down as number of responses solicited increases. But not with any statistical significance. But the correlation goes the other direction, and is weak? This is an artifact of our 0 high, 2 low coding scheme.
+
 
 ### problem -> utility
 
