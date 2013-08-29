@@ -51,8 +51,8 @@ questions
 	+ **number of responses solicited -> utility**
 	+ **number of responses solicited -> realisticness**
 	+ number of responses solicited -> creativity
-	+ number of responses solicited -> run: number of category leaves
-	+ number of responses solicited -> run: number of category parents
+	+ **number of responses solicited -> run: number of category leaves**
+	+ **number of responses solicited -> run: number of category parents**
 	+ **number of runs -> run: number of category leaves**
 	+ number of runs -> run: number of category parents
 4. Within (1), what separates a core axis from an *intervention*? What interventions could we introduce to brainstorming tasks?
@@ -210,6 +210,10 @@ Increasing the *number of responses requested* has an increasing effect on origi
 ### problem -> number of cluster categories
 
 From the charts, there doesn't seem to be a link between these two.
+
+## num responses -> number of clusters low/high
+
+In both cases, the number of clusters generated (normalized) goes down. 
 
 ## problem -> realisticness
 
