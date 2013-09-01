@@ -45,11 +45,11 @@ def gen_jobs_random(questions, num_assignments):
 def get_questions_for_responses(n, append=False):
     n = "as many as possible" if append else "%i" % (n)
 
-    charity_question = """<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href="https://www.eff.org" target="_new">https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>
-      <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href="https://www.eff.org/helpout" target="_new">https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"""
+    charity_question = "<p>The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (<a href=https://www.eff.org' target='_new'>https://www.eff.org</a>) or via other online sources (such as Wikipedia).</p>\
+      <p>Brainstorm %s <em>new</em> ways the EFF can raise funds and simultaneously increase awareness. Your ideas <em>must be different from their current methods</em>, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: <a href='https://www.eff.org/helpout' target='_new'>https://www.eff.org/helpout</a>. Be as specific as possible in your responses.</p>"
 
-    turk_question = """<p>Mechanical Turk currently lacks a dedicated mobile app for performing HITs on smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).</p>
-      <p>Brainstorm %s features for a mobile app to Mechanical Turk that would improve the worker's experience when performing HITs on mobile devices. Be as specific as possible in your responses.</p>"""
+    turk_question = "<p>Mechanical Turk currently lacks a dedicated mobile app for performing HITs on smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).</p>\
+      <p>Brainstorm %s features for a mobile app to Mechanical Turk that would improve the worker's experience when performing HITs on mobile devices. Be as specific as possible in your responses.</p>"
 
     mp3_question = """<p>Many people have old iPods or MP3 players that they no longer use. Please brainstorm %s uses for old iPods/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may <em>not</em> have displays. Be as specific as possible in your descriptions.</p>"""
 
@@ -97,6 +97,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
                   reward,
                   administrator_URL,
                   admin_id,
+                  questions,
                   duration = duration,
                   append_ideas = append)
 

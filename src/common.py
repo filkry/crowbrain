@@ -27,10 +27,13 @@ env = Environment(autoescape=guess_autoescape,
 ###
 
 class RandomStorm(TurkHITType):
-    def __init__(self, num_responses, max_assignments, reward, admin_url, admin_id, duration, append_ideas = False):
+    def __init__(self, num_responses, max_assignments, reward,
+            admin_url, admin_id, backup_problems, duration,
+            append_ideas = False):
         self.num_responses = 10 if num_responses is None else num_responses
         self.admin_url = admin_url
         self.admin_id = admin_id
+        self.backup_problems = backup_problems
 
         if append_ideas:
             self.append_ideas = True

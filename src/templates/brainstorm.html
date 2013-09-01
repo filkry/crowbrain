@@ -68,6 +68,7 @@
 
     job_id = null;
     ready_to_submit = false;
+    okay = true;
 
     idea_html = '<li> \
                     <input type="text" name="brainstorm_response" placeholder="Idea here..."> \
@@ -97,11 +98,21 @@
         console.log("Error status");
         console.log(textStatus)
 
-        // Change the message
-        $('#wait').text("Error getting a question. Please proceed to end of HIT.");
-        $('#problem').val(errorThrown);
-        // Hide the input boxes
-        $('#responses').css('display', 'none');
+        var backups= new Array();
+        {% for backup in backup_problems %}
+        backups.push("{{ backup |safe}}");
+        {% endfor %}
+
+        index = Math.floor(Math.random() * backups.length);
+        question = backups[index];
+
+        // Change the HIT
+        $('#question').html(question);
+        $('#problem').val(question);
+        $('#wait').css('display', 'none');
+        $('#question').css('display', 'block');
+
+        okay = false;
     }
 
     function focus_function() {
@@ -124,15 +135,17 @@
         // TODO: this test should be on the assignment variable
         if($('#submitButton').val().indexOf("You must ACCEPT the HIT") == -1) {
             // Get a brainstorming question from server
-            $.ajax ({
-                url: "http://{{ admin_url }}/get",
-                type: "POST",
-                data: JSON.stringify({administrator_id:"{{ admin_id }}"}),
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                success: get_question,
-                error: get_question_err,
-            });
+            if(okay) {
+                $.ajax ({
+                    url: "http://{{ admin_url }}/get",
+                    type: "POST",
+                    data: JSON.stringify({administrator_id:"{{ admin_id }}"}),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: get_question,
+                    error: get_question_err,
+                });
+            }
         } else {
             $('#wait').text("(If you accept the HIT, your question will appear here)");
         }
