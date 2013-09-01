@@ -35,6 +35,13 @@ def gen_jobs_for_question(question, num):
 
     return [{"question": question, "job_type": job_type} for i in range(num)]
 
+
+def gen_jobs_for_all_questions_long(questions_assignments):
+    jobs = []
+    for question, num_assignments in questions_assignments:
+      jobs.append(gen_jobs_for_question(question, num_assignments))
+    return list(itertools.chain.from_iterable(jobs))
+
 def gen_jobs_for_all_questions(questions, num_assignments_per_question):
     jobs = [gen_jobs_for_question(q, num_assignments_per_question) for q in questions]
     return list(itertools.chain.from_iterable(jobs))
@@ -62,13 +69,36 @@ def get_questions_for_responses(n, append=False):
 
     return question
 
+### This part is what changes for the experiment, mainly
+
+def get_num_participants(num_requested):
+  if num_requested == 5:
+    return [5, 5, 5, 5]
+  elif num_requested == 10:
+    return [5, 5, 5, 5]
+  elif num_requested == 20:
+    return [3, 0, 0, 0]
+  elif num_requested == 50:
+    return [6, 4, 5, 6]
+  elif num_requested == 75:
+    return [6, 5, 5, 5]
+  elif num_requested == 100:
+    return [7, 4, 5, 6]
+
 def get_response_rewards(expid):
-    return [(75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
+    return [
+            (5, 0.18, "%s_fives" % expid, "fives", False),
+            (10, 0.35, "%s_tens" % expid, "tens", False),
+            (20, 0.70, "%s_twenties" % expid, "twenties", False),
+            (50, 1.75, "%s_fifties" % expid, "fifties", False),
+            (75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
             (100, 3.50, "%s_hundreds" % expid, "hundreds", False),
             ]
 
+###
+
 def post_jobs(administrator_URL, responses_rewards, duration,
-              num_assignments_per_condition, tc, exp, random_type = False):
+              tc, exp, random_type = False):
 
     keys = []
 
@@ -76,10 +106,12 @@ def post_jobs(administrator_URL, responses_rewards, duration,
         questions = get_questions_for_responses(responses, append)
 
         jobs = None
-        if random_type:
-            jobs = gen_jobs_random(questions, num_assignments_per_condition)
-        else:
-            jobs = gen_jobs_for_all_questions(questions, num_assignments_per_condition)
+        #if random_type:
+        #    jobs = gen_jobs_random(questions, num_assignments_per_condition)
+        #else:
+        qr = zip(questions, get_num_participants(responses))
+        print "Number of conditions", len(qr)
+        jobs = gen_jobs_for_all_questions_long(qr)
 
         print len(jobs)
 
@@ -88,9 +120,7 @@ def post_jobs(administrator_URL, responses_rewards, duration,
         print r
         print r.headers
 
-        num_assignments_total = num_assignments_per_condition
-        if not random_type:
-            num_assignments_total = num_assignments_per_condition * len(questions)
+        num_assignments_total = len(jobs)
 
         hit =  RandomStorm(responses,
                   num_assignments_total,
@@ -112,7 +142,6 @@ if __name__=='__main__':
     with sl.Experiment(exp_location, schema, expid) as exp:
 
         keys = post_jobs(admin_url, get_response_rewards(expid), 60*60*18,
-                  num_assignments_per_condition = 5,
                   tc=tc, exp=exp, random_type = False)
 
         results = [attempt_finish_trial(tc, exp, key) for key in keys]
