@@ -96,6 +96,9 @@ questions
 	+ what is a good similarity metric for ideas?
 14. **Can we automate measurement of originality?**
 15. What kind of "personas" do we see in the data?
+16. Another important independent variable: location/cultural/language restrictions!
+17. What guidelines can we recommend?
+	+ if the quality of ideas doesn't go down, does it make sense to post big HITs because they finish faster?
 
 
 history
