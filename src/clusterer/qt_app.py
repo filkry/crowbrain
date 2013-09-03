@@ -97,6 +97,9 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     return self.createIndex(p.row(), 0, p)
 
+  def rowCount(self, parent=QtCore.QModelIndex()):
+    p = parent.internalPointer() if parent.isValid() else self.root
+    return p.child_count()
 
   def get_next_depth(self, dq):
     for l in dq:
@@ -179,12 +182,81 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
       return clus_id
 
-
     def save(self):
       cursor = self.conn.cursor()
       cursor.execute("DELETE FROM clusters WHERE question_code=?")
 
-      self._save_node(self.root)
+      self._save_node(self.root, cursor)
+
+      cursor.close()
+
+    def load(self):
+      cursor = self.conn.cursor()
+
+      cluster_dict = dict()
+
+      # Load clusters
+      cursor.execute("""SELECT id, label FROM clusters
+                        WHERE question_code = ?""", (self.question_code,))
+      for i, l in cursor.fetchall():
+        node = IdeaTreeNode([], None, l)
+        cluster_dict[i] = node
+
+      # Organize into tree
+      cursor.execute("""SELECT child, parent FROM cluster_hierarchy
+                        WHERE child IN (SELECT id FROM clusters
+                                        WHERE question_code = ?)""",
+                     (self.question_code,))
+      for c, p in cursor.fetchall():
+        child = cluster_dict[c]
+        parent = cluster_dict[p]
+
+        child.parent = parent
+        parent.append_child(child)
+
+      # Load ideas into clusters
+      cursor.execute("""SELECT cluster_id, id, idea
+                        FROM ideas INNER JOIN idea_clusters
+                        ON ideas.id = idea_clusters.idea_id
+                        WHERE ideas.question_code = ?""",
+                     (self.question_code,))
+      for cid, iid, idea in cursor.fetchall():
+        cluster_dict[cid].ideas.append((iid, idea))
+
+      cursor.close()
+
+    def export_clusters(self, filename):
+
+      cursor = self.conn.cursor()
+      with open("%s_%s_clusters.csv" % (filename, question_code), 'w') as cfout:
+        cwriter = csv.writer(cfout)
+        cwriter.writerow(['question_code', 'cluster', 'cluster_parent', 'cluster_label'])
+
+        cursor.execute("""SELECT child, parent, label
+                          FROM cluster_hierarchy INNER JOIN clusters
+                          ON cluster_hierarchy.child = clusters.id
+                          WHERE  clusters.question_code = ?""",
+                       (self.question_code,))
+        for c, p, l in cursor.fetchall():
+          cwriter.writerow([self.question_code, c, p, l])
+
+      with open("%s_%s.csv" % (filename, question_code), 'w') as fout:
+        writer = csv.writer(fout)
+        writer.writerow(['question_code', 'idea_id', 'cluster_id', 'idea', 'idea_num',
+                         'worker_id', 'post_date', 'num_ideas_requested',])
+
+        cursor.execute("""SELECT ideas.id, idea_clusters.cluster_id, idea, idea_num,
+                                 worker_id, 'post_date', 'num_ideas_requested'
+                          FROM ideas INNER JOIN idea_clusters
+                          ON ideas.id = idea_clusters.idea_id
+                          WHERE ideas.question_code = ?""".
+                       (self.question_code,))
+        for iid, cid, i, num, wid, date, nr in cursor.fetchall():
+          writer.writerow([self.question_code, iid, cid, i, num, wid,
+                           date, nr])
+      
+      cursor.close()
+      print("export complete")
 
 
 
@@ -310,112 +382,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
     return text
   def get_idea_string(self, idea_tuple):
     return idea_tuple[1] + '  (_id:%d)' % idea_tuple[0]
-  
-# Returns (idea_id, cluster_id, parent_cluster_id, new_current_cluster_num)
-
-  def get_next_depth(self, dq):
-    for l in dq:
-      if len(l) == 0:
-        continue
-      return get_line_indent(l)
-
-  # Please note that all this code is awful
-  def _get_line_info(self, l, peek, cluster_stack, new_cluster_num, cwriter, question_code):
-    ids = self.extract_idea_ids_from_text(l)
-
-    if not ids:
-      # Check if this is a label
-      if len(l) > 0:
-        self.last_label = ''.join([c for c in l if c not in "-"]) # should be a regex, but I can write this faster
-
-      # Newline, close clusters up to level of next idea
-      next_depth = self.get_next_depth(peek)
-      while len(cluster_stack) > next_depth - 1:
-        del cluster_stack[-1]
-      return None
-
-    idea_id = ids[0]
-
-    depth_count = get_line_indent(l)
-
-    if depth_count > len(cluster_stack):
-      while depth_count > len(cluster_stack):
-        cluster_stack.append(new_cluster_num)
-        new_cluster_num = new_cluster_num + 1
-        if len(cluster_stack) > 1:
-          cwriter.writerow([question_code, cluster_stack[-1], cluster_stack[-2], self.last_label])
-        else:
-          cwriter.writerow([question_code, cluster_stack[-1], None, self.last_label])
-        self.last_label = None
-
-    elif depth_count < len(cluster_stack):
-      while depth_count < len(cluster_stack):
-        del cluster_stack[-1]
-
-    parent_cluster_id = None if len(cluster_stack) < 2 else cluster_stack[-2]
-
-    return (idea_id, cluster_stack[-1], parent_cluster_id, new_cluster_num)
-
-  def export_clusters(self, filename):
-    cursor = self.conn.cursor()
-    with open(filename, 'w') as fout:
-      with open("%s_clusters.csv" % filename, 'w') as cfout:
-        writer = csv.writer(fout)
-        writer.writerow(['question_code', 'cluster_num', 'parent_idea_id', 'idea_id', 'idea', 'idea_num', 'worker_id', 'post_date', 'num_ideas_requested',])
-
-        cwriter = csv.writer(cfout)
-        cwriter.writerow(['question_code', 'cluster', 'cluster_parent', 'cluster_label'])
-
-        last_ws = False
-
-        for question_code in self.get_question_codes():
-          cluster_stack = []
-          new_cluster_num = 0
-          last_id = -1
-          cursor.execute("SELECT cluster_text FROM clusters WHERE question_code = ?", (question_code,)) 
-          row = cursor.fetchone()
-          if row:
-            text = row[0]
-          else:
-            text = ""
-
-          look_ahead = deque()
-          for l in text.splitlines():
-            look_ahead.append(l)
-
-            if len(look_ahead) < 10:
-              continue
-
-            line = look_ahead.popleft()
-
-            print(question_code, ",", line, ",", cluster_stack)
-            line_info = self._get_line_info(line, look_ahead, cluster_stack, new_cluster_num, cwriter, question_code)
-
-            if line_info:
-              last_ws = False
-              (idea_id, cluster_id, parent_id, cn) = line_info
-              new_cluster_num = cn
-              cursor.execute("SELECT idea, idea_num, worker_id, post_date, num_ideas_requested FROM ideas WHERE id = ?", (idea_id,))
-              row_data = cursor.fetchone()
-              writer.writerow([question_code, cluster_id, parent_id, idea_id] + list(row_data))
-
-          # Bad form, but speed > goodness
-          while len(look_ahead) > 0:
-            line = look_ahead.popleft()
-
-            line_info = self._get_line_info(line, look_ahead, cluster_stack, new_cluster_num, cwriter, question_code)
-
-            if line_info:
-              last_ws = False
-              (idea_id, cluster_id, parent_id, cn) = line_info
-              new_cluster_num = cn
-              cursor.execute("SELECT idea, idea_num, worker_id, post_date, num_ideas_requested FROM ideas WHERE id = ?", (idea_id,))
-              row_data = cursor.fetchone()
-              writer.writerow([question_code, cluster_id, parent_id, idea_id] + list(row_data))
-
-    cursor.close()
-    print("export complete")
-
+ 
 # QAbstractListModel required methods
   def rowCount(self, parent):
     return len(self.cur_ideas)
@@ -430,62 +397,28 @@ class IdeaListModel(QtCore.QAbstractListModel):
 
 
 
-# This is probably very un-Qt, but I just need something that works ASAP
-class FakeOverviewModel(QtCore.QAbstractListModel):
-  def __init__(self, real_model, parent=None):
-    super(FakeOverviewModel, self).__init__(parent)
-    self.real_model = real_model
-    self.top_labels = None
-    self.reset_model()
-
-  def _find_top_labels(self):
-    text = self.real_model.get_cluster_text()
-    test = re.compile("^-[^-()]+$")
-
-    self.top_labels = sorted([(i, l) for (i, l) in enumerate(text.splitlines()) if test.match(l) is not None],
-                              key = lambda x: x[1].lower())
-
-  def reset_model(self):
-    self.beginResetModel()
-    self._find_top_labels()
-    self.endResetModel()
-
-  def rowCount(self, parent):
-    return len(self.top_labels)
-
-  def get_row_for_item(self, row):
-    return self.top_labels[row][0]
-
-  def data(self, index, role=QtCore.Qt.DisplayRole):
-    row = index.row()
-    if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.ToolTipRole:
-      return self.top_labels[row][1]
-    return None
-
-
-
 class AppWindow(QtGui.QMainWindow):
   def __init__(self, parent=None):
     super(AppWindow, self).__init__(parent)
     self.ui = clustering_app.Ui_MainWindow()
     self.ui.setupUi(self)
     self.idea_model = IdeaListModel()
-    self.overview_model = FakeOverviewModel(self.idea_model)
+
+    self.idea_tree_models = dict()
+    for qc in self.idea_model.get_question_codes():
+      self.idea_tree_models[qc] = IdeaTreeModel(self, qc)
+
     self._finish_ui()
     self.regex_matches = []
 
   def _finish_ui(self):
     # Connect up all the buttons
     self.ui.button_move_down.clicked.connect(self.handle_move_selection_down)
-    self.ui.button_move_down_split.clicked.connect(self.handle_move_selection_down_split)
     self.ui.button_move_up.clicked.connect(self.handle_move_selection_up)
     self.ui.button_sort_by_list.clicked.connect(self.handle_sort_by_list_selection)
-    self.ui.button_find_similar.clicked.connect(self.handle_find_similar)
     self.ui.button_next_regex.clicked.connect(self.handle_next_regex)
-    self.ui.button_inc_indent.clicked.connect(self.handle_inc_indent)
-    self.ui.button_dec_indent.clicked.connect(self.handle_dec_indent)
     self.ui.button_resolve_lost.clicked.connect(self.handle_resolve_lost)
-    self.ui.button_resolve_right.clicked.connect(self.handle_resolve_right)
+    self.ui.btn_import.clicked.connect(self.handle_import)
 
     # Connect menu items
     self.ui.menu_item_save.triggered.connect(self.save_cluster_text)
@@ -500,21 +433,17 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.line_regex.textChanged.connect(self.clear_regex)
     self.ui.text_edit_clusters.textChanged.connect(self.clear_regex)
 
-    # Connect list click
-    self.ui.list_overview.clicked.connect(self.handle_overview_list_click)
-
     # Add entries to the combo box
     self.ui.combo_box_data_set.addItems(self.idea_model.get_question_codes())
-    self.idea_model.set_question_code(self.ui.combo_box_data_set.currentText())
-    self.sync_cluster_text()
     self.ui.combo_box_data_set.currentIndexChanged.connect(self.handle_combo_box_changed)
+
+    # Set/change models
+    qc = self.ui.combo_box_data_set.currentText()
+    self.idea_model.set_question_code(qc)
+    self.ui.tree_main.setModel(self.idea_tree_models[qc])
 
   def handle_resolve_lost(self):
     self.idea_model.resolve()
-
-  def handle_resolve_right(self):
-    new_text = self.idea_model.resolve_right()
-    self.ui.text_edit_clusters.document().setPlainText(new_text)
 
   def clear_regex(self):
     self.regex_matches = []
@@ -549,9 +478,6 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.text_edit_clusters.setTextCursor(selection_cursor)
     self.ui.text_edit_clusters.moveCursor(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
 
-  def handle_overview_list_click(self, index):
-    line = self.overview_model.get_row_for_item(index.row())
-    self.highlight_line(line)
     
   def showEvent(self, e):
     return super(AppWindow, self).showEvent(e)
@@ -560,66 +486,12 @@ class AppWindow(QtGui.QMainWindow):
     return super(AppWindow, self).closeEvent(e)
 
 
-  def move_selection_down(self, split = False):
-    selected_indexes = [i.row() for i in self.ui.list_ideas.selectedIndexes()]
-    new_strings = self.idea_model.make_ideas_used(selected_indexes)
-    self.ui.text_edit_clusters.moveCursor(QtGui.QTextCursor.StartOfLine)
-    self.ui.text_edit_clusters.moveCursor(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
-    selected_text = self.ui.text_edit_clusters.textCursor().selectedText()
-    indent_level = get_line_indent(selected_text)
-    self.ui.text_edit_clusters.moveCursor(QtGui.QTextCursor.EndOfLine)
-    if not self.ui.text_edit_clusters.document().isEmpty():
-      self.ui.text_edit_clusters.insertPlainText("\n")
-    indent_text = "-" * indent_level
-    if split:
-      self.ui.text_edit_clusters.insertPlainText("\n")
-    self.ui.text_edit_clusters.insertPlainText("\n".join([indent_text + s for s in new_strings]))
-    self.save_cluster_text()
-
-  def handle_move_selection_down_split(self):
-    self.move_selection_down(True)
-
   def handle_move_selection_down(self):
-    self.move_selection_down(False)
+    print("TODO")
     
   def handle_move_selection_up(self):
-    selection_cursor = self.ui.text_edit_clusters.textCursor()
-    selection_cursor.setPosition(selection_cursor.selectionStart())
-    selection_cursor.movePosition(QtGui.QTextCursor.StartOfLine)
-    end_cursor = self.ui.text_edit_clusters.textCursor()
-    end_cursor.setPosition(end_cursor.selectionEnd())
-    end_cursor.movePosition(QtGui.QTextCursor.EndOfLine)
-    selection_cursor.setPosition(end_cursor.position(), QtGui.QTextCursor.KeepAnchor)
-    self.ui.text_edit_clusters.setTextCursor(selection_cursor)
-    selected_text = self.ui.text_edit_clusters.textCursor().selectedText()
-    matches = self.idea_model.extract_idea_ids_from_text(selected_text)
-    self.idea_model.make_ideas_unused(matches)
-    self.ui.text_edit_clusters.textCursor().deleteChar()
-    self.ui.text_edit_clusters.textCursor().deleteChar()
-  def handle_inc_indent(self):
-    self.handle_indent(1)
-  def handle_dec_indent(self):
-    self.handle_indent(-1)
-  def handle_indent(self, amount):
-    selection_cursor = self.ui.text_edit_clusters.textCursor()
-    selection_cursor.setPosition(selection_cursor.selectionStart())
-    selection_cursor.movePosition(QtGui.QTextCursor.StartOfLine)
-    end_cursor = self.ui.text_edit_clusters.textCursor()
-    end_cursor.setPosition(end_cursor.selectionEnd())
-    end_cursor.movePosition(QtGui.QTextCursor.StartOfLine)
-    while selection_cursor.position() < end_cursor.position():
-      self._do_indent(selection_cursor, amount)
-      selection_cursor.movePosition(QtGui.QTextCursor.Down)
-      selection_cursor.movePosition(QtGui.QTextCursor.StartOfLine)
-    self._do_indent(selection_cursor, amount)
-    self.save_cluster_text()
-  def _do_indent(self, text_cursor, amount):
-      if amount > 0:
-        text_cursor.insertText('-'*amount)
-      else:
-        for i in range(-1*amount):
-          if text_cursor.document().characterAt(text_cursor.position()) == '-':
-            text_cursor.deleteChar()
+    print("TODO")
+
   def handle_sort_by_list_selection(self):
     selected_indexes = sorted([i.row() for i in self.ui.list_ideas.selectedIndexes()])
     if selected_indexes:
@@ -645,27 +517,20 @@ class AppWindow(QtGui.QMainWindow):
       if previously_selected_idea_id in cur_id_list:
         row_num = cur_id_list.index(previously_selected_idea_id)
         self.ui.list_ideas.selectionModel().select(self.ui.list_ideas.model().createIndex(row_num,0), QtGui.QItemSelectionModel.ClearAndSelect)
-  def handle_find_regex(self):
-    pass
+
   def handle_export(self):
-    self.save_cluster_text()
-    (filename, selected_filter) = QtGui.QFileDialog.getSaveFileName(self, caption="Enter filename to save clusters", filter="CSV files (*.csv)")
-    if filename:
-      if not filename.lower().endswith('.csv'):
-        filename = filename + '.csv'
-      self.idea_model.export_clusters(filename)
+    print("TODO")
   def handle_combo_box_changed(self):
-    self.save_cluster_text()
-    self.idea_model.set_question_code(self.ui.combo_box_data_set.currentText())
-    self.sync_cluster_text()
-    self.overview_model.reset_model()
-  def sync_cluster_text(self):
-    self.ui.text_edit_clusters.document().setPlainText(self.idea_model.get_cluster_text())
-  def save_cluster_text(self):
-    self.idea_model.update_cluster_text(self.ui.text_edit_clusters.document().toPlainText())
-    self.overview_model.reset_model()
+    self.save_clusters()
+    qc = self.ui.combo_box_data_set.currentText()
+    self.idea_model.set_question_code(qc)
+    self.ui.tree_main.setModel(self.idea_tree_models[qc])
+
+  def save_clusters(self):
+    print("TODO SAVE")
+
   def close_app(self):
-    self.save_cluster_text()
+    self.save_clusters()
     app.closeAllWindows()
 
 app = None
