@@ -10,7 +10,7 @@ import clustering_app
 import csv
 from collections import deque, defaultdict
 
-db_file_name = 'clusters.db'
+db_file_name = '~/Dropbox/clusterer/clusters.db'
 
 def get_line_indent(l):
   depth_count = 0
@@ -20,6 +20,173 @@ def get_line_indent(l):
     depth_count = depth_count + 1
     front = front[1:]
   return depth_count
+
+def extract_idea_ids_from_text(s):
+  matches = []
+  for match in re.findall('\(_id:[0-9]+\)', s):
+    matches.append(int(re.findall('[0-9]+', match)[0]))
+  return matches
+
+class IdeaTreeNode(object):
+  def __init__(self, ideas, parent, label = None):
+    assert not isinstance(ideas, basestring)
+    self.label = label
+    self.ideas = ideas # list of (text, id) tuples
+    self.parent = parent
+    self.children = []
+
+  def merge(self, other_node):
+    self.ideas.extend(other_node.ideas)
+
+  def append_child(self, child_node):
+    self.children.append(child_node)
+
+  def child_count(self):
+    return len(self.children)
+
+  def child(self, row):
+    return self.children[row]
+
+  def label(self):
+    if self.label:
+      return self.label
+    else if len(self.ideas) > 0:
+      return self.ideas[0][0][:30]
+    else:
+      return "NO LABEL, NO IDEAS"
+
+  def tooltip(self):
+    return '\n'.join(self.ideas)
+
+  def row(self):
+    if self.parent:
+      return self.parent.children.index(self)
+    return 0
+
+  def parent(self):
+    return self.parent
+
+class IdeaTreeModel(QtCore.QAbstractItemModel):
+  def __init__(self, question_code, parent=None):
+    super(IdeaTreeModel, self).__init__(parent)
+    self.root = IdeaTreeNode([], None, question_code)
+    self.conn = db.connect(db_file_name)
+    self.question_code = question_code
+
+  def columnCount(self, parent = None):
+    return 1
+
+  def data(self, index, role):
+    item = index.internalPointer()
+    if role == QtCore.Qt.DisplayRole:
+      return item.label()
+    else if role == QtCore.Qt.ToolTipRole:
+      return item.tooltip()
+    return None
+
+  def index(self, row, column, parent):
+    p = parent.internalPointer if parent.isValid() else self.root
+    c = p.child(row)
+    return self.createIndex(row, column, c)
+
+  def parent(self, index):
+    c = index.InternalPointer()
+    p = c.parent()
+    if p == self.root:
+      return QtCore.QModelIndex()
+
+    return self.createIndex(p.row(), 0, p)
+
+
+  def get_next_depth(self, dq):
+    for l in dq:
+      if len(l) == 0:
+        continue
+      return get_line_indent(l)
+
+  # Please note that all this code is awful
+  def _get_line_node(self, l, current_node, used_ids):
+    ids = extract_idea_ids_from_text(l)
+    assert len(ids) <= 1
+
+    if not ids:
+      # Check if this is a label
+      if len(l) > 0:
+        return IdeaTreeNode([], current_node, l.strip('-'))
+      # Otherwise this is a newline, close clusters up to level of depth
+      else:
+        return None
+
+    idea, ids = self.idea_model.get_ids_for_text(l)
+    new_ids = [i for i in ids if not i in used_ids]
+    new_id = new_ids[0]
+    used_ides.append(new_id)
+    return IdeaTreeNode([(idea, new_id)], current_node, idea)
+
+  def import_from_text(self, text):
+    used_ids = []
+
+    # Clear the root node
+    self.root = IdeaTreeNode([], None, root_name)
+
+    current_node = self.root
+    current_depth = 0
+
+    look_ahead = deque(text.splitlines())
+    while len(look_ahead) > 0:
+      line = look_ahead.popleft()
+      next_node = self._get_line_node(line, current_node, used_ids)
+
+      if not next_node:
+        next_depth = self.get_next_depth(look_ahead)
+        while len(node_stack) > next_depth - 1:
+          current_node = current_node.parent()
+      else:
+        depth_count = get_line_indent(line)
+
+        if depth_count == current_depth:
+          current_node.merge(next_node)
+
+        else if depth_count > current_depth:
+          assert depth_count - 1 == current_depth
+          current_node.append_child(next_node)
+          current_node = next_node
+          current_depth += 1
+
+        elif depth_count < current_depth:
+          while depth_count < current_depth:
+            current_node = current_node.parent()
+            current_depth -= 1
+
+    def _save_node(self, node, cursor):
+      # Create cluster
+      cursor.execute("""INSERT INTO clusters(question_code, label)
+                        VALUES (?, ?)""", (self.question_code, node.label))
+      clus_id = cursor.lastrowid
+
+      # Map ideas
+      for i, text in node.ideas:
+        cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id)
+                          VALUES (?, ?)""", (i, clus_id))
+
+      # Create children
+      child_ids = [self._save_node(c, cursor) for c in node.children]
+      
+      # Create parent-child relationships
+      for child_id in child_ids:
+        cursor.execute("""INSERT INTO cluster_hierarchy(child, parent)
+                          VALUES(?, ?)""", (child_id, clus_id))
+
+      return clus_id
+
+
+    def save(self):
+      cursor = self.conn.cursor()
+      cursor.execute("DELETE FROM clusters WHERE question_code=?")
+
+      self._save_node(self.root)
+
+
 
 class IdeaListModel(QtCore.QAbstractListModel):
   def __init__(self, parent=None):
@@ -43,58 +210,23 @@ class IdeaListModel(QtCore.QAbstractListModel):
   def resolve_right(self):
     # This is so awful, please never look at this awful code again
     text = self.get_cluster_text()
-    old_count = len(set(self.extract_idea_ids_from_text(text)))
-
-    new_text = ""
-
-    present_ids = []
-    not_found_answers = []
-
-    id_stacks = defaultdict(list)
-
-    # find real IDs
-    cursor = self.conn.cursor()    
-    for l in text.splitlines():
-      id_loc = l.find('(_')
-      if id_loc > 0:
+    
+  def get_ids_for_text(self, text):
+    id_loc = l.find('(_')
+    ids = []
+    if id_loc > 0:
         old_id = l[id_loc+2:-1]
         l_p = l[0:id_loc - 2]
         l_p = l_p.strip('-')
-        
-        if l_p not in id_stacks:
-          cursor.execute("SELECT id FROM ideas WHERE question_code = ? AND idea = ?", (self.cur_question_code, l_p,))
-          for (idea_id,) in cursor.fetchall():
-            id_stacks[l_p].append(idea_id)
 
-        # check if idea is somehow not in the new list
-        if l_p not in id_stacks:
-          not_found_answers.append(l)
-        else:
-          real_id = id_stacks[l_p][-1]
-          del id_stacks[l_p][-1]
+        cursor = self.conn.cursor()   
+        cursor.execute("SELECT id FROM ideas WHERE question_code = ? AND idea = ?", (self.cur_question_code, l_p,))
+        for (idea_id,) in cursor.fetchall():
+            ids.append(idea_id)
 
-          new_text += l.replace(old_id, "id:" + str(real_id)) + '\n'
-          present_ids.append(real_id)
-
-          assert(l_p == self.cur_ideas[real_id -1][1])
-      else: # if not an id, just take text as-is
-        new_text += l + '\n'
-
-    new_count = len(set(self.extract_idea_ids_from_text(new_text)))
-
-    print(old_count, new_count)
-
-    indices = list(set([i -1 for i in present_ids]))
-
-    print(new_text)
-
-    self.make_ideas_used(indices)
-    self.update_cluster_text(new_text)
-
-    print("Answers not found:", not_found_answers)
-
-    return new_text
-
+        return l_p, ids
+    else:
+      return None
 
   def resolve(self):
     # fix lost ideas
@@ -178,11 +310,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
     return text
   def get_idea_string(self, idea_tuple):
     return idea_tuple[1] + '  (_id:%d)' % idea_tuple[0]
-  def extract_idea_ids_from_text(self, s):
-    matches = []
-    for match in re.findall('\(_id:[0-9]+\)', s):
-      matches.append(int(re.findall('[0-9]+', match)[0]))
-    return matches
+  
 # Returns (idea_id, cluster_id, parent_cluster_id, new_current_cluster_num)
 
   def get_next_depth(self, dq):

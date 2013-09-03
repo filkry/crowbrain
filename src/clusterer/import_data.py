@@ -20,7 +20,6 @@ def create_tables(cursor):
   sql = [
     '''CREATE TABLE IF NOT EXISTS
           ideas (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 cluster_num INTEGER NOT NULL,
                  idea TEXT NOT NULL,
                  idea_num INTEGER NOT NULL,
                  worker_id TEXT NOT NULL,
@@ -34,8 +33,16 @@ def create_tables(cursor):
                              idea2 INTEGER NOT NULL REFERENCES ideas(id),
                              score DOUBLE)''',
     '''CREATE TABLE IF NOT EXISTS
-          clusters (question_code TEXT NOT NULL PRIMARY KEY,
-                    cluster_text TEXT NOT NULL)''',
+          clusters (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    question_code TEXT NOT NULL,
+                    label TEXT NOT NULL)''',
+    '''CREATE TABLE IF NOT EXISTS
+          cluster_heirarchy (child INTEGER NOT NULL REFERENCES clusters(id),
+                             parent INTEGER NOT NULL REFERENCES clusters(id))''',
+    '''CREATE TABLE IF NOT EXISTS
+          idea_clusters (idea_id INTEGER NOT NULL REFERENCES ideas(id),
+                         cluster_id INTEGER NOT NULL REFERENCES clusters(id),
+                         UNIQUE(idea_id) ON CONFLICT REPLACE)''',
     '''CREATE INDEX IF NOT EXISTS
           ideas_idea_index ON ideas(idea)''',
     '''CREATE INDEX IF NOT EXISTS
