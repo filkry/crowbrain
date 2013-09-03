@@ -146,7 +146,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="btns_idea12"/>
   <buttongroup name="btns_idea21"/>
+  <buttongroup name="btns_idea12"/>
  </buttongroups>
 </ui>

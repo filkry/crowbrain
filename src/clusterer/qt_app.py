@@ -7,10 +7,11 @@ import string
 from PySide import QtCore, QtGui
 import sqlite3 as db
 import clustering_app
+import import_cluster_text
 import csv
 from collections import deque, defaultdict
 
-db_file_name = '~/Dropbox/clusterer/clusters.db'
+db_file_name = '/home/fil/Dropbox/clusters.db'
 
 def get_line_indent(l):
   depth_count = 0
@@ -29,8 +30,8 @@ def extract_idea_ids_from_text(s):
 
 class IdeaTreeNode(object):
   def __init__(self, ideas, parent, label = None):
-    assert not isinstance(ideas, basestring)
-    self.label = label
+    assert not isinstance(ideas, str)
+    self._label = label
     self.ideas = ideas # list of (text, id) tuples
     self.parent = parent
     self.children = []
@@ -48,22 +49,22 @@ class IdeaTreeNode(object):
     return self.children[row]
 
   def label(self):
-    if self.label:
-      return self.label
-    else if len(self.ideas) > 0:
+    if self._label:
+      return self._label
+    elif len(self.ideas) > 0:
       return self.ideas[0][0][:30]
     else:
       return "NO LABEL, NO IDEAS"
 
   def tooltip(self):
-    return '\n'.join(self.ideas)
+    return '\n'.join(i[0] for i in self.ideas)
 
   def row(self):
     if self.parent:
       return self.parent.children.index(self)
     return 0
 
-  def parent(self):
+  def get_parent(self):
     return self.parent
 
 class IdeaTreeModel(QtCore.QAbstractItemModel):
@@ -80,18 +81,18 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     item = index.internalPointer()
     if role == QtCore.Qt.DisplayRole:
       return item.label()
-    else if role == QtCore.Qt.ToolTipRole:
+    elif role == QtCore.Qt.ToolTipRole:
       return item.tooltip()
     return None
 
   def index(self, row, column, parent):
-    p = parent.internalPointer if parent.isValid() else self.root
+    p = parent.internalPointer() if parent.isValid() else self.root
     c = p.child(row)
     return self.createIndex(row, column, c)
 
   def parent(self, index):
-    c = index.InternalPointer()
-    p = c.parent()
+    c = index.internalPointer()
+    p = c.get_parent()
     if p == self.root:
       return QtCore.QModelIndex()
 
@@ -108,7 +109,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
       return get_line_indent(l)
 
   # Please note that all this code is awful
-  def _get_line_node(self, l, current_node, used_ids):
+  def _get_line_node(self, l, current_node, used_ids, idea_model):
     ids = extract_idea_ids_from_text(l)
     assert len(ids) <= 1
 
@@ -120,17 +121,18 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
       else:
         return None
 
-    idea, ids = self.idea_model.get_ids_for_text(l)
+    idea, ids = idea_model.get_ids_for_text(l)
     new_ids = [i for i in ids if not i in used_ids]
     new_id = new_ids[0]
-    used_ides.append(new_id)
+    used_ids.append(new_id)
     return IdeaTreeNode([(idea, new_id)], current_node, idea)
 
-  def import_from_text(self, text):
+  def import_from_text(self, text, idea_model):
+    self.beginResetModel()
     used_ids = []
 
     # Clear the root node
-    self.root = IdeaTreeNode([], None, root_name)
+    self.root = IdeaTreeNode([], None, self.root.label())
 
     current_node = self.root
     current_depth = 0
@@ -138,19 +140,20 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     look_ahead = deque(text.splitlines())
     while len(look_ahead) > 0:
       line = look_ahead.popleft()
-      next_node = self._get_line_node(line, current_node, used_ids)
+      next_node = self._get_line_node(line, current_node, used_ids, idea_model)
 
       if not next_node:
         next_depth = self.get_next_depth(look_ahead)
-        while len(node_stack) > next_depth - 1:
-          current_node = current_node.parent()
+        while current_depth > next_depth - 1:
+          current_node = current_node.get_parent()
+          current_depth -= 1
       else:
         depth_count = get_line_indent(line)
 
         if depth_count == current_depth:
           current_node.merge(next_node)
 
-        else if depth_count > current_depth:
+        elif depth_count > current_depth:
           assert depth_count - 1 == current_depth
           current_node.append_child(next_node)
           current_node = next_node
@@ -158,13 +161,15 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
         elif depth_count < current_depth:
           while depth_count < current_depth:
-            current_node = current_node.parent()
+            current_node = current_node.get_parent()
             current_depth -= 1
+
+    self.endResetModel()
 
     def _save_node(self, node, cursor):
       # Create cluster
       cursor.execute("""INSERT INTO clusters(question_code, label)
-                        VALUES (?, ?)""", (self.question_code, node.label))
+                        VALUES (?, ?)""", (self.question_code, node.label()))
       clus_id = cursor.lastrowid
 
       # Map ideas
@@ -191,6 +196,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
       cursor.close()
 
     def load(self):
+      self.beginResetModel()
       cursor = self.conn.cursor()
 
       cluster_dict = dict()
@@ -224,6 +230,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
         cluster_dict[cid].ideas.append((iid, idea))
 
       cursor.close()
+      self.endResetModel()
 
     def export_clusters(self, filename):
 
@@ -249,7 +256,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                                  worker_id, 'post_date', 'num_ideas_requested'
                           FROM ideas INNER JOIN idea_clusters
                           ON ideas.id = idea_clusters.idea_id
-                          WHERE ideas.question_code = ?""".
+                          WHERE ideas.question_code = ?""",
                        (self.question_code,))
         for iid, cid, i, num, wid, date, nr in cursor.fetchall():
           writer.writerow([self.question_code, iid, cid, i, num, wid,
@@ -284,6 +291,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
     text = self.get_cluster_text()
     
   def get_ids_for_text(self, text):
+    l = text
     id_loc = l.find('(_')
     ids = []
     if id_loc > 0:
@@ -406,7 +414,7 @@ class AppWindow(QtGui.QMainWindow):
 
     self.idea_tree_models = dict()
     for qc in self.idea_model.get_question_codes():
-      self.idea_tree_models[qc] = IdeaTreeModel(self, qc)
+      self.idea_tree_models[qc] = IdeaTreeModel(qc)
 
     self._finish_ui()
     self.regex_matches = []
@@ -421,17 +429,15 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.btn_import.clicked.connect(self.handle_import)
 
     # Connect menu items
-    self.ui.menu_item_save.triggered.connect(self.save_cluster_text)
+    self.ui.menu_item_save.triggered.connect(self.save_clusters)
     self.ui.menu_item_export.triggered.connect(self.handle_export)
     self.ui.menu_item_quit.triggered.connect(self.close_app)
 
     # Init list
     self.ui.list_ideas.setModel(self.idea_model)
-    self.ui.list_overview.setModel(self.overview_model)
 
     # Regex textbox
     self.ui.line_regex.textChanged.connect(self.clear_regex)
-    self.ui.text_edit_clusters.textChanged.connect(self.clear_regex)
 
     # Add entries to the combo box
     self.ui.combo_box_data_set.addItems(self.idea_model.get_question_codes())
@@ -482,9 +488,20 @@ class AppWindow(QtGui.QMainWindow):
   def showEvent(self, e):
     return super(AppWindow, self).showEvent(e)
   def closeEvent(self, e):
-    self.save_cluster_text()
+    self.save_clusters()
     return super(AppWindow, self).closeEvent(e)
 
+  def handle_import(self):
+    dialog = QtGui.QDialog()
+    dialog.ui = import_cluster_text.Ui_Dialog()
+    dialog.ui.setupUi(dialog)
+
+    dialog.exec()
+
+    text = dialog.ui.text_input.document().toPlainText()
+
+    qc = self.idea_model.cur_question_code
+    self.idea_tree_models[qc].import_from_text(text, self.idea_model)
 
   def handle_move_selection_down(self):
     print("TODO")

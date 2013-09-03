@@ -13,7 +13,7 @@ import sys
 
 sys.setrecursionlimit(10000)
 
-db_name = 'clusters.db'
+db_name = '/home/fil/Dropbox/clusters.db'
 clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.08.19/'
 
 def create_tables(cursor):
@@ -22,6 +22,7 @@ def create_tables(cursor):
           ideas (id INTEGER PRIMARY KEY AUTOINCREMENT,
                  idea TEXT NOT NULL,
                  idea_num INTEGER NOT NULL,
+                 auto_cluster_num INTEGER NOT NULL,
                  worker_id TEXT NOT NULL,
                  post_date TEXT NOT NULL,
                  num_ideas_requested INTEGER NOT NULL,
@@ -63,7 +64,7 @@ def import_file(fname, cursor):
     reader = csv.reader(fin)
     reader.next() # Read header
     for row in reader:
-      cursor.execute("INSERT INTO ideas(cluster_num, idea, idea_num, worker_id, post_date, num_ideas_requested, question_code) VALUES(?, ?, ?, ?, ?, ?, ?)", row)
+      cursor.execute("INSERT INTO ideas(auto_cluster_num, idea, idea_num, worker_id, post_date, num_ideas_requested, question_code) VALUES(?, ?, ?, ?, ?, ?, ?)", row)
 
 def get_stems(cursor):
   cursor.execute('SELECT idea FROM ideas')
