@@ -99,6 +99,8 @@ questions
 16. Another important independent variable: location/cultural/language restrictions!
 17. What guidelines can we recommend?
 	+ if the quality of ideas doesn't go down, does it make sense to post big HITs because they finish faster?
+18. can we infer remixing automaticaly? What can we infer from remixing?
+19. What are different kinds of riffing? phrase bouncing vs tree search?
 
 
 history
