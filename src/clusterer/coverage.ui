@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>828</width>
+    <height>179</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QLabel" name="lbl_idea1">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>491</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Idea 1 goes here</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lbl_idea2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>491</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Idea 2 goes here</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>20</y>
+     <width>311</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Idea 1 has ___ coverage over idea 2</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="btn_12_high">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>40</y>
+     <width>106</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>High</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">btns_idea12</string>
+   </attribute>
+  </widget>
+  <widget class="QRadioButton" name="btn_12_low">
+   <property name="geometry">
+    <rect>
+     <x>630</x>
+     <y>40</y>
+     <width>106</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Low</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">btns_idea12</string>
+   </attribute>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>730</x>
+     <y>140</y>
+     <width>92</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Done</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>80</y>
+     <width>311</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Idea 2 has ___ coverage over idea 1</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="btn_21_high">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>100</y>
+     <width>106</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>High</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">btns_idea21</string>
+   </attribute>
+  </widget>
+  <widget class="QRadioButton" name="btn_21_low">
+   <property name="geometry">
+    <rect>
+     <x>630</x>
+     <y>100</y>
+     <width>106</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Low</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">btns_idea21</string>
+   </attribute>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="btns_idea12"/>
+  <buttongroup name="btns_idea21"/>
+ </buttongroups>
+</ui>
