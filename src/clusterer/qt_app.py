@@ -125,11 +125,17 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     idea, ids = idea_model.get_ids_for_text(l)
     new_ids = [i for i in ids if not i in used_ids]
+    if len(new_ids) == 0:
+        print("Couldn't find idea:", l)
+        return None
     new_id = new_ids[0]
     used_ids.append(new_id)
     return IdeaTreeNode([(idea, new_id)], current_node, idea)
 
   def import_from_text(self, text, idea_model):
+    if len(text) == 0:
+        return
+
     self.beginResetModel()
     used_ids = []
 
@@ -156,6 +162,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
           current_node.merge(next_node)
 
         elif depth_count > current_depth:
+          if depth_count - 1 != current_depth:
+            print(line)
           assert depth_count - 1 == current_depth
           current_node.append_child(next_node)
           current_node = next_node
