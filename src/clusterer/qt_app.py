@@ -42,9 +42,13 @@ class IdeaTreeNode(object):
   def merge(self, other_node):
     self.ideas.extend(other_node.ideas)
 
+  def sort_children(self):
+    self.children = sorted(self.children, key=lambda x: x.label().lower())
+
   def append_child(self, child_node):
     self.children.append(child_node)
     child_node.parent = self
+    self.sort_children()
 
   def remove_child(self, child_node):
     if child_node in self.children:
@@ -61,7 +65,7 @@ class IdeaTreeNode(object):
     if self._label:
       return self._label
     elif len(self.ideas) > 0:
-      return self.ideas[0][0][:30]
+      return self.ideas[0][0]
     else:
       return "NO LABEL, NO IDEAS"
 
@@ -280,6 +284,12 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     for cid, iid, idea in cursor.fetchall():
       if cid in cluster_dict:
         cluster_dict[cid].ideas.append((idea, iid))
+
+    for key in cluster_dict:
+      # Don't load useless clusters (artifacts from import)
+      c = cluster_dict[key]
+      if len(c.get_all_ideas()) == 0:
+        c.parent.remove_child(c)
 
     cursor.close()
 
@@ -594,6 +604,8 @@ class AppWindow(QtGui.QMainWindow):
 
     dialog.ui.lbl_idea1.setText(node1.label())
     dialog.ui.lbl_idea2.setText(node2.label())
+    dialog.ui.lbl_idea1.setToolTip(node1.tooltip())
+    dialog.ui.lbl_idea2.setToolTip(node2.tooltip())
 
     dialog.ui.btn_both_high.clicked.connect(lambda x=0: dialog.done(x))
     dialog.ui.btn_both_low.clicked.connect(lambda x=1: dialog.done(x))
@@ -619,7 +631,7 @@ class AppWindow(QtGui.QMainWindow):
     for c in compare_root.children:
       cis = c.get_all_ideas()
       if len(cis) == 0:
-        print(c.label())
+        print("No idea under", c.label())
       s = self.idea_model.mean_similarity([i[1] for i in nis],
                                           [i[1] for i in cis])
       scores.append((c, s))
@@ -677,6 +689,7 @@ class AppWindow(QtGui.QMainWindow):
 
     itm = IdeaTreeModel(self.idea_model.cur_question_code, root = node.parent)
     dialog.ui.treeView.setModel(itm)
+    dialog.ui.treeView.expandAll()
 
     ret = dialog.exec()
 
@@ -710,11 +723,11 @@ class AppWindow(QtGui.QMainWindow):
         cov_n_b, cov_b_n = self.coverage_prompt(new_node, best_match)
         if cov_n_b == cov_b_n and cov_n_b:
           best_match.merge(new_node)
+          new_node = best_match
           break
         elif cov_n_b == cov_b_n:
           # Create new node under the current node
           # TODO: move this into the tree class
-          label = cluster_label_prompt(best_match.ideas + new_node.ideas)
           new_parent = IdeaTreeNode([], current_node, label)
           current_node.append_child(new_parent)
 
@@ -722,6 +735,8 @@ class AppWindow(QtGui.QMainWindow):
 
           new_parent.append_child(best_match)
           new_parent.append_child(new_node)
+
+          self.cluster_label_prompt(new_parent)
           break
         elif cov_n_b > cov_b_n:
           # TODO: move this into tree class
@@ -733,6 +748,12 @@ class AppWindow(QtGui.QMainWindow):
           current_node = best_match
 
     itm.bad_fake_reset()
+
+    index = itm.createIndex(new_node.row(), 0, new_node)
+    self.ui.tree_main.scrollTo(index)
+    self.ui.tree_main.selectionModel().setCurrentIndex(index,
+      QtGui.QItemSelectionModel.Select)
+
     self.idea_model.make_ideas_used([i[0] for i in ideas])
     
   def handle_move_selection_up(self):
