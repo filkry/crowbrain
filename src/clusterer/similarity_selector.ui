@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>847</width>
-    <height>361</height>
+    <height>679</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,8 +24,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>401</width>
-     <height>101</height>
+     <width>831</width>
+     <height>61</height>
     </rect>
    </property>
    <property name="text">
@@ -36,88 +36,73 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>110</y>
-     <width>411</width>
-     <height>41</height>
+     <y>70</y>
+     <width>831</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Top1</string>
    </property>
-   <attribute name="buttonGroup">
-    <string notr="true">btns_top</string>
-   </attribute>
   </widget>
   <widget class="QPushButton" name="btn_top2">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
-     <width>411</width>
-     <height>41</height>
+     <y>110</y>
+     <width>831</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Top2</string>
    </property>
-   <attribute name="buttonGroup">
-    <string notr="true">btns_top</string>
-   </attribute>
   </widget>
   <widget class="QPushButton" name="btn_top3">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>210</y>
-     <width>411</width>
-     <height>41</height>
+     <y>150</y>
+     <width>831</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Top3</string>
    </property>
-   <attribute name="buttonGroup">
-    <string notr="true">btns_top</string>
-   </attribute>
   </widget>
   <widget class="QPushButton" name="btn_top4">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>260</y>
-     <width>411</width>
-     <height>41</height>
+     <y>190</y>
+     <width>831</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Top4</string>
    </property>
-   <attribute name="buttonGroup">
-    <string notr="true">btns_top</string>
-   </attribute>
   </widget>
   <widget class="QPushButton" name="btn_top5">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>310</y>
-     <width>411</width>
-     <height>41</height>
+     <y>230</y>
+     <width>831</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Top5</string>
    </property>
-   <attribute name="buttonGroup">
-    <string notr="true">btns_top</string>
-   </attribute>
   </widget>
   <widget class="QPushButton" name="btn_fromlist">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>310</y>
-     <width>201</width>
+     <x>440</x>
+     <y>430</y>
+     <width>401</width>
      <height>41</height>
     </rect>
    </property>
@@ -128,8 +113,8 @@
   <widget class="QPushButton" name="btn_none">
    <property name="geometry">
     <rect>
-     <x>640</x>
-     <y>310</y>
+     <x>650</x>
+     <y>630</y>
      <width>191</width>
      <height>41</height>
     </rect>
@@ -138,20 +123,17 @@
     <string>No close cluster</string>
    </property>
   </widget>
-  <widget class="QListView" name="list_tree">
+  <widget class="QTreeView" name="tree_options">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>10</y>
-     <width>401</width>
-     <height>291</height>
+     <x>10</x>
+     <y>270</y>
+     <width>421</width>
+     <height>401</height>
     </rect>
    </property>
   </widget>
  </widget>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="btns_top"/>
- </buttongroups>
 </ui>
