@@ -44,9 +44,11 @@ class IdeaTreeNode(object):
 
   def append_child(self, child_node):
     self.children.append(child_node)
+    child_node.parent = self
 
   def remove_child(self, child_node):
     if child_node in self.children:
+      child_node.parent = None
       del self.children[self.children.index(child_node)]
 
   def child_count(self):
@@ -201,6 +203,10 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     self.endResetModel()
 
     idea_model.make_ideas_used(used_ids)
+
+  def bad_fake_reset(self):
+    self.beginResetModel()
+    self.endResetModel()
 
   def _save_node(self, node, cursor):
     # Create cluster
@@ -663,7 +669,13 @@ class AppWindow(QtGui.QMainWindow):
     dialog.ui.btn_ok.clicked.connect(lambda x=0: dialog.done(x))
     dialog.ui.btn_none.clicked.connect(lambda x=1: dialog.done(x))
 
-    itm = IdeaTreeModel(self.idea_model.cur_question_code, root = node)
+    # Add a fake parent if there is none
+    if node.parent is None:
+      fake_parent = IdeaTreeNode([], None)
+      fake_parent.append_child(node)
+      node.parent = fake_parent
+
+    itm = IdeaTreeModel(self.idea_model.cur_question_code, root = node.parent)
     dialog.ui.treeView.setModel(itm)
 
     ret = dialog.exec()
@@ -679,8 +691,6 @@ class AppWindow(QtGui.QMainWindow):
     indexes = [i.row() for i in self.ui.list_ideas.selectedIndexes()]
     ideas = self.idea_model.get_ideas_for_indices(indexes)
 
-    #self.idea_model.make_ideas_used([i[0] for i in ideas])
-
     # I stored it backwards from Mike
     ideas_flipped = [(i[1], i[0]) for i in ideas]
 
@@ -688,13 +698,11 @@ class AppWindow(QtGui.QMainWindow):
     self.cluster_label_prompt(new_node)
     current_node = itm.root
 
-    return
-
     while True:
       best_match = self.similarity_prompt(new_node, current_node)
 
       if best_match is None:
-        # current_node.append_child(new_node)
+        current_node.append_child(new_node)
         break
 
       else:
@@ -707,7 +715,7 @@ class AppWindow(QtGui.QMainWindow):
           # Create new node under the current node
           # TODO: move this into the tree class
           label = cluster_label_prompt(best_match.ideas + new_node.ideas)
-          new_parent = IdeaTreeNode(None, current_node, label)
+          new_parent = IdeaTreeNode([], current_node, label)
           current_node.append_child(new_parent)
 
           current_node.remove_child(best_match)
@@ -723,6 +731,9 @@ class AppWindow(QtGui.QMainWindow):
           new_node = best_match
         else:
           current_node = best_match
+
+    itm.bad_fake_reset()
+    self.idea_model.make_ideas_used([i[0] for i in ideas])
     
   def handle_move_selection_up(self):
     btn = QtGui.QMessageBox.question(self, 'Confirmation', 
