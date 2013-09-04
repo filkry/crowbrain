@@ -49,6 +49,14 @@ def create_tables(cursor):
     '''CREATE INDEX IF NOT EXISTS
           used_ideas_index ON used_ideas(idea_id)''',
     '''CREATE INDEX IF NOT EXISTS
+          clusters_cluster_index ON clusters(id)''',
+    '''CREATE INDEX IF NOT EXISTS
+          cluster_h_cluster_index ON cluster_hierarchy(child)''',
+    '''CREATE INDEX IF NOT EXISTS
+          idea_clusters_idea_index ON idea_clusters(idea_id)''',
+    '''CREATE INDEX IF NOT EXISTS
+          idea_clusters_cluster_index ON idea_clusters(cluster_id)''',
+    '''CREATE INDEX IF NOT EXISTS
           similarity_score_index_1 ON similarity_scores(idea1)''',
     '''CREATE INDEX IF NOT EXISTS
           similarity_score_index_2 ON similarity_scores(idea2)''',

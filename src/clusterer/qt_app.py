@@ -74,6 +74,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     self.conn = db.connect(db_file_name)
     self.question_code = question_code
 
+    self.load()
+
   def columnCount(self, parent = None):
     return 1
 
@@ -166,6 +168,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     self.endResetModel()
 
+    idea_model.make_ideas_used(used_ids)
+
   def _save_node(self, node, cursor):
     # Create cluster
     cursor.execute("""INSERT INTO clusters(question_code, label)
@@ -173,7 +177,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     clus_id = cursor.lastrowid
 
     # Map ideas
-    for i, text in node.ideas:
+    for text, i in node.ideas:
       cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id)
                         VALUES (?, ?)""", (i, clus_id))
 
@@ -202,6 +206,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     self.beginResetModel()
     cursor = self.conn.cursor()
 
+    root_cluster = None
     cluster_dict = dict()
 
     # Load clusters
@@ -210,6 +215,11 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     for i, l in cursor.fetchall():
       node = IdeaTreeNode([], None, l)
       cluster_dict[i] = node
+      if root_cluster is None:
+        root_cluster = node
+
+    if root_cluster is None:
+      return
 
     # Organize into tree
     cursor.execute("""SELECT child, parent FROM cluster_hierarchy
@@ -230,9 +240,12 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                       WHERE ideas.question_code = ?""",
                    (self.question_code,))
     for cid, iid, idea in cursor.fetchall():
-      cluster_dict[cid].ideas.append((iid, idea))
+      cluster_dict[cid].ideas.append((idea, iid))
 
     cursor.close()
+
+    self.root = root_cluster
+
     self.endResetModel()
 
   def export_clusters(self, filename):
@@ -354,18 +367,17 @@ class IdeaListModel(QtCore.QAbstractListModel):
     idea = cursor.fetchone()[0]
     cursor.close()
     return idea
-  # Returns list of strings to display
-  def make_ideas_used(self, indexes):
+
+  def make_ideas_used(self, ids):
     self.beginResetModel()
     cursor = self.conn.cursor()
-    items = [self.cur_ideas[i] for i in indexes]
-    for item in items:
-      cursor.execute("INSERT INTO used_ideas(idea_id) VALUES(?)", (item[0],))
-      del self.cur_ideas[self.cur_ideas.index(item)]
+    for i in ids:
+      cursor.execute("INSERT INTO used_ideas(idea_id) VALUES(?)", (i,))
     cursor.close()
     self.conn.commit()
+    self.read_in_ideas()
     self.endResetModel()
-    return [self.get_idea_string(i) for i in items]
+
   def make_ideas_unused(self, idea_id_list):
     self.beginResetModel()
     cursor = self.conn.cursor()
