@@ -166,104 +166,107 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     self.endResetModel()
 
-    def _save_node(self, node, cursor):
-      # Create cluster
-      cursor.execute("""INSERT INTO clusters(question_code, label)
-                        VALUES (?, ?)""", (self.question_code, node.label()))
-      clus_id = cursor.lastrowid
+  def _save_node(self, node, cursor):
+    # Create cluster
+    cursor.execute("""INSERT INTO clusters(question_code, label)
+                      VALUES (?, ?)""", (self.question_code, node.label()))
+    clus_id = cursor.lastrowid
 
-      # Map ideas
-      for i, text in node.ideas:
-        cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id)
-                          VALUES (?, ?)""", (i, clus_id))
+    # Map ideas
+    for i, text in node.ideas:
+      cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id)
+                        VALUES (?, ?)""", (i, clus_id))
 
-      # Create children
-      child_ids = [self._save_node(c, cursor) for c in node.children]
-      
-      # Create parent-child relationships
-      for child_id in child_ids:
-        cursor.execute("""INSERT INTO cluster_hierarchy(child, parent)
-                          VALUES(?, ?)""", (child_id, clus_id))
+    # Create children
+    child_ids = [self._save_node(c, cursor) for c in node.children]
+    
+    # Create parent-child relationships
+    for child_id in child_ids:
+      cursor.execute("""INSERT INTO cluster_hierarchy(child, parent)
+                        VALUES(?, ?)""", (child_id, clus_id))
 
-      return clus_id
+    return clus_id
 
-    def save(self):
-      cursor = self.conn.cursor()
-      cursor.execute("DELETE FROM clusters WHERE question_code=?")
+  def save(self):
+    cursor = self.conn.cursor()
+    cursor.execute("DELETE FROM clusters WHERE question_code=?",
+                   (self.question_code,))
 
-      self._save_node(self.root, cursor)
+    self._save_node(self.root, cursor)
 
-      cursor.close()
+    self.conn.commit()
+    cursor.close()
+    self.conn.commit()
 
-    def load(self):
-      self.beginResetModel()
-      cursor = self.conn.cursor()
+  def load(self):
+    self.beginResetModel()
+    cursor = self.conn.cursor()
 
-      cluster_dict = dict()
+    cluster_dict = dict()
 
-      # Load clusters
-      cursor.execute("""SELECT id, label FROM clusters
-                        WHERE question_code = ?""", (self.question_code,))
-      for i, l in cursor.fetchall():
-        node = IdeaTreeNode([], None, l)
-        cluster_dict[i] = node
+    # Load clusters
+    cursor.execute("""SELECT id, label FROM clusters
+                      WHERE question_code = ?""", (self.question_code,))
+    for i, l in cursor.fetchall():
+      node = IdeaTreeNode([], None, l)
+      cluster_dict[i] = node
 
-      # Organize into tree
-      cursor.execute("""SELECT child, parent FROM cluster_hierarchy
-                        WHERE child IN (SELECT id FROM clusters
-                                        WHERE question_code = ?)""",
+    # Organize into tree
+    cursor.execute("""SELECT child, parent FROM cluster_hierarchy
+                      WHERE child IN (SELECT id FROM clusters
+                                      WHERE question_code = ?)""",
+                   (self.question_code,))
+    for c, p in cursor.fetchall():
+      child = cluster_dict[c]
+      parent = cluster_dict[p]
+
+      child.parent = parent
+      parent.append_child(child)
+
+    # Load ideas into clusters
+    cursor.execute("""SELECT cluster_id, id, idea
+                      FROM ideas INNER JOIN idea_clusters
+                      ON ideas.id = idea_clusters.idea_id
+                      WHERE ideas.question_code = ?""",
+                   (self.question_code,))
+    for cid, iid, idea in cursor.fetchall():
+      cluster_dict[cid].ideas.append((iid, idea))
+
+    cursor.close()
+    self.endResetModel()
+
+  def export_clusters(self, filename):
+
+    cursor = self.conn.cursor()
+    with open("%s_%s_clusters.csv" % (filename, question_code), 'w') as cfout:
+      cwriter = csv.writer(cfout)
+      cwriter.writerow(['question_code', 'cluster', 'cluster_parent', 'cluster_label'])
+
+      cursor.execute("""SELECT child, parent, label
+                        FROM cluster_hierarchy INNER JOIN clusters
+                        ON cluster_hierarchy.child = clusters.id
+                        WHERE  clusters.question_code = ?""",
                      (self.question_code,))
-      for c, p in cursor.fetchall():
-        child = cluster_dict[c]
-        parent = cluster_dict[p]
+      for c, p, l in cursor.fetchall():
+        cwriter.writerow([self.question_code, c, p, l])
 
-        child.parent = parent
-        parent.append_child(child)
+    with open("%s_%s.csv" % (filename, question_code), 'w') as fout:
+      writer = csv.writer(fout)
+      writer.writerow(['question_code', 'idea_id', 'cluster_id', 'idea', 'idea_num',
+                       'worker_id', 'post_date', 'num_ideas_requested',])
 
-      # Load ideas into clusters
-      cursor.execute("""SELECT cluster_id, id, idea
+      cursor.execute("""SELECT ideas.id, idea_clusters.cluster_id, idea, idea_num,
+                               worker_id, 'post_date', 'num_ideas_requested'
                         FROM ideas INNER JOIN idea_clusters
                         ON ideas.id = idea_clusters.idea_id
                         WHERE ideas.question_code = ?""",
                      (self.question_code,))
-      for cid, iid, idea in cursor.fetchall():
-        cluster_dict[cid].ideas.append((iid, idea))
-
-      cursor.close()
-      self.endResetModel()
-
-    def export_clusters(self, filename):
-
-      cursor = self.conn.cursor()
-      with open("%s_%s_clusters.csv" % (filename, question_code), 'w') as cfout:
-        cwriter = csv.writer(cfout)
-        cwriter.writerow(['question_code', 'cluster', 'cluster_parent', 'cluster_label'])
-
-        cursor.execute("""SELECT child, parent, label
-                          FROM cluster_hierarchy INNER JOIN clusters
-                          ON cluster_hierarchy.child = clusters.id
-                          WHERE  clusters.question_code = ?""",
-                       (self.question_code,))
-        for c, p, l in cursor.fetchall():
-          cwriter.writerow([self.question_code, c, p, l])
-
-      with open("%s_%s.csv" % (filename, question_code), 'w') as fout:
-        writer = csv.writer(fout)
-        writer.writerow(['question_code', 'idea_id', 'cluster_id', 'idea', 'idea_num',
-                         'worker_id', 'post_date', 'num_ideas_requested',])
-
-        cursor.execute("""SELECT ideas.id, idea_clusters.cluster_id, idea, idea_num,
-                                 worker_id, 'post_date', 'num_ideas_requested'
-                          FROM ideas INNER JOIN idea_clusters
-                          ON ideas.id = idea_clusters.idea_id
-                          WHERE ideas.question_code = ?""",
-                       (self.question_code,))
-        for iid, cid, i, num, wid, date, nr in cursor.fetchall():
-          writer.writerow([self.question_code, iid, cid, i, num, wid,
-                           date, nr])
-      
-      cursor.close()
-      print("export complete")
+      for iid, cid, i, num, wid, date, nr in cursor.fetchall():
+        writer.writerow([self.question_code, iid, cid, i, num, wid,
+                         date, nr])
+    
+    cursor.close()
+    print("export complete")
 
 
 
@@ -544,7 +547,8 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.tree_main.setModel(self.idea_tree_models[qc])
 
   def save_clusters(self):
-    print("TODO SAVE")
+    for qc in self.idea_model.get_question_codes():
+      self.idea_tree_models[qc].save()
 
   def close_app(self):
     self.save_clusters()

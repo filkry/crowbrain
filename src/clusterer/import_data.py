@@ -38,7 +38,7 @@ def create_tables(cursor):
                     question_code TEXT NOT NULL,
                     label TEXT NOT NULL)''',
     '''CREATE TABLE IF NOT EXISTS
-          cluster_heirarchy (child INTEGER NOT NULL REFERENCES clusters(id),
+          cluster_hierarchy (child INTEGER NOT NULL REFERENCES clusters(id),
                              parent INTEGER NOT NULL REFERENCES clusters(id))''',
     '''CREATE TABLE IF NOT EXISTS
           idea_clusters (idea_id INTEGER NOT NULL REFERENCES ideas(id),
