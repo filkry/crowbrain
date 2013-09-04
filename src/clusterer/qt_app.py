@@ -42,6 +42,10 @@ class IdeaTreeNode(object):
   def append_child(self, child_node):
     self.children.append(child_node)
 
+  def remove_child(self, child_node):
+    if child_node in self.children:
+      del self.children[self.children.index(child_node)]
+
   def child_count(self):
     return len(self.children)
 
@@ -66,6 +70,14 @@ class IdeaTreeNode(object):
 
   def get_parent(self):
     return self.parent
+
+  def get_ids(self):
+    ids = [i[1] for i in self.ideas]
+
+    for c in self.children:
+      ids += c.get_ids()
+
+    return ids
 
 class IdeaTreeModel(QtCore.QAbstractItemModel):
   def __init__(self, question_code, parent=None):
@@ -248,11 +260,27 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                       WHERE ideas.question_code = ?""",
                    (self.question_code,))
     for cid, iid, idea in cursor.fetchall():
-      cluster_dict[cid].ideas.append((idea, iid))
+      if cid in cluster_dict:
+        cluster_dict[cid].ideas.append((idea, iid))
 
     cursor.close()
 
     self.root = root_cluster
+
+    self.endResetModel()
+
+  def get_ids(self, index):
+    if index.isValid():
+      return index.internalPointer().get_ids()
+    else:
+      return []
+
+  def remove_node(self, index):
+    self.beginResetModel()
+    # This is probably a memory leak, I might be keeping a reference around
+    if index.isValid():
+      node = index.internalPointer()
+      node.parent.remove_child(node)
 
     self.endResetModel()
 
@@ -309,11 +337,10 @@ class IdeaListModel(QtCore.QAbstractListModel):
     for idea_id, idea in cursor.fetchall():
       self.cur_ideas.append((idea_id, idea))
     cursor.close()
+  
+  def get_ideas_for_indices(self, indices):
+    return [self.cur_ideas[i] for i in indices]
 
-  def resolve_right(self):
-    # This is so awful, please never look at this awful code again
-    text = self.get_cluster_text()
-    
   def get_ids_for_text(self, text):
     l = text
     id_loc = l.find('(_')
@@ -332,12 +359,9 @@ class IdeaListModel(QtCore.QAbstractListModel):
     else:
       return None
 
-  def resolve(self):
+  def resolve(self, idea_tree_model):
     # fix lost ideas
-    text = self.get_cluster_text()
-    real_used_ids = self.extract_idea_ids_from_text(text)
-
-    print(real_used_ids)
+    real_used_ids = idea_tree_model.root.get_ids()
 
     lost = []
     cursor = self.conn.cursor()
@@ -395,6 +419,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
     self.conn.commit()
     cursor.close()
     self.endResetModel()
+
   def update_cluster_text(self, cluster_text):
     cursor = self.conn.cursor()
     cursor.execute("DELETE FROM clusters WHERE question_code = ?", (self.cur_question_code,))
@@ -472,7 +497,8 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.tree_main.setModel(self.idea_tree_models[qc])
 
   def handle_resolve_lost(self):
-    self.idea_model.resolve()
+    qc = self.idea_model.cur_question_code
+    self.idea_model.resolve(self.idea_tree_models[qc])
 
   def clear_regex(self):
     self.regex_matches = []
@@ -526,11 +552,77 @@ class AppWindow(QtGui.QMainWindow):
     qc = self.idea_model.cur_question_code
     self.idea_tree_models[qc].import_from_text(text, self.idea_model)
 
+  def coverage_prompt(self, node1, node2):
+    print "TODO"
+
+  def affinity_prompt(self, node, compare_nodes):
+    print "TODO"
+
+  def cluster_label_prompt(self, ideas):
+    print "TODO"
+
   def handle_move_selection_down(self):
-    print("TODO")
+    qc = self.idea_model.cur_question_code
+    itm = self.idea_tree_models[qc]
+
+    indexes = [i.row() for i in self.ui.list_ideas.selectedIndexes()]
+    ideas = self.idea_model.get_ideas_for_indices(indexes)
+
+    self.idea_model.make_ideas_used([i[0] for i in ideas])
+
+    # I stored it backwards from Mike
+    ideas_flipped = [(i[1], i[0]) for i in ideas]
+
+    new_node = IdeaTreeNode(ideas_flipped, None)
+    current_node = itm.root
+
+    while True:
+      best_match = self.affinity_prompt(new_node, current_node.children)
+
+      if best_match is None:
+        current_node.append_child(new_node)
+        break
+
+      else:
+        # each is true if high, false if low
+        cov_n_b, cov_b_n = coverage_prompt(new_node, best_match)
+        if cov_n_b == cov_b_n and cov_n_b:
+          best_match.merge(new_node)
+          break
+        else if cov_n_b == cov_b_n:
+          # Create new node under the current node
+          # TODO: move this into the tree class
+          label = cluster_label_prompt(best_match.ideas + new_node.ideas)
+          new_parent = IdeaTreeNode(None, current_node, label)
+          current_node.append_child(new_parent)
+
+          current_node.remove_child(best_match)
+
+          new_parent.append_child(best_match)
+          new_parent.append_child(new_node)
+          break
+        else if cov_n_b > cov_b_n:
+          # TODO: move this into tree class
+          current_node.remove_child(best_match)
+          current_node.append_child(new_node)
+          current_node = new_node
+          new_node = best_match
+        else:
+          current_node = best_match
     
   def handle_move_selection_up(self):
-    print("TODO")
+    btn = QtGui.QMessageBox.question(self, 'Confirmation', 
+            'Really remove this node?',
+            buttons = QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+
+    sel = self.ui.tree_main.selectedIndexes()
+    for index in sel:
+      if index.isValid():
+        qc = self.idea_model.cur_question_code
+        itm = self.idea_tree_models[qc]
+        ids = itm.get_ids(index)
+        itm.remove_node(index)
+        self.idea_model.make_ideas_unused(ids)
 
   def handle_sort_by_list_selection(self):
     selected_indexes = sorted([i.row() for i in self.ui.list_ideas.selectedIndexes()])
