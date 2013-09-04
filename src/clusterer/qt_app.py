@@ -9,6 +9,8 @@ import sqlite3 as db
 import clustering_app
 import import_cluster_text
 import similarity_selector
+import coverage
+import title
 import csv
 from collections import deque, defaultdict
 
@@ -95,7 +97,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     self.conn = db.connect(db_file_name)
     self.question_code = question_code
 
-    self.load()
+    if root is None:
+      self.load()
 
   def columnCount(self, parent = None):
     return 1
@@ -579,7 +582,28 @@ class AppWindow(QtGui.QMainWindow):
     self.idea_tree_models[qc].import_from_text(text, self.idea_model)
 
   def coverage_prompt(self, node1, node2):
-    print("TODO")
+    dialog = QtGui.QDialog()
+    dialog.ui = coverage.Ui_Dialog()
+    dialog.ui.setupUi(dialog)
+
+    dialog.ui.lbl_idea1.setText(node1.label())
+    dialog.ui.lbl_idea2.setText(node2.label())
+
+    dialog.ui.btn_both_high.clicked.connect(lambda x=0: dialog.done(x))
+    dialog.ui.btn_both_low.clicked.connect(lambda x=1: dialog.done(x))
+    dialog.ui.btn_12.clicked.connect(lambda x=2: dialog.done(x))
+    dialog.ui.btn_21.clicked.connect(lambda x=3: dialog.done(x))
+
+    ret = dialog.exec()
+
+    if ret == 0:
+      return True, True
+    elif ret == 1:
+      return False, False
+    elif ret == 2:
+      return True, False
+    elif ret == 3:
+      return False, True
 
   def similarity_prompt(self, node, compare_root):
     scores = []
@@ -631,8 +655,22 @@ class AppWindow(QtGui.QMainWindow):
 
     return None
 
-  def cluster_label_prompt(self, ideas):
-    print("TODO")
+  def cluster_label_prompt(self, node):
+    dialog = QtGui.QDialog()
+    dialog.ui = title.Ui_Dialog()
+    dialog.ui.setupUi(dialog)
+
+    dialog.ui.btn_ok.clicked.connect(lambda x=0: dialog.done(x))
+    dialog.ui.btn_none.clicked.connect(lambda x=1: dialog.done(x))
+
+    itm = IdeaTreeModel(self.idea_model.cur_question_code, root = node)
+    dialog.ui.treeView.setModel(itm)
+
+    ret = dialog.exec()
+
+    if ret == 0:
+      node._label = dialog.ui.lineEdit.text()
+    print(node.label())
 
   def handle_move_selection_down(self):
     qc = self.idea_model.cur_question_code
@@ -647,41 +685,44 @@ class AppWindow(QtGui.QMainWindow):
     ideas_flipped = [(i[1], i[0]) for i in ideas]
 
     new_node = IdeaTreeNode(ideas_flipped, None)
+    self.cluster_label_prompt(new_node)
     current_node = itm.root
+
+    return
 
     while True:
       best_match = self.similarity_prompt(new_node, current_node)
 
       if best_match is None:
-        current_node.append_child(new_node)
+        # current_node.append_child(new_node)
         break
 
       else:
         # each is true if high, false if low
-        cov_n_b, cov_b_n = coverage_prompt(new_node, best_match)
-        # if cov_n_b == cov_b_n and cov_n_b:
-        #   best_match.merge(new_node)
-        #   break
-        # elif cov_n_b == cov_b_n:
-        #   # Create new node under the current node
-        #   # TODO: move this into the tree class
-        #   label = cluster_label_prompt(best_match.ideas + new_node.ideas)
-        #   new_parent = IdeaTreeNode(None, current_node, label)
-        #   current_node.append_child(new_parent)
+        cov_n_b, cov_b_n = self.coverage_prompt(new_node, best_match)
+        if cov_n_b == cov_b_n and cov_n_b:
+          best_match.merge(new_node)
+          break
+        elif cov_n_b == cov_b_n:
+          # Create new node under the current node
+          # TODO: move this into the tree class
+          label = cluster_label_prompt(best_match.ideas + new_node.ideas)
+          new_parent = IdeaTreeNode(None, current_node, label)
+          current_node.append_child(new_parent)
 
-        #   current_node.remove_child(best_match)
+          current_node.remove_child(best_match)
 
-        #   new_parent.append_child(best_match)
-        #   new_parent.append_child(new_node)
-        #   break
-        # elif cov_n_b > cov_b_n:
-        #   # TODO: move this into tree class
-        #   current_node.remove_child(best_match)
-        #   current_node.append_child(new_node)
-        #   current_node = new_node
-        #   new_node = best_match
-        # else:
-        #   current_node = best_match
+          new_parent.append_child(best_match)
+          new_parent.append_child(new_node)
+          break
+        elif cov_n_b > cov_b_n:
+          # TODO: move this into tree class
+          current_node.remove_child(best_match)
+          current_node.append_child(new_node)
+          current_node = new_node
+          new_node = best_match
+        else:
+          current_node = best_match
     
   def handle_move_selection_up(self):
     btn = QtGui.QMessageBox.question(self, 'Confirmation', 

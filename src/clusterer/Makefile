@@ -7,7 +7,7 @@ all:
 	pyside-uic coverage.ui > coverage.py
 	pyside-uic import_cluster_text.ui > import_cluster_text.py
 	pyside-uic similarity_selector.ui > similarity_selector.py
-	#pyside-uic title.ui > title.py
+	pyside-uic title.ui > title.py
 backup:
 	cbackup.py *py *ui
 tar:
