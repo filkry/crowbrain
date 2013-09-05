@@ -39,8 +39,13 @@ class IdeaTreeNode(object):
     self.parent = parent
     self.children = []
 
+  def add_ideas(self, ideas):
+    present_ids = [iid for idea, iid in self.ideas]
+    ideas = [(idea, iid) for (idea, iid) in ideas if not iid in present_ids]
+    self.ideas.extend(ideas)
+
   def merge(self, other_node):
-    self.ideas.extend(other_node.ideas)
+    self.add_ideas(other_node.ideas)
 
   def sort_children(self):
     self.children = sorted(self.children, key=lambda x: x.label().lower())
@@ -58,19 +63,35 @@ class IdeaTreeNode(object):
   def child_count(self):
     return len(self.children)
 
+  def all_child_nodes(self):
+    ret = self.children.copy()
+
+    for c in self.children:
+      ret += c.all_child_nodes()
+
+    return ret
+
   def child(self, row):
+    if len(self.children) <= row:
+      return None
     return self.children[row]
 
   def label(self):
     if self._label:
       return self._label
-    elif len(self.ideas) > 0:
-      return self.ideas[0][0]
+    elif len(self.get_all_ideas()) > 0:
+      return self.get_all_ideas()[0][0]
     else:
       return "NO LABEL, NO IDEAS"
 
+  def long_label(self):
+    if self.parent is not None:
+      return self.parent.long_label() + "/" + self.label()
+    else:
+      return self.label()
+
   def tooltip(self):
-    return '\n'.join(i[0] for i in self.ideas)
+    return '\n'.join(i[0] for i in self.get_all_ideas())
 
   def row(self):
     if self.parent:
@@ -89,7 +110,7 @@ class IdeaTreeNode(object):
     return ids
 
   def get_all_ideas(self):
-    ret = self.ideas
+    ret = self.ideas.copy()
 
     for c in self.children:
       ret += c.get_all_ideas()
@@ -120,6 +141,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
   def index(self, row, column, parent):
     p = parent.internalPointer() if parent.isValid() else self.root
     c = p.child(row)
+    if c is None:
+      return None
     return self.createIndex(row, column, c)
 
   def parent(self, index):
@@ -283,13 +306,14 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                    (self.question_code,))
     for cid, iid, idea in cursor.fetchall():
       if cid in cluster_dict:
-        cluster_dict[cid].ideas.append((idea, iid))
+        cluster_dict[cid].add_ideas([(idea, iid)])
 
     for key in cluster_dict:
       # Don't load useless clusters (artifacts from import)
       c = cluster_dict[key]
       if len(c.get_all_ideas()) == 0:
-        c.parent.remove_child(c)
+        if not c.parent is None:
+          c.parent.remove_child(c)
 
     cursor.close()
 
@@ -602,8 +626,8 @@ class AppWindow(QtGui.QMainWindow):
     dialog.ui = coverage.Ui_Dialog()
     dialog.ui.setupUi(dialog)
 
-    dialog.ui.lbl_idea1.setText(node1.label())
-    dialog.ui.lbl_idea2.setText(node2.label())
+    dialog.ui.lbl_idea1.setText(node1.long_label())
+    dialog.ui.lbl_idea2.setText(node2.long_label())
     dialog.ui.lbl_idea1.setToolTip(node1.tooltip())
     dialog.ui.lbl_idea2.setToolTip(node2.tooltip())
 
@@ -626,9 +650,12 @@ class AppWindow(QtGui.QMainWindow):
   def similarity_prompt(self, node, compare_root):
     scores = []
 
+    if len(compare_root.children) == 0:
+      return None
+
     nis = node.get_all_ideas()
 
-    for c in compare_root.children:
+    for c in compare_root.all_child_nodes():
       cis = c.get_all_ideas()
       if len(cis) == 0:
         print("No idea under", c.label())
@@ -645,12 +672,17 @@ class AppWindow(QtGui.QMainWindow):
     top_btns = [dialog.ui.btn_top1, dialog.ui.btn_top2, dialog.ui.btn_top3,
                 dialog.ui.btn_top4, dialog.ui.btn_top5]
 
-    dialog.ui.label_idea.setText(node.label())
+    dialog.ui.label_idea.setText(node.long_label())
 
-    for i, btn in enumerate(top_btns):
-      btn.setText(top[i][0].label())
-      btn.setToolTip(top[i][0].tooltip())
+    for i, (node, score) in enumerate(top):
+      btn = top_btns[i]
+      btn.setText(node.long_label())
+      btn.setToolTip(node.tooltip())
       btn.clicked.connect(lambda x=i: dialog.done(x))
+
+    if len(top) < len(top_btns):
+      for btn in top_btns[len(top):]:
+        btn.setEnabled(False)
 
     itm = IdeaTreeModel(self.idea_model.cur_question_code, root = compare_root)
     dialog.ui.tree_options.setModel(itm)
@@ -678,24 +710,18 @@ class AppWindow(QtGui.QMainWindow):
     dialog.ui = title.Ui_Dialog()
     dialog.ui.setupUi(dialog)
 
+    if node._label is not None:
+      dialog.ui.lineEdit.insert(node._label)
+
     dialog.ui.btn_ok.clicked.connect(lambda x=0: dialog.done(x))
     dialog.ui.btn_none.clicked.connect(lambda x=1: dialog.done(x))
 
-    # Add a fake parent if there is none
-    if node.parent is None:
-      fake_parent = IdeaTreeNode([], None)
-      fake_parent.append_child(node)
-      node.parent = fake_parent
-
-    itm = IdeaTreeModel(self.idea_model.cur_question_code, root = node.parent)
-    dialog.ui.treeView.setModel(itm)
-    dialog.ui.treeView.expandAll()
+    dialog.ui.text_ideas.document().setPlainText(node.tooltip())
 
     ret = dialog.exec()
 
     if ret == 0:
       node._label = dialog.ui.lineEdit.text()
-    print(node.label())
 
   def handle_move_selection_down(self):
     qc = self.idea_model.cur_question_code
@@ -708,13 +734,14 @@ class AppWindow(QtGui.QMainWindow):
     ideas_flipped = [(i[1], i[0]) for i in ideas]
 
     new_node = IdeaTreeNode(ideas_flipped, None)
-    self.cluster_label_prompt(new_node)
     current_node = itm.root
 
     while True:
       best_match = self.similarity_prompt(new_node, current_node)
 
       if best_match is None:
+        if new_node._label is None:
+          self.cluster_label_prompt(new_node)
         current_node.append_child(new_node)
         break
 
@@ -728,7 +755,7 @@ class AppWindow(QtGui.QMainWindow):
         elif cov_n_b == cov_b_n:
           # Create new node under the current node
           # TODO: move this into the tree class
-          new_parent = IdeaTreeNode([], current_node, label)
+          new_parent = IdeaTreeNode([], current_node, None)
           current_node.append_child(new_parent)
 
           current_node.remove_child(best_match)
@@ -736,14 +763,24 @@ class AppWindow(QtGui.QMainWindow):
           new_parent.append_child(best_match)
           new_parent.append_child(new_node)
 
+          if new_node._label is None:
+            self.cluster_label_prompt(new_node)
+
+          self.cluster_label_prompt(best_match)
           self.cluster_label_prompt(new_parent)
           break
         elif cov_n_b > cov_b_n:
           # TODO: move this into tree class
+          if new_node._label is None:
+            self.cluster_label_prompt(new_node)
+
           current_node.remove_child(best_match)
           current_node.append_child(new_node)
           current_node = new_node
-          new_node = best_match
+          current_node.append_child(best_match)
+
+          self.cluster_label_prompt(best_match)
+          break
         else:
           current_node = best_match
 
