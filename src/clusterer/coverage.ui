@@ -25,6 +25,9 @@
    <property name="text">
     <string>Idea 1 goes here</string>
    </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QLabel" name="lbl_idea2">
    <property name="geometry">
@@ -37,6 +40,9 @@
    </property>
    <property name="text">
     <string>Idea 2 goes here</string>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="btn_both_high">

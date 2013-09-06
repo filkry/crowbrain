@@ -36,16 +36,6 @@
     <string>Cluster title</string>
    </property>
   </widget>
-  <widget class="QTreeView" name="treeView">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>381</width>
-     <height>251</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QPushButton" name="btn_ok">
    <property name="geometry">
     <rect>
@@ -70,6 +60,16 @@
    </property>
    <property name="text">
     <string>None</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="text_ideas">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>381</width>
+     <height>251</height>
+    </rect>
    </property>
   </widget>
  </widget>

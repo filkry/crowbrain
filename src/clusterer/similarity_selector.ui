@@ -31,6 +31,9 @@
    <property name="text">
     <string>Idea goes here</string>
    </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QPushButton" name="btn_top1">
    <property name="geometry">
