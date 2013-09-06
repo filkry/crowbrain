@@ -2,4 +2,5 @@ clusters.db
 coverage.py
 import_cluster_text.py
 similarity_selector.py
+clustering_app.py
 title.py
