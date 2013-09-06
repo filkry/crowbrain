@@ -34,7 +34,10 @@ def extract_idea_ids_from_text(s):
 class IdeaTreeNode(object):
   def __init__(self, ideas, parent, label = None):
     assert not isinstance(ideas, str)
-    self._label = label
+    if label is not None and len(label) > 0:
+      self._label = label
+    else:
+      self._label = None
     self.ideas = ideas # list of (text, id) tuples
     self.parent = parent
     self.children = []
@@ -248,7 +251,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
   def _save_node(self, node, cursor):
     # Create cluster
     cursor.execute("""INSERT INTO clusters(question_code, label)
-                      VALUES (?, ?)""", (self.question_code, node.label()))
+                      VALUES (?, ?)""", (self.question_code, node._label))
     clus_id = cursor.lastrowid
 
     # Map ideas
