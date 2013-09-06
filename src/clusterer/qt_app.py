@@ -86,12 +86,22 @@ class IdeaTreeNode(object):
 
   def long_label(self):
     if self.parent is not None:
-      return self.parent.long_label() + "/" + self.label()
+      l = self.parent.label()
+      if l == 'forgot_name' or l == 'iPod' or l == 'charity' or l == 'turk':
+        return self.label()
+      else:
+        return self.parent.long_label() + "/" + self.label()
     else:
       return self.label()
 
   def tooltip(self):
-    return '\n'.join(i[0] for i in self.get_all_ideas())
+    ret = '\n'.join(i[0] for i in self.ideas)
+
+    for c in self.children:
+      tt = c.tooltip()
+      ret = ret + '\n' + '\n'.join(['\t' + t for t in tt.split('\n')]) + '\n'
+
+    return ret
 
   def row(self):
     if self.parent:
@@ -746,19 +756,26 @@ class AppWindow(QtGui.QMainWindow):
         break
 
       else:
+        bm_parent = best_match.parent
+        if bm_parent is None:
+          assert(False)
+
         # each is true if high, false if low
         cov_n_b, cov_b_n = self.coverage_prompt(new_node, best_match)
         if cov_n_b == cov_b_n and cov_n_b:
           best_match.merge(new_node)
           new_node = best_match
+
+          if best_match._label is None:
+            self.cluster_label_prompt(best_match)
           break
         elif cov_n_b == cov_b_n:
           # Create new node under the current node
           # TODO: move this into the tree class
           new_parent = IdeaTreeNode([], current_node, None)
-          current_node.append_child(new_parent)
+          bm_parent.append_child(new_parent)
 
-          current_node.remove_child(best_match)
+          bm_parent.remove_child(best_match)
 
           new_parent.append_child(best_match)
           new_parent.append_child(new_node)
@@ -774,10 +791,9 @@ class AppWindow(QtGui.QMainWindow):
           if new_node._label is None:
             self.cluster_label_prompt(new_node)
 
-          current_node.remove_child(best_match)
-          current_node.append_child(new_node)
-          current_node = new_node
-          current_node.append_child(best_match)
+          bm_parent.remove_child(best_match)
+          bm_parent.append_child(new_node)
+          new_node.append_child(best_match)
 
           self.cluster_label_prompt(best_match)
           break
