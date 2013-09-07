@@ -46,6 +46,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="lbl_remaining">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QPushButton" name="button_sort_by_list">
@@ -130,7 +137,7 @@
      <x>0</x>
      <y>0</y>
      <width>840</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

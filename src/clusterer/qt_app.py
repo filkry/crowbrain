@@ -578,6 +578,11 @@ class AppWindow(QtGui.QMainWindow):
     self.idea_model.set_question_code(qc)
     self.ui.tree_main.setModel(self.idea_tree_models[qc])
 
+    self.idea_model.modelReset.connect(lambda: self.update_remaining())
+
+  def update_remaining(self):
+    self.ui.lbl_remaining.setText(str(self.idea_model.rowCount(None)) + " remaining")
+
   def handle_resolve_lost(self):
     qc = self.idea_model.cur_question_code
     self.idea_model.resolve(self.idea_tree_models[qc])
