@@ -1,4 +1,5 @@
 clusters.db
+out
 coverage.py
 import_cluster_text.py
 similarity_selector.py

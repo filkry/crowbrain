@@ -350,9 +350,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     self.endResetModel()
 
   def export_clusters(self, filename):
-
     cursor = self.conn.cursor()
-    with open("%s_%s_clusters.csv" % (filename, question_code), 'w') as cfout:
+    with open("%s_%s_clusters.csv" % (filename, self.question_code), 'w') as cfout:
       cwriter = csv.writer(cfout)
       cwriter.writerow(['question_code', 'cluster', 'cluster_parent', 'cluster_label'])
 
@@ -364,7 +363,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
       for c, p, l in cursor.fetchall():
         cwriter.writerow([self.question_code, c, p, l])
 
-    with open("%s_%s.csv" % (filename, question_code), 'w') as fout:
+    with open("%s_%s.csv" % (filename, self.question_code), 'w') as fout:
       writer = csv.writer(fout)
       writer.writerow(['question_code', 'idea_id', 'cluster_id', 'idea', 'idea_num',
                        'worker_id', 'post_date', 'num_ideas_requested',])
@@ -380,7 +379,6 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                          date, nr])
     
     cursor.close()
-    print("export complete")
 
 
 
@@ -592,34 +590,29 @@ class AppWindow(QtGui.QMainWindow):
 
   def handle_next_regex(self):
     if not self.regex_matches:
-      test = re.compile(self.ui.line_regex.text(), re.IGNORECASE)
-      text = self.idea_model.get_cluster_text()
+      qc = self.idea_model.cur_question_code
+      itm = self.idea_tree_models[qc]
+      nodes = itm.root.all_child_nodes()
 
-      self.regex_matches = [i for (i, l) in enumerate(text.splitlines()) if test.match(l) is not None]
+      test = re.compile(self.ui.line_regex.text(), re.IGNORECASE)
+
+      self.regex_matches = [node for node in nodes
+                                 for (idea, i) in node.ideas
+                                 if test.match(idea) is not None]
 
       # convenience hack; if no results, add .* and .* to end and beginning
 
       if len(self.regex_matches) == 0:
         test = re.compile(".*" + self.ui.line_regex.text() + ".*", re.IGNORECASE)
-        self.regex_matches = [i for (i, l) in enumerate(text.splitlines()) if test.match(l) is not None]
+        self.regex_matches = [node for node in nodes
+                                   for (idea, i) in node.ideas
+                                   if test.match(idea) is not None]
 
       print("number of matches: %i" % len(self.regex_matches))
 
     if self.regex_matches:
-      self.highlight_line(self.regex_matches[0])
+      self.highlight_node(self.regex_matches[0])
       del self.regex_matches[0]
-
-
-  def highlight_line(self, line):
-    selection_cursor = self.ui.text_edit_clusters.textCursor()
-    document = self.ui.text_edit_clusters.document()
-    block = document.findBlockByLineNumber(line)
-
-    selection_cursor.setPosition(block.position())
-
-    self.ui.text_edit_clusters.setTextCursor(selection_cursor)
-    self.ui.text_edit_clusters.moveCursor(QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor)
-
     
   def showEvent(self, e):
     return super(AppWindow, self).showEvent(e)
@@ -810,12 +803,18 @@ class AppWindow(QtGui.QMainWindow):
 
     itm.bad_fake_reset()
 
-    index = itm.createIndex(new_node.row(), 0, new_node)
+    self.highlight_node(new_node)
+
+    self.idea_model.make_ideas_used([i[0] for i in ideas])
+
+  def highlight_node(self, node):
+    qc = self.idea_model.cur_question_code
+    itm = self.idea_tree_models[qc]
+
+    index = itm.createIndex(node.row(), 0, node)
     self.ui.tree_main.scrollTo(index)
     self.ui.tree_main.selectionModel().setCurrentIndex(index,
       QtGui.QItemSelectionModel.Select)
-
-    self.idea_model.make_ideas_used([i[0] for i in ideas])
     
   def handle_move_selection_up(self):
     btn = QtGui.QMessageBox.question(self, 'Confirmation', 
@@ -858,7 +857,13 @@ class AppWindow(QtGui.QMainWindow):
         self.ui.list_ideas.selectionModel().select(self.ui.list_ideas.model().createIndex(row_num,0), QtGui.QItemSelectionModel.ClearAndSelect)
 
   def handle_export(self):
-    print("TODO")
+    output_folder = 'out/'
+
+    for question_code in self.idea_model.get_question_codes():
+      itm = self.idea_tree_models[question_code]
+      itm.export_clusters(output_folder)
+
+
   def handle_combo_box_changed(self):
     self.save_clusters()
     qc = self.ui.combo_box_data_set.currentText()
