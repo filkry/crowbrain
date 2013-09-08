@@ -369,7 +369,7 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                        'worker_id', 'post_date', 'num_ideas_requested',])
 
       cursor.execute("""SELECT ideas.id, idea_clusters.cluster_id, idea, idea_num,
-                               worker_id, 'post_date', 'num_ideas_requested'
+                               worker_id, post_date, num_ideas_requested
                         FROM ideas INNER JOIN idea_clusters
                         ON ideas.id = idea_clusters.idea_id
                         WHERE ideas.question_code = ?""",
