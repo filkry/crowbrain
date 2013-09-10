@@ -62,10 +62,15 @@ def get_questions_for_responses(n, append=False):
 
     forgot_question = """<p>Imagine you are in a social setting and you have forgotten the name of somebody you know. Brainstorm %s ways you could learn their name without directly asking them. Be as specific as possible in your descriptions.</p>"""
 
-    question = [charity_question % (n),
-                turk_question % (n),
+    question = [
+                #charity_question % (n),
+                #turk_question % (n),
                 mp3_question %(n),
-                forgot_question %(n)]
+                mp3_question %(n),
+                mp3_question %(n),
+                mp3_question %(n),
+                #forgot_question %(n)
+               ]
 
     return question
 
@@ -73,26 +78,18 @@ def get_questions_for_responses(n, append=False):
 
 def get_num_participants(num_requested):
   if num_requested == 5:
-    return [5, 5, 5, 5]
+    return [0, 0, 39, 0]
   elif num_requested == 10:
-    return [5, 5, 5, 5]
-  elif num_requested == 20:
-    return [3, 0, 0, 0]
-  elif num_requested == 50:
-    return [6, 4, 5, 6]
-  elif num_requested == 75:
-    return [6, 5, 5, 5]
-  elif num_requested == 100:
-    return [7, 4, 5, 6]
+    return [0, 0, 13, 0]
 
 def get_response_rewards(expid):
     return [
             (5, 0.18, "%s_fives" % expid, "fives", False),
             (10, 0.35, "%s_tens" % expid, "tens", False),
-            (20, 0.70, "%s_twenties" % expid, "twenties", False),
-            (50, 1.75, "%s_fifties" % expid, "fifties", False),
-            (75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
-            (100, 3.50, "%s_hundreds" % expid, "hundreds", False),
+            #(20, 0.70, "%s_twenties" % expid, "twenties", False),
+            #(50, 1.75, "%s_fifties" % expid, "fifties", False),
+            #(75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
+            #(100, 3.50, "%s_hundreds" % expid, "hundreds", False),
             ]
 
 ###
