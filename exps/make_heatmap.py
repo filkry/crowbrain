@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
-import json
+import json, math
 
 html_template = '''
 <html>
   <title>Brainstorming Heatmaps</title>
+  <style type='text/css'>
+  </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script type="text/javascript">
     var table_datas = %s;
@@ -98,8 +100,11 @@ def process_data(data_lists):
           if val > 1.0:
             print "Error: Value is >1", val
             val = 1.0
-          if val < 0:
+          elif val < 0:
             print "Error: Value is <0", val
+            val = 0
+          if math.isnan(val):
+            #print "Error, value is None"
             val = 0
           as_int = int((1.0-val)*255)
           data_dict[key] = "#%02x%02x%02x" % (as_int, as_int, as_int)
