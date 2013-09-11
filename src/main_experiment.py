@@ -78,7 +78,7 @@ def get_questions_for_responses(n, append=False):
 
 def get_num_participants(num_requested):
   if num_requested == 5:
-    return [0, 0, 50 0]
+    return [0, 0, 50, 0]
   elif num_requested == 10:
     return [0, 0, 26, 0]
   elif num_requested == 20:
