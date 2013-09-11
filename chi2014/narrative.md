@@ -20,6 +20,67 @@ We wanted to *automatically* solve a problem that required *creativity*, which a
 Make better brainstorming tasks to generate creativity.
 
 
+data stats
+==========
+
+60 responses (10 in each condition)
+# incompletes
+
+7        5
+111     20
+180     75
+199     75
+213    100
+216    100
+Name: num_requested, dtype: uint16
+7       3
+111    13
+180    13
+199    21
+213    20
+216    35
+Name: num_received, dtype: uint16
+
+total 2330 iPod answers
+
+2 repeat worker / qc combos in iPod condition
+5 (2013-09-03 22:00:57) -> 10 (2013-09-03 22:01:51)
+20 (2013-07-16 16:10:48) - > 50 (2013-09-03 21:00:51)
+
+1034 nodes ("unique ideas")
+
+    Question code iPod
+        Number of ideas: 2330
+        Number of clustered ideas: 2330
+        Number of "low clusters" for question code iPod : 1034
+        responses per cluster 2.25338491296
+        percent 0.443776824034
+        5
+            Number of responses: 48
+            Number of clusters: 41
+            percent of unique: 0.854166666667
+        10
+            Number of responses: 100
+            Number of clusters: 77
+            percent of unique: 0.77
+        20
+            Number of responses: 193
+            Number of clusters: 130
+            percent of unique: 0.673575129534
+        50
+            Number of responses: 500
+            Number of clusters: 334
+            percent of unique: 0.668
+        75
+            Number of responses: 634
+            Number of clusters: 437
+            percent of unique: 0.68927444795
+        100
+            Number of responses: 855
+            Number of clusters: 502
+            percent of unique: 0.587134502924
+
+TODO: debug this plot
 
 assumptions
 ===========
@@ -307,6 +368,32 @@ Pilot5 tested this and found nothing.
 ### originality <-> remix
 Found a 0.68 - 0.78 (depending on whether riffs are counted as original) correlation between originality and inmix summary statistics for runs (i.e. # of original ideas and # of inmix ideas).
 
+
+recommendations
+===============
+
+Here are some of the recommendations I have been able to come up with.
+
+I have considered the following "goals" of brainstorming. This is kind of an intersection of "things people might want to achieve" and "things we can actually count in our data"
+
+? many categories (number of subtrees)
++ many unique ideas (number of unique clusters)
++ high specificity in ideas ("leafiness" of idea)
+- high verbosity (word count)
++ low completion time (total time spent on all responses)
++ high originality/rarity (number of ideas under cluster node)
+? many "popular" categories (subtrees of size > 1)
+- high completion rate
+
+For each, I have just done a plot of the measure over the first 48 ideas that came in, for each number requested condition.
+
+The + things come out better when you request more ideas; It's better to request more than less, and in fact right now it looks like it's better to request 100 ideas from a person and take the first 50 than it is to just ask for 50. "If you want +, ask fewer people for more ideas".
+
+The - things come out better when you ask for less ideas. Completion rate is key here. The different is not significant, but you might start to see it affect the improvements in the + cases if we actually manage to look at batches of size 100 (incomplete batches would flatline on these measure after a certain number of ideas). "If you want -, ask many people for fewer ideas".
+
+The ? things don't have a really convincing effect; it looks like anything there is an outlier as the conditions are jumbled up with no clear ordering. "If you want ?, ?"
+
+I still need to look at completion time from first accept to last submit, as I think this might tell another interesting story. I'm going to look at that and then take a look at what's coming out of our repeat answer-ers.
 
 
 
