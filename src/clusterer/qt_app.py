@@ -42,6 +42,23 @@ class IdeaTreeNode(object):
     self.parent = parent
     self.children = []
 
+  def as_text(self):
+    outlines = []
+
+    if self._label and len(self._label) > 0:
+      outlines.append(self._label)
+    for text, i in self.ideas:
+      outlines.append(text + '  (_id:' + str(i) + ')')
+
+    for i, c in enumerate(self.children):
+      recur = c.as_text()
+      outlines += ['' if l == '' else ('-' + l)
+                        for l in recur]
+
+      outlines.append('')
+
+    return outlines
+
   def add_ideas(self, ideas):
     present_ids = [iid for idea, iid in self.ideas]
     ideas = [(idea, iid) for (idea, iid) in ideas if not iid in present_ids]
@@ -349,6 +366,13 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     self.endResetModel()
 
+
+  def export_clusters_text(self, filename):
+    with open("%s_%s_clusters.txt" % (filename, self.question_code), 'w') as cfout:
+      lines = self.root.as_text()
+      cfout.write('\n'.join(lines))
+
+
   def export_clusters(self, filename):
     cursor = self.conn.cursor()
     with open("%s_%s_clusters.csv" % (filename, self.question_code), 'w') as cfout:
@@ -437,6 +461,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
 
         return l_p, ids
     else:
+      print("Couldn't find ID", l)
       return None
 
   def resolve(self, idea_tree_model):
@@ -862,6 +887,7 @@ class AppWindow(QtGui.QMainWindow):
     for question_code in self.idea_model.get_question_codes():
       itm = self.idea_tree_models[question_code]
       itm.export_clusters(output_folder)
+      itm.export_clusters_text(output_folder)
 
 
   def handle_combo_box_changed(self):
