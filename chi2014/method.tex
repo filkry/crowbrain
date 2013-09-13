@@ -55,7 +55,7 @@ Brainstorm N features for a mobile app to Mechanical Turk that would improve the
 
 \item \textbf{MP3}
 
-Many people have old iPods or MP3 players that they no longer use. Please brainstorm N uses for old iPods/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may \emph{not} have displays. Be as specific as possible in your descriptions.
+Many people have old MP3 players or MP3 players that they no longer use. Please brainstorm N uses for old MP3 players/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may \emph{not} have displays. Be as specific as possible in your descriptions.
 
 \item \textbf{Forgot Name}
 
@@ -63,7 +63,9 @@ Imagine you are in a social setting and you have forgotten the name of somebody 
 
 \end{enumerate}
 
-Here do I talk about the unlimited condition? Yes, and put out how many responses we got, how many answers were in each of those.
+Classic brainstorming procedure asks for as many ideas as possible in a period of time. We instead asked participants for a specific number of responses: 5, 10, 20, 50, 75 or 100.
+
+This decision was motivated by our early experience asking respondants to simply come up with "as many ideas as possible" in a generous time frame. Over N respondents, we received a mean of N ideas (std N), despite giving a financial reward N times that of any of our explicitly numbered conditions. This unlimited condition provided a great deal of leeway for participants to "game the system", and receive the full reward with very little work, so we dropped the condition.
 
 \subsection{Experiment}
 
@@ -71,43 +73,70 @@ With the above problem set and the previously outlined task design (SEC), we col
 
 \subsubsection{Data Collection}
 
-Does it make sense to have a section here on what data we collected? YES
+HITs were augmented with JavaScript to collect data in addition to brainstorming responses. For each response, we collected the time of the first activation and last de-activation of the form element. We collected the time the HIT was accepted and the time it was submitted. We took a has of the Mechanical Turk worker ID as a unique identifier of our participants.
+
+\subsection{Terminology}
+
+In examining the data, we found responses advocating a specific problem-solving strategy would nonetheless vary in generality. We introduce terminology here that will allow us to better describe and formalize these differences.
+
+An \emph{instance} is a single response by a single participant to a brainstorming question. For example, Figure FIG gives four \emph{instances} provided in the \emph{MP3 player} brainstorming task.
+
+\begin{figure}[!h]
+    \begin{enumerate}
+        \item "Use as a mirror"
+        \item "Mirror"
+        \item "Use it as a mirror for makeup"
+        \item "Tape it to a telephone pole and use as a reflector"
+    \end{enumerate}
+\end{figure}
+
+An instance is associated with exactly one \emph{idea}. An idea may have 0 or more instances, all of which describe an identical solution to a problem. In Figure FIG, "Use as a mirror" and "Mirror" belong to the same \emph{idea}. However, "Use it as a mirror for makeup" does not belong to the same idea, as it adds additional information to the problem solution; it is more specific.
+
+Despite this, it is clear the ideas have some commonality. It is desireable to encode this relationship. To that end, we organize ideas in \emph{category trees}. In a category tree, ideas act as nodes. Each idea may have 0 or 1 parent idea (only the root has 0) and 0 or more child ideas. An example category tree for the instances in Figure FIG is given in Figure FIG.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{sample_category_tree}
+\end{figure}
+
+If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B: all ideas in A are are suitably general to encompass all ideas in B. This difference is relative to the ideas in question.
+
+A \emph{question forest} is simply the collection of all category trees generated in response to a particular question. Different trees in a question forest have no special relationship in meaning.
 
 \subsection{Coding}
 
-One researcher coded the data for category in a hierarchical scheme. For each question, ideas recieved from the participants were organized in a tree structure. A single node in the tree represents a particular solution to the problem, and has zero more associated, identical responses.
+One researcher coded the data to produce the idea forests described above. The clustering algorithm is described in Figure FIG. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
 
-To formalize the clustering method, we introduce some key terms:
+The clustering algorithm relies on the human intelligence of the researcher for three key decisions:
 
 \subsubsection{Similarity}
-Similarity is a subjective measure of the equality of two nodes a, b on the basis of their key problem solution. a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes.
+Two ndodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
 
 \subsubsection{Coverage}
-A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative.
+A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Mirror" has high coverage of "Tape it to a telephone pole and use as a reflector", as the latter is a specific use for a mirror. On the other hand, the latter idea has low coverage of the former.
 
-\subsubsection{Symmetrical Coverage}
-Two nodes a, b have symmetrical coverage if coverage(a, b) = coverage(b, a).
-
-In the resulting tree, all parent nodes have high coverage over their child nodes, but all child nodes have low coverage over their parent nodes. All nodes have high affinity with their parent and their children. The clustering algorithm is outlined in figure (FIG).
+\subsubsection{Artificial Ideas}
+Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
 
 \begin{figure*}[h]
 \begin{verbatim}
-for each idea:
-  idea_node = new cluster with idea as member
-  current_node = root
+for each instance:
+  idea_node = new node including instance
+  current_node = root of forest
   do:
-    best_match = max_affinity(idea_node, current_node.children)
+    best_match = max_similarity(idea_node, current_node.children)
 
-    if best_match.affinity is low or current_node has no children:
+    if best_match.similarity is low or current_node has no children:
       insert idea_node under current_node
       exit do
     else:
-      if symmetrical_coverage(idea_node, best_match) and high:
+      if coverage(idea_node, best_match) == coverage(best_match, idea_node) == high:
         merge idea_node, best_match
         exit do
-      else symmetrical_coverage(idea_node, best_match) and low:
-        new_parent = new child node of current_node, summarizing cause of affinity
+      else if coverage(idea_node, best_match) == coverage(best_match, idea_node) == low:
+        new_parent = new artifical idea node
         insert best_match, idea_node under new_parent
+        insert new_parent under current_node
         exit do
       else if coverage(idea_node, best_match) > coverage(best_match, idea_node):
         replace best_match with idea_node in tree
@@ -119,3 +148,5 @@ for each idea:
 \caption{Manual clustering algorithm}
 \label{fig:cluseringalg}
 \end{figure*}
+
+After completion of the coding algorithm, we were left with an idea forest as described in section SEC.
