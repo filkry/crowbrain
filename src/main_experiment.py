@@ -78,7 +78,7 @@ def get_questions_for_responses(n, append=False):
 
 def get_num_participants(num_requested):
   if num_requested == 5:
-    return [0, 0, 50, 0]
+    return [0, 0, 40, 0]
   elif num_requested == 10:
     return [0, 0, 26, 0]
   elif num_requested == 20:
@@ -87,8 +87,8 @@ def get_num_participants(num_requested):
 def get_response_rewards(expid):
     return [
             (5, 0.18, "%s_fives" % expid, "fives", False),
-            (10, 0.35, "%s_tens" % expid, "tens", False),
-            (20, 0.70, "%s_twenties" % expid, "twenties", False),
+            #(10, 0.35, "%s_tens" % expid, "tens", False),
+            #(20, 0.70, "%s_twenties" % expid, "twenties", False),
             #(50, 1.75, "%s_fifties" % expid, "fifties", False),
             #(75, 2.65, "%s_seventy_fives" % expid, "seventy_fives", False),
             #(100, 3.50, "%s_hundreds" % expid, "hundreds", False),
