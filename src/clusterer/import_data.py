@@ -14,7 +14,7 @@ import sys
 sys.setrecursionlimit(10000)
 
 db_name = '/home/fil/Dropbox/clusters.db'
-clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.09.05/'
+clusters_dir = '/home/fil/Dropbox/crowbrain_share/data/idea-clusters-2013.09.13/'
 
 def create_tables(cursor):
   sql = [
