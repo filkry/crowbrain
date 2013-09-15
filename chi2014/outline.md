@@ -143,10 +143,7 @@ Organize this in the same way we organize the findings section of the paper.
 	+ parent degree histogram
 	+ parent nodes artificial (table, all nodes, big category nodes)
 
-#### Measures
-+ measures of outcomes of interest ( this should move)
-	+ originality: o-score (Design fixation)
-	+ specificity: ????
+### Hypothesis testing
 
 #### Zoomed out
 
@@ -154,44 +151,23 @@ Introduce two ways of looking concept: overall input of instances over a certain
 
 Show one unshuffled plot, then introduce concept of shuffling.
 
-+ saturation:
-	+ number of ideas received
-	+ number of category trees received
-
-+ effect of single person phenomenon?
-
-+ originality (hist cross condition?, cumulative originality is a dangerous concept)
-+ specificity (hists cross condition?)
++ experiment-level
+  + saturation: the number of categories become saturated at a logarithmic rate (?) over time.
+    + it probably makes more sense to look at rate than cumulative number of ideas. Then we can get a posterior poisson parameter with an HDI and do the test that way?
+  + different category generation rates between conditions. The plots show that, roughly speaking, the more ideas you ask for, the more ideas you generate in the same number of instances. Again, I'm struggling with how I'd prove this statistically. I don't think we can randomly sample and test at each point in time, though.
+  + qualitative: the effect of a single person. In the non-reordered plots, we can see spikes where people show extreme creativity.
+  + originality: higher request numbers generate more original ideas and more original categories. Not sure what the distribution would be, it's a continuous measure that grows exponentially towards 1.
+  + generality/tree height: ideas are less general as you increase the number of responses requested. Looks roughly normal.
 
 #### "Zoomed in"
 
-+ run stats
-	+ number of categories normalized(hist)
-	+ number of unique ideas (hist)
-	+ how long people tend to riff on the same idea (hist)
-	+ height range
-
-+ originality
-	+ category tree level
-	+ idea level
-
-+ introduction of new ideas and categories (where does this happen?)
-
-+ specificity
-	+ height in tree
-
-+ fixation
-	+ heatmap of remixing only? Or remixing and time spent on idea?
-	+ length of fixation runs histogram
-
-+ time spent on responses
-
-### Hypothesis testing
-
-+ base this on what we see int he visualizations, and related work
-
-+ viz-founded
-+ in larger conditions, participants are more likely to work in the same categories, and to reiterate the same idea (exhaustion) (how does this reconcile with their ideas being more original?)
++ individual run-level
+  + originality (of ideas and categories) increases until you pass the 20 threshold at which point it is constant. Will show a plot for this definitely. Then we can either show different that the HDI for rate of originality growth does not include zero pre-20 (not sure what distribution, again), or do a difference of means test for originality using whatever dist. for it we use in the previous section.
+  + introduction of categories happens evenly across the entire idea spread (plot)  (I'm not sure if it's even worth discuss this)
+  + generality: ideas get less general after the 20 point as well (I'm not sure if it's even worth discuss this)
+  + verifying SIAM hypotheses:
+    + time spent  on responses is longer when changing categories. I think we can model time accurately with a log-normal distribution.
+    + an idea is more likely to be followed by the same idea than expected randomly: I think this is just a bernoulli, ideally show the HDI does not include 0.5
 
 ### Qualitative observations
 
