@@ -1,4 +1,6 @@
-We began the process of soliciting responses to brainstorming tasks in a crowd marketplace. Throughout the experimental process, particular aspects of the experimental design remained fixed.
+\section{Method}
+
+In order to develop an adequate model of baseline brainstorming performance in crowd marketplaces, it was necessary to establish a corpus of data. Over the course of four months we repeatedly collected responses to brainstorming tasks. Throughout the experimental process, particular aspects of the experimental design remained fixed.
 
 The independent variables of interest were \emph{brainstorming problem} and \emph{number of ideas requested}.
 
@@ -6,7 +8,7 @@ Participants were recruited from Amazon's \emph{Mechanical Turk} (CITE), and wer
 
 HITs were placed on the marketplace for each \emph{number of ideas requested} condition, with proportional rewards. Participants could accept at most one HIT in each of these conditions.
 
-Upon accepting a HIT, participants are randomly assigned into a \emph{brainstorming problem} condition. We ensured that participants completing multiple HITs are not exposed to the same brainstorming task twice.
+Upon accepting a HIT, participants were randomly assigned into a \emph{brainstorming problem} condition. We ensured that participants completing multiple HITs are not exposed to the same brainstorming task twice.
 
 \subsubsection{Design Concerns}
 Workers choose which HITs to complete, thus self-selection bias is a reasonable concern. This bias is also present in real-world HIT choice behaviour. 
@@ -71,13 +73,31 @@ This decision was motivated by our early experience asking respondants to simply
 
 With the above problem set and the previously outlined task design (SEC), we collected responses. We chose 6 \emph{number of ideas requested} conditions that covered the spectrum (and beyond) of quantity of creativity requested from a single participant. Those conditions were: 5 ideas (with a corresponding reward of \$0.18 USD), 10 ideas (\$0.35), 20 (\$0.70), 50 (\$1.75), 75 (\$2.65), and 100 (\$3.50). To reiterate, participants chose a HIT to generate some number of ideas, and then were randomly assigned a problem.
 
-\subsubsection{Data Collection}
+\subsubsection{Data Collected}
+
+In total, 341 HITs were complteed by 280 distinct participants. A breakdown of responses across conditions is given in table TAB. In cases when a single participant answered the same question multiple times, all HITs after the first were dropped for subsequent analysis.
+
+\begin{tabular}[h!]{r | l l l l l l }
+& 5 & 10 & 20 & 50 & 75 & 100 \\ \hline \hline
+HITs (MP3) & 59 & 49 & 23 & 10 & 10 & 10 \\
+HITs unique (MP3) & 57 & 39 & 21 & 9 & 10 & 10 \\ \hline
+HITs (Turk) & 11 & 10 & 11 & 10 & 9 & 9 \\
+HITs unique (Turk) & 11 & 9 & 11 & 9 & 9 & 7 \\ \hline
+HITs (Forgot) & 10 & 10 & 10 & 12 & 11 & 11 \\
+HITs unique (Forgot) & 10 & 8 & 9 & 12 & 10 & 10 \\ \hline
+HITs (Charity) & 9 & 10 & 10 & 8 & 10 & 9 \\
+HITs unique (Charity) & 9 & 9 & 10 & 7 & 9 & 9 \\ \hline
+HITs (total) \\
+HITs unique (total) \\ \hline
+\end{tabular}
+
+There is significantly more data for the MP3 condition than for any of the others. Despite at least 7 unique HITs for each of the 24 problem x number conditions, we found that the limited number of total responses for the 5, 10 and 20 conditions precluded significant analysis. To that end, we selected the MP3 player problem to further expand the data set to 400 (TODO: maybe not true) responses per number condition.
 
 HITs were augmented with JavaScript to collect data in addition to brainstorming responses. For each response, we collected the time of the first activation and last de-activation of the form element. We collected the time the HIT was accepted and the time it was submitted. We took a has of the Mechanical Turk worker ID as a unique identifier of our participants.
 
 \subsection{Terminology}
 
-In examining the data, we found responses advocating a specific problem-solving strategy would nonetheless vary in generality. We introduce terminology here that will allow us to better describe and formalize these differences.
+As we began to examine the data, it quickly began apparent that there are nuances in discussing responses to brainstorming tasks. In the interest of facilitating this discussion, we introduce terms here that will be used for the remainder of the paper.
 
 An \emph{instance} is a single response by a single participant to a brainstorming question. For example, Figure FIG gives four \emph{instances} provided in the \emph{MP3 player} brainstorming task.
 
@@ -105,20 +125,12 @@ A \emph{question forest} is simply the collection of all category trees generate
 
 \subsection{Coding}
 
-One researcher coded the data to produce the idea forests described above. The clustering algorithm is described in Figure FIG. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
+One researcher coded responses the MP3 problem to produce an idea forest as described above. The MP3 problem was chosen because it was subjectively easiest to distinguish between and categorize ideas.
 
-The clustering algorithm relies on the human intelligence of the researcher for three key decisions:
+The clustering algorithm is described in Figure FIG. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
 
-\subsubsection{Similarity}
-Two ndodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
-
-\subsubsection{Coverage}
-A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Mirror" has high coverage of "Tape it to a telephone pole and use as a reflector", as the latter is a specific use for a mirror. On the other hand, the latter idea has low coverage of the former.
-
-\subsubsection{Artificial Ideas}
-Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
-
-\begin{figure*}[h]
+\begin{figure*}[h!]
+\small
 \begin{verbatim}
 for each instance:
   idea_node = new node including instance
@@ -148,5 +160,16 @@ for each instance:
 \caption{Manual clustering algorithm}
 \label{fig:cluseringalg}
 \end{figure*}
+
+The clustering algorithm relies on the human intelligence of the researcher for three key decisions:
+
+\subsubsection{Similarity}
+Two ndodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
+
+\subsubsection{Coverage}
+A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Mirror" has high coverage of "Tape it to a telephone pole and use as a reflector", as the latter is a specific use for a mirror. On the other hand, the latter idea has low coverage of the former.
+
+\subsubsection{Artificial Ideas}
+Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
 
 After completion of the coding algorithm, we were left with an idea forest as described in section SEC.
