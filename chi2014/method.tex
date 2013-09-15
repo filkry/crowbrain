@@ -173,3 +173,21 @@ A node a has high coverage of a node b if the problem solution in a is equal to 
 Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
 
 After completion of the coding algorithm, we were left with an idea forest as described in section SEC.
+
+\subsection{Measures}
+
+With the described tree structure, we were able to begin deriving measures of interest with respect to instances, ideas, and category trees. In particular, we used the category forest structure to assign originality and generality scores to ideas and categories. Furthermore, we use the category tree to identify remixing of ideas within the brainstorming run of a participant.
+
+\subsubsection{Originality}
+
+As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith [CITE]. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. We similarly calculate o-score for categories. Throughout this paper, we will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
+
+\subsubsection{Generality}
+
+Similar ideas are presented differently between different instances. The most major distinction is generality. We use \emph{idea height}, the height of an idea in it's corresponding category tree to quantify this notion of generality. An illustration of how idea height is calculated is given in figure FIG. Idea height is a relative scale that is comparable within-tree but not between-trees.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{idea_height}
+\end{figure}
+
