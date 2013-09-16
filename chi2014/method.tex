@@ -4,7 +4,7 @@ In order to develop an adequate model of baseline brainstorming performance in c
 
 The independent variables of interest were \emph{brainstorming problem} and \emph{number of ideas requested}.
 
-Participants were recruited from Amazon's \emph{Mechanical Turk} (CITE), and were restricted to residents of the United States for a baseline expectation of english language comprehension and cultural familiarity. Mechanical Turk is an online marketplace in which members receive financial reward for completing \emph{Human Intelligence Tasks}, or HITs.
+Participants were recruited from Amazon's \emph{Mechanical Turk} \cite{_amazon_????}, and were restricted to residents of the United States for a baseline expectation of english language comprehension and cultural familiarity. Mechanical Turk is an online marketplace in which members receive financial reward for completing \emph{Human Intelligence Tasks}, or HITs.
 
 HITs were placed on the marketplace for each \emph{number of ideas requested} condition, with proportional rewards. Participants could accept at most one HIT in each of these conditions.
 
@@ -19,7 +19,7 @@ Upon accepting a HIT, participants were asked to give consent and informed that 
 
 The brainstorming task is a form in a standard web browser. Participants are presented with a brief overview of the tenets of brainstorming, are presented a problem, and must enter some number of ideas to resolve the problem within an 18 hour period.
 
-At the beginning of the form is a brief introduction to brainstorming, with a paraphrase of Osborne's four rules of brainstorming (CITE). These rules were manipulated to make sense within the constraints nominal brainstorming over the web medium. The rules, as displayed to the participants:
+At the beginning of the form is a brief introduction to brainstorming, with a paraphrase of Osborne's four rules of brainstorming \cite{osborn_applied_1957}. These rules were manipulated to make sense within the constraints nominal brainstorming over the web medium. The rules, as displayed to the participants:
 
 \begin{enumerate}
 \item There are no bad ideas. Don't criticise your choices.
@@ -32,7 +32,7 @@ The brainstorming task is below this, followed by a series of text entry inputs 
 
 \subsection{Pilots and Question Selection}
 
-With this basic design in hand, we ran several pilots and experiments. In early pilots, we used classic problems from psychology literature on brainstorming, including the "thumb problem" and "broom problem" (CITE). Early results from brainstormers were unsatisfying and wildly divergent. We identified three key traits problems needed in order to evaluate them for creativity:
+With this basic design in hand, we ran several pilots and experiments. In early pilots, we used classic problems from psychology literature on brainstorming, including the "thumb problem" and "broom problem" \cite{isaksen_review_1997}. Early results from brainstormers were unsatisfying and wildly divergent. We identified three key traits problems needed in order to evaluate them for creativity:
 
 \begin{enumerate}
 \item They must require creativity to resolve. Obvious answers do not satisfy the problem.
@@ -99,7 +99,7 @@ HITs were augmented with JavaScript to collect data in addition to brainstorming
 
 As we began to examine the data, it quickly began apparent that there are nuances in discussing responses to brainstorming tasks. In the interest of facilitating this discussion, we introduce terms here that will be used for the remainder of the paper.
 
-An \emph{instance} is a single response by a single participant to a brainstorming question. For example, Figure FIG gives four \emph{instances} provided in the \emph{MP3 player} brainstorming task.
+An \emph{instance} is a single response by a single participant to a brainstorming question. For example, figure~\ref{fig:sample_instances} gives four \emph{instances} provided in the \emph{MP3 player} brainstorming task.
 
 \begin{figure}[!h]
     \begin{enumerate}
@@ -108,6 +108,7 @@ An \emph{instance} is a single response by a single participant to a brainstormi
         \item "Use it as a mirror for makeup"
         \item "Tape it to a telephone pole and use as a reflector"
     \end{enumerate}
+    \label{sample_instances}
 \end{figure}
 
 An instance is associated with exactly one \emph{idea}. An idea may have 0 or more instances, all of which describe an identical solution to a problem. In Figure FIG, "Use as a mirror" and "Mirror" belong to the same \emph{idea}. However, "Use it as a mirror for makeup" does not belong to the same idea, as it adds additional information to the problem solution; it is more specific.
@@ -127,7 +128,7 @@ A \emph{question forest} is simply the collection of all category trees generate
 
 One researcher coded responses the MP3 problem to produce an idea forest as described above. The MP3 problem was chosen because it was subjectively easiest to distinguish between and categorize ideas.
 
-The clustering algorithm is described in Figure FIG. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
+The clustering algorithm is described in Figure~\ref{fig:cluseringalg}. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
 
 \begin{figure*}[h!]
 \small
@@ -180,7 +181,7 @@ With the described tree structure, we were able to begin deriving measures of in
 
 \subsubsection{Originality}
 
-As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith [CITE]. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. We similarly calculate o-score for categories. Throughout this paper, we will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
+As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. We similarly calculate o-score for categories. Throughout this paper, we will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
 
 \subsubsection{Generality}
 
@@ -189,5 +190,6 @@ Similar ideas are presented differently between different instances. The most ma
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.9\columnwidth]{idea_height}
+    \label{idea_height}
 \end{figure}
 
