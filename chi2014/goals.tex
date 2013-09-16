@@ -1,0 +1,19 @@
+\section{Goals and Hypotheses}
+
+Our primary motivation is to develop baseline for brainstorming performance in crowd marketplaces. Brainstorming performance is often measured in terms of creativity. However, there any many interpretations of creativity [CITE a couple citations]. Instead we are interested in performance on variables that are commonly \emph{components} of a creativity score: quantity, originality, and surprise factor.
+
+As our primary goal, we examine these outcomes with respect to the number of answer requested from workers. This is the simplest of conditions that can vary when choosing a design for a crowd brainstorming problem. Furthermore, we detail the phenomenon of \emph{riffing} (known in the idea generation literature as \emph{clustering}, a term we use for its classification meaning later in the paper).
+
+In addition to the high-level goal of modelling quantity, originality and surprise factor in brainstorming results, we began with several explicit hypotheses. \textbf{Hypothesis 1:} the rate of new ideas will reduce towards 0 exponentially as a function of the number of responses gathered. Less formally, by continually soliciting solutions, we will eventually reach a saturation point at which the majority of new solutions are derivative of previously seen solutions.
+
+\textbf{Hypothesis 2:} there is a set general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition. 
+
+In addition, trends identified by prior work in spatial and temporal co-located brainstorming may or may not be exist in crowd brainstorming. We selected the trends most testable with our data set to replicate their findings. Nijstad and Stroebe's SIAM model \cite{nijstad_how_2006} makes three non-subjective predictions, two of which retain their applicability in this setting:
+
+\begin{itemize}
+\item \textbf{Hypothesis 3:} An idea from one semantic category should more often be followed by an idea from the same category than expected by random chance
+\item \textbf{Hypothesis 4:} idea generation when changing semantic categories takes longer than when repetiting categories
+\end{itemize}
+
+Parnes et al \cite{parnes_effects_1961} showed that more high quality ideas were generated in the latter half of brainstorming run than the former half. In keeping of our philosophy regarding creativity and quality measurements, we restrict the content of this test to originality. \textbf{Hypothesis 5:} Ideas generated in the latter half of a brainstorming session are of higher originality than ideas generated in the former half.
+
