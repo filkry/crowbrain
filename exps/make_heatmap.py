@@ -35,8 +35,12 @@ html_template = '''
         var row = table_data[i];
         for (var j = 0; j < headers.length; j++) {
           var table_cell_color = row[headers[j]];
+          if (table_cell_color[0] == '#') {
           //console.log("Color: " + table_cell_color);
-          return_str += '<td bgcolor="' + table_cell_color + '" class="' + headers[j] + '">&nbsp;</td>';
+            return_str += '<td bgcolor="' + table_cell_color + '" class="' + headers[j] + '">&nbsp;</td>';
+          } else {
+            return_str += '<td style="min-width:200px;" class="' + headers[j] + '">' + table_cell_color + '</td>';
+          }
         }
         return_str += "</tr>";
       }
@@ -96,6 +100,8 @@ def process_data(data_lists):
             data_dict[key] = "#000000"
           else:
             data_dict[key] = "#FFFFFF"
+        elif type(val) == str:
+          data_dict[key] = val
         else:
           if val > 1.0:
             print "Error: Value is >1", val
