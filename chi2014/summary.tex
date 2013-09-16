@@ -1,20 +1,51 @@
-\section{Summary of Data}
+\section{Summary of Idea Forest}
 
-The resulting forest was composed of 3007 instances, 1213 ideas, and 335 category trees. The number of instances, ideas and categories present in each of the number conditions is given in table TAG. In addition, table TAG shows the number of "non-singleton" categories, namely, those categories containing at least two instances. Intuitively, non-singleton categories represent those categories in which some exploration actually occured. These represent categories in which we can potentially identify the idea production phase of the SIAM model [].
+The resulting forest was composed of 3007 instances, 1213 ideas, 335 category trees, and 129 non-singleton category trees. These metrics are decomposed by number condition is given in table TAB. A bird's eye view of the complete idea forest is in Figure FIG.
 
-\begin{tabular}[h!]{r | l l l l l l }
-& 5 & 10 & 20 & 50 & 75 & 100 \\ \hline \hline
-HITs & 57 & 47 & 23 & 10 & 10 & 10 \\
-instances & 293 & 471 & 453 & 500 & 634 & 855 \\
-ideas & 171 & 249 & 278 & 341 & 443 & 177 \\
-category trees & 76 & 93 & 100 & 123 & 172 & 177 \\
-non-singleton trees & 28 & 41 & 41 & 50 & 49 & 61 \\
-\end{tabular}
-
-Figure FIG shows the distribution of instances in non-singleton categories. The majority of the "mass" of instances are in trees with less than 70 instances.
-
-% TODO: this figure needs better labeling for the second part
-\begin{figure}[!h]
+\begin{figure}[h!]
     \centering
-    \includegraphics[width=0.9\columnwidth]{instances_in_subtrees}
+    \includegraphics[width=0.9\columnwidth]{idea_forest}
+    \caption{Idea Forest}
 \end{figure}
+
+\begin{table}
+	\begin{tabular}[h!]{r | l l l l l l }
+	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 \\ \hline \hline
+	HITs & 57 & 47 & 23 & 10 & 10 & 10 \\
+	instances & 293 & 471 & 453 & 500 & 634 & 855 \\
+	ideas & 171 & 249 & 278 & 341 & 443 & 177 \\
+	category trees & 76 & 93 & 100 & 123 & 172 & 177 \\
+	non-singleton trees & 28 & 41 & 41 & 50 & 49 & 61 \\
+	\end{tabular}
+\end{table}
+
+The height of category trees follows a roughly Poisson distribution, with the maximum tree height observed at 5. Summary statistics across condition are in table TAB. The third quartile drops as the number condition increases. While the upper conditions still discover categories trees with heights as great as 5, they generate many more "short" trees. This suggests that the ideas generated in the upper conditions are less common.
+
+\begin{table}
+	\begin{tabular}[h!]{r | l l l l l l l}
+	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
+	median & 2 & 2 & 2 & 2 & 2 & 2 & 2\\
+	first quartile & 2 & 1  & 1 & 1 & 1 & 1 & 1\\
+	third quartile & 2 & 3 &3 &3 &2 &2 & 2\\
+	\end{tabular}
+	\caption{Category tree height}
+\end{table}
+
+The number of nodes and number of instances are also roughly poisson distributed (Table TAB). In keeping with the findings for height, trees found in the upper number conditions are smaller than trees found in the lower conditions. The precipitous drop in median tree size suggests that in the largest condition, participants are finding rare ideas with only a few variants and less than 14 instances.
+
+\begin{table}
+\begin{tabular}[h!]{r | l l l l l l l}
+	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
+	number of nodes& \\ \hline
+	median &3&4&4&3&2&2&2 \\
+	first quartile &2&1&1&1&1&1&1 \\
+	third quartile &15&12&12&10&5&5&5 \\
+	number of instances& \\ \hline
+	median &14&12&12&9&4&4&4 \\
+	first quartile &4&3&4&2&1&1&1 \\
+	third quartile &48&31&29&21&14&13&13 \\
+	\end{tabular}
+	\caption{Number of ideas and instances in trees}
+\end{table}
+
+To better understand what this distribution of tree sizes means...

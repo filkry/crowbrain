@@ -1,19 +1,34 @@
 \section{Method}
 
-In order to develop an adequate model of baseline brainstorming performance in crowd marketplaces, it was necessary to establish a corpus of data. Over the course of four months we repeatedly collected responses to brainstorming tasks. Throughout the experimental process, particular aspects of the experimental design remained fixed.
-
-The independent variables of interest were \emph{brainstorming problem} and \emph{number of ideas requested}.
+In order to develop models and test hypotheses, it was necessary to establish a significant corpus of brainstorming data data. Over the course of four months we repeatedly collected responses to brainstorming tasks.
 
 Participants were recruited from Amazon's \emph{Mechanical Turk} \cite{_amazon_????}, and were restricted to residents of the United States for a baseline expectation of english language comprehension and cultural familiarity. Mechanical Turk is an online marketplace in which members receive financial reward for completing \emph{Human Intelligence Tasks}, or HITs.
 
-HITs were placed on the marketplace for each \emph{number of ideas requested} condition, with proportional rewards. Participants could accept at most one HIT in each of these conditions.
+HITs were placed on the marketplace asking for a variable \emph{number of ideas}, with proportional rewards. These conditions were : 5 ideas (with a corresponding reward of \$0.18 USD), 10 ideas (\$0.35), 20 (\$0.70), 50 (\$1.75), 75 (\$2.65), and 100 (\$3.50).
 
-Upon accepting a HIT, participants were randomly assigned into a \emph{brainstorming problem} condition. We ensured that participants completing multiple HITs are not exposed to the same brainstorming task twice.
+This served as the independent variable in all data gathering. It must be stated that under normal brainstorming conditions, participants are asked to generate as many ideas as possible within a fixed time frame, instead of a fixed number. We excluded such a condition for two reasons. First, it is practice in crowd creativity tasks to solicit a fixed number of ideas (e.g. Yu and Nickerson \cite{yu_cooks_2011}). Secondly, we piloted asking respondants for "as many ideas as possible" in a generous time frame. Over N respondents, we received a mean of N ideas (std N), despite giving a financial of \$\$\$\$. This suggested a propensity to "game the system", a behaviour we wanted to exclude.
 
-\subsubsection{Design Concerns}
-Workers choose which HITs to complete, thus self-selection bias is a reasonable concern. This bias is also present in real-world HIT choice behaviour. 
+While the brainstorming question was manipulated in pilot studies, it was fixed for the data reported on in this paper:
 
-Upon accepting a HIT, participants were asked to give consent and informed that they could leave the study at any point without financial consequences. In regular online task markplaces, common practice would restrict workers from submitting a HIT as complete unless all responses were given. This is a threat to external validity.
+\begin{itemize}
+\item \textbf{MP3}
+
+Many people have old MP3 players or MP3 players that they no longer use. Please brainstorm N uses for old MP3 players/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may \emph{not} have displays. Be as specific as possible in your descriptions.
+\end{itemize}
+
+This problem was selected for three qualities:
+
+\begin{enumerate}
+\item It requires creativity to resolve. Obvious answers do not satisfy the problem.
+\item Mechanical Turk participants have the expertise to solve the problem.
+\item It has an associated success metric.
+\end{enumerate}
+
+Workers choose which \emph{number of ideas} condition to participate in, thus self-selection bias is a reasonable concern. However, this bias is also present in real-world HIT choice behaviour. 
+
+Upon accepting a HIT, participants were asked to give consent and informed that they could leave the study at any point without financial consequences. Under normal conditions, the participants would be expected to complete all responses to receive compensation.
+
+Should we be dropping these runs, or at least testing they don't have an affect?
 
 \subsection{Task}
 
@@ -28,78 +43,26 @@ At the beginning of the form is a brief introduction to brainstorming, with a pa
 \item Combinations of ideas count as new ideas.
 \end{enumerate}
 
-The brainstorming task is below this, followed by a series of text entry inputs numbered through to the total number of ideas requested. Figure X (FIG) is an example of a typical task. We place a larger free text area at the bottom of the list where participants could enter any additional ideas.
-
-\subsection{Pilots and Question Selection}
-
-With this basic design in hand, we ran several pilots and experiments. In early pilots, we used classic problems from psychology literature on brainstorming, including the "thumb problem" and "broom problem" \cite{isaksen_review_1997}. Early results from brainstormers were unsatisfying and wildly divergent. We identified three key traits problems needed in order to evaluate them for creativity:
-
-\begin{enumerate}
-\item They must require creativity to resolve. Obvious answers do not satisfy the problem.
-\item They must be problems that participants on Mechanical Turk would have the expertise to solve.
-\item They must have an associated success metric.
-\end{enumerate}
-
-The primary researcher and two additional researchers familiar with crowd marketplace brainstorming tasks brainstormed a large variety of potential problems. These problems were iterativelly culled and refined over a series of further pilots until the above goals were felt to be achieved. This resulted in the following four questions, as presented to the participants:
-
-\begin{enumerate}
-\item \textbf{Charity}
-
-The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect individual rights with respect to digital and online technologies. For example, the EFF has initiated a lawsuit against the US government to limit the degree to which the US surveils its citizens via secret NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website (https://www.eff.org) or via other online sources (such as Wikipedia).
-
-Brainstorm N \emph{new} ways the EFF can raise funds and simultaneously increase awareness. Your ideas \emph{must be different from their current methods}, which include donation pages, merchandise, web badges and banners, affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the full list of their current methods here: https://www.eff.org/helpout. Be as specific as possible in your responses."
-
-\item \textbf{Mechanical Turk}
-
-"Mechanical Turk currently lacks a dedicated mobile app for performing HITs on smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).
-
-Brainstorm N features for a mobile app to Mechanical Turk that would improve the worker's experience when performing HITs on mobile devices. Be as specific as possible in your responses.
-
-\item \textbf{MP3}
-
-Many people have old MP3 players or MP3 players that they no longer use. Please brainstorm N uses for old MP3 players/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may \emph{not} have displays. Be as specific as possible in your descriptions.
-
-\item \textbf{Forgot Name}
-
-Imagine you are in a social setting and you have forgotten the name of somebody you know. Brainstorm N ways you could learn their name without directly asking them. Be as specific as possible in your descriptions.
-
-\end{enumerate}
-
-Classic brainstorming procedure asks for as many ideas as possible in a period of time. We instead asked participants for a specific number of responses: 5, 10, 20, 50, 75 or 100.
-
-This decision was motivated by our early experience asking respondants to simply come up with "as many ideas as possible" in a generous time frame. Over N respondents, we received a mean of N ideas (std N), despite giving a financial reward N times that of any of our explicitly numbered conditions. This unlimited condition provided a great deal of leeway for participants to "game the system", and receive the full reward with very little work, so we dropped the condition.
-
-\subsection{Experiment}
-
-With the above problem set and the previously outlined task design (SEC), we collected responses. We chose 6 \emph{number of ideas requested} conditions that covered the spectrum (and beyond) of quantity of creativity requested from a single participant. Those conditions were: 5 ideas (with a corresponding reward of \$0.18 USD), 10 ideas (\$0.35), 20 (\$0.70), 50 (\$1.75), 75 (\$2.65), and 100 (\$3.50). To reiterate, participants chose a HIT to generate some number of ideas, and then were randomly assigned a problem.
+The brainstorming problem is below this, followed by a series of text entry inputs numbered through to the total number of ideas requested. Figure X (FIG) is an example of a typical task. We place a larger free text area at the bottom of the list where participants could enter any additional ideas.
 
 \subsubsection{Data Collected}
 
-In total, 341 HITs were complteed by 280 distinct participants. A breakdown of responses across conditions is given in table TAB. In cases when a single participant answered the same question multiple times, all HITs after the first were dropped for subsequent analysis.
+In total, 161 HITs were complteed by 146 distinct participants, for a total of 3007 responses. A breakdown of responses across conditions is given in table TAB. In cases when a single participant participated in multiple conditions, all HITs after the first were dropped for subsequent analysis.
 
 \begin{tabular}[h!]{r | l l l l l l }
 & 5 & 10 & 20 & 50 & 75 & 100 \\ \hline \hline
-HITs (MP3) & 59 & 49 & 23 & 10 & 10 & 10 \\
-HITs unique (MP3) & 57 & 39 & 21 & 9 & 10 & 10 \\ \hline
-HITs (Turk) & 11 & 10 & 11 & 10 & 9 & 9 \\
-HITs unique (Turk) & 11 & 9 & 11 & 9 & 9 & 7 \\ \hline
-HITs (Forgot) & 10 & 10 & 10 & 12 & 11 & 11 \\
-HITs unique (Forgot) & 10 & 8 & 9 & 12 & 10 & 10 \\ \hline
-HITs (Charity) & 9 & 10 & 10 & 8 & 10 & 9 \\
-HITs unique (Charity) & 9 & 9 & 10 & 7 & 9 & 9 \\ \hline
-HITs (total) \\
-HITs unique (total) \\ \hline
+HITs completed & 59 & 49 & 23 & 10 & 10 & 10 \\
+HITs completed (no repeats) & 57 & 39 & 21 & 9 & 10 & 10 \\
+solutions (no repeats) & 283 & 372 & 413 & 450 & 635 & 855 \\
 \end{tabular}
 
-There is significantly more data for the MP3 condition than for any of the others. Despite at least 7 unique HITs for each of the 24 problem x number conditions, we found that the limited number of total responses for the 5, 10 and 20 conditions precluded significant analysis. To that end, we selected the MP3 player problem to further expand the data set to 400 (TODO: maybe not true) responses per number condition.
-
-HITs were augmented with JavaScript to collect data in addition to brainstorming responses. For each response, we collected the time of the first activation and last de-activation of the form element. We collected the time the HIT was accepted and the time it was submitted. We took a has of the Mechanical Turk worker ID as a unique identifier of our participants.
+HITs were augmented with JavaScript to collect data in addition to brainstorming responses. For each response, we collected the time of the first activation and last de-activation of the corresponding form element. We collected the time the HIT was accepted and the time it was submitted. To uniquely identify participants, we computed a hash of their Mechanical Turk worker ID. A hash was used to protect privacy after data release.
 
 \subsection{Terminology}
 
-As we began to examine the data, it quickly began apparent that there are nuances in discussing responses to brainstorming tasks. In the interest of facilitating this discussion, we introduce terms here that will be used for the remainder of the paper.
+To facilitate discussion, we introduce terms here that we will use throughout the rest of the paper.
 
-An \emph{instance} is a single response by a single participant to a brainstorming question. For example, figure~\ref{fig:sample_instances} gives four \emph{instances} provided in the \emph{MP3 player} brainstorming task.
+An \emph{instance} is a single solution by a single participant to a brainstorming question. Alternatively, an instance may be thought of as the text entered into a single field in the task form. For example, figure~\ref{fig:sample_instances} gives four \emph{instances} from the data set.
 
 \begin{figure}[!h]
     \begin{enumerate}
@@ -111,24 +74,26 @@ An \emph{instance} is a single response by a single participant to a brainstormi
     \label{sample_instances}
 \end{figure}
 
-An instance is associated with exactly one \emph{idea}. An idea may have 0 or more instances, all of which describe an identical solution to a problem. In Figure FIG, "Use as a mirror" and "Mirror" belong to the same \emph{idea}. However, "Use it as a mirror for makeup" does not belong to the same idea, as it adds additional information to the problem solution; it is more specific.
+A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT by a single user. As stated above, after dropping repeat data, all brainstorming runs were completed by distinct participants.
 
-Despite this, it is clear the ideas have some commonality. It is desireable to encode this relationship. To that end, we organize ideas in \emph{category trees}. In a category tree, ideas act as nodes. Each idea may have 0 or 1 parent idea (only the root has 0) and 0 or more child ideas. An example category tree for the instances in Figure FIG is given in Figure FIG.
+An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, and all instances in the same idea should be paraphrases of one another. In Figure FIG, "Use as a mirror" and "Mirror" belong to the same \emph{idea}. However, "Use it as a mirror for makeup" does not belong to the same idea, as it contains additional information.
+
+Despite this, it is clear the ideas have some commonality. It is desireable to encode this relationship. To that end, we propose a hierarchical clustering of ideas in \emph{category trees}. In a category tree, ideas act as nodes. Each idea may have 0 or 1 parent idea (only the root has 0) and 0 or more child ideas. An example category tree for the instances in Figure FIG is given in Figure FIG.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.9\columnwidth]{sample_category_tree}
 \end{figure}
 
-If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B: all instances in A are are suitably general to encompass all instances in B. This difference is relative to the ideas in question.
+If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B: all instances in A are are suitably general to encompass all instances in B. This hierarchical clustering allows us to classify ideas as simultaneously different in solution stragy but different in solution details.
 
-A \emph{question forest} is simply the collection of all category trees generated in response to a particular question. Different trees in a question forest have no special relationship in meaning.
+We further distinguish category trees into \emph{singleton} and \emph{non-singleton} category trees. A singleton category tree is composed of only one idea node, the root. A non-singleton category tree has at least two idea nodes. We introduce non-singleton category trees as correspondents to the images in Nisjstad and Stroebe's SIAM model \cite{nijstad_how_2006}. On SIAM, the idea generation process is represented by a series of images activations within which idea production occurs. Non-singleton trees by definition represent strategies that have been produced in at least two distinct ways.
 
-\subsection{Coding}
+The \emph{idea forest} is the collection of all category trees. Different trees in the forest have no particular relationship.
 
-One researcher coded responses the MP3 problem to produce an idea forest as described above. The MP3 problem was chosen because it was subjectively easiest to distinguish between and categorize ideas.
+\subsection{Clustering}
 
-The clustering algorithm is described in Figure~\ref{fig:cluseringalg}. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
+In addition to the notion of an idea forest, we also propose a clustering algorithm driven by human intelligence to create the data structure. The algorithm is described in Figure~\ref{fig:cluseringalg}. Instances are added one at a time to the existing idea forest. In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
 
 \begin{figure*}[h!]
 \small
@@ -165,7 +130,7 @@ for each instance:
 The clustering algorithm relies on the human intelligence of the researcher for three key decisions:
 
 \subsubsection{Similarity}
-Two ndodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
+Two nodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
 
 \subsubsection{Coverage}
 A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Mirror" has high coverage of "Tape it to a telephone pole and use as a reflector", as the latter is a specific use for a mirror. On the other hand, the latter idea has low coverage of the former.
@@ -173,23 +138,4 @@ A node a has high coverage of a node b if the problem solution in a is equal to 
 \subsubsection{Artificial Ideas}
 Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
 
-After completion of the coding algorithm, we were left with an idea forest as described in section SEC.
-
-\subsection{Measures}
-
-With the described tree structure, we were able to begin deriving measures of interest with respect to instances, ideas, and category trees. In particular, we used the category forest structure to assign originality and generality scores to ideas and categories. Furthermore, we use the category tree to identify remixing of ideas within the brainstorming run of a participant.
-
-\subsubsection{Originality}
-
-As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. We similarly calculate o-score for categories. Throughout this paper, we will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
-
-\subsubsection{Generality}
-
-Similar ideas are presented differently between different instances. The most major distinction is generality. We use \emph{idea height}, the height of an idea in it's corresponding category tree to quantify this notion of generality. An illustration of how idea height is calculated is given in figure FIG. Idea height is a relative scale that is comparable within-tree but not between-trees.
-
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.9\columnwidth]{idea_height}
-    \label{idea_height}
-\end{figure}
-
+The primary author followed the algorithm to cluster the 3007 response instances into ideas and trees.

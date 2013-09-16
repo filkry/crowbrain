@@ -1,26 +1,38 @@
 \section{Results}
 
-\subsection{Between-Conditions Comparisons}
+We can use the uniqueness measure to understand the rate at which new ideas arrive. As we gather more and more ideas in the course of an experiment, we expect that we will see fewer ideas that are not already in our idea pool. Figure FIG shows the cumulative count of ideas as a function of the number of instances gathered in the experiment. To smooth the plot, the order in which instances were received was shuffled 100 times, and the mean of the cumulative unique idea count was taken at each step.
 
-\subsubsection{Saturation of ideas}
-
-One of our hypotheses (HYP) was that as the number of instances gathered increased, the rate of new ideas, new categories and new singleton categories would converge towards 0.
-
-Figure FIG shows the rate of new idea, category, and non-singleton category generation  over time for each number requested conditions. These plots have been smoothed by randomly shuffling the order in which ideas were receieved 500 times and taking the mean cumulative count at each point in time, and plotting with a window size of 10. In an ideal scenario where each instance provided a new unique idea and category, the lines would horizontal across the top of the figure.
-
-\begin{figure}
+\begin{figure}[h!]
     \centering
-    \includegraphics[width=0.9\columnwidth]{rate_new_idea_over_time}
-    \includegraphics[width=0.9\columnwidth]{rate_new_category_over_time}
-    \includegraphics[width=0.9\columnwidth]{rate_new_ns_category_over_time}
+    \includegraphics[width=0.9\columnwidth]{ideas_over_time}
+    \caption{Cumulative idea count}
+\end{figure}
+
+The horizontal line in Figure FIG represent the idea case, in which each instance represents a different idea (i.e. every answer we receive is a new, unique idea). As expected, the rate at which ideas are gained appears to taper off.
+
+Figure FIG more closely examines the rate, the primary property of interest. The panels, from top to bottom, are the rate at which new ideas, categories, and non-singleton categories are generated, respectively. Similar to Figure FIG, these are based on shuffling the order of instances 10000 times and taking the mean of the derivative at each point. In this case, the ideal (a 1:1:1 instance:idea:category ratio) is represented by the horizontal bar across the top of the chart.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{rate_new_idea_over_time}
+    \includegraphics[width=0.7\columnwidth]{rate_new_category_over_time}
+    \includegraphics[width=0.7\columnwidth]{rate_new_ns_category_over_time}
     \caption{Rate of idea generation}
 \end{figure}
+
+The number of ideas, categories and non-singleton each drop off exponentially over time. It is unsurprising that the number of new categories should drop off faster than the number of new ideas, as we expect that there are fewer categories of ideas than there are individual ideas themselves.
+
+The third panel, which shows non-singleton categories over time, tells a distinctly different story from the others. While in the idea and category plots, the height-ordering of rates of generation between categories remains generally identical, there is a point of intersection and reversal in the non-singleton category plot at around the 30 instances point. Before this point, the lower conditions actually generate new categories at a \emph{faster} rate.
+
+In lower conditions, brainstormers will quickly offer up big, popular, non-singleton categories. Beyond the inflection point, the category pool is saturated with these low-hanging fruit, and only brainstormers tasked with generating more ideas will find the smaller category. This is a more nuanced view of the tree node/instance quartiles in Section SEC; condition 5 brainstormers cover the spectrum of category sizes while condition 100 brainstormers pull from the smaller category trees in the forest.
+
+\subsection{Hypothesis 1}
 
 Visually, the rate of idea, category and singleton category generation seems to trend towards 0. We tested this hypothesis...
 
 Additionally Figure FIG indicates that there is some effect of number of ideas requested on the rate of generation. Generally, conditions with more requested responses generated ideas and categories at a higher rate. We tested this...
 
-\subsubsection{Originality}
+\subsection{Originality}
 
 We were also interested in the effect of the number requested condition on originality. Originality, as measured by o-scores at both the category and idea level, is compared cross condition in figure FIG. Some stat tests here...
 
@@ -33,22 +45,8 @@ We were also interested in the effect of the number requested condition on origi
 
 The more ideas requested, the more original the ideas produced. This provides support for the findings of Parnes et al \cite{parnes_effects_1961}, namely that more original ideas are found in extended idea generation events. This finding will be examined in the next section.
 
-\subsubsection{Generality}
 
-As discussed above, we use height in category tree as a measure of an ideas generality. Generality (and its reverse, sepcificity) are both potentially desireable outcomes of a brainstorming task.
 
-The idea-height across number conditions is given in figure FIG.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\columnwidth]{height_in_subtree}
-    \includegraphics[width=0.9\columnwidth]{height_in_subtree_5}
-    \caption{Generality of ideas}
-\end{figure}
-
-The top panel in Figure FIG suggests that ideas tend to be less general in the conditions where we request more ideas. However, the bottom panel, which shows generality only for the first 5 responses, has no such effect. This suggests that only answers later on in the larger request batches become less general, an effect that we further examine in the following section.
-
-In this previous section, we showed that the rate of idea convergence, the originality of ideas, and the generality of ideas varied between the number requested conditions. These relationships are useful to understand when deciding what crowd brainstorming strategy to follow. What this birds eye view excludes is an understanding of \emph{how} these differences occur. To that end, we shift our attention to the context of a single brainstorming run.
 
 \subsection{Brainstorming Runs}
 
