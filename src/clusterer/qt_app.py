@@ -2,6 +2,7 @@
 import os
 import sys
 import json
+import pickle
 import re
 import string
 from PySide import QtCore, QtGui
@@ -371,6 +372,11 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     with open("%s_%s_clusters.txt" % (filename, self.question_code), 'w') as cfout:
       lines = self.root.as_text()
       cfout.write('\n'.join(lines))
+
+    pf = "%s_%s_IdeaTreeNode.pickle" % (filename, self.question_code)
+    print(pf)
+    with open(pf, 'wb') as cfout:
+        pickle.dump(self.root, cfout)
 
 
   def export_clusters(self, filename):
