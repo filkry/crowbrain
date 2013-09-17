@@ -79,9 +79,68 @@ This threshold at 20 ideas brings us to \textbf{Hypothesis 6:} Ideas generated i
 
 Test here...
 
-\subsection{Riffing}
+\subsection{Riffing: We need to change the name of this}
 
+At the level of the individual brainstorming run, we examine a new phenomenon related to uniqueness above. Within the SIAM model, \emph{riffing} (or \emph{clustering} as it is known in the work) occurs when a single participant activates a single image (analogous to a non-singleton category) and produces multiple ideas from that image under a fail state is reached and a transition is undergone to a new image. Unsurprisingly, we observed riffing activity in our data. An example of a single participant's riffed responses is given in Figure FIG. The second column is dark if the instance is a \emph{look-back equal} to any idea earlier in the run. The first column is dark if the instance is a \emph{source} instance, meaning it is the first in a chain of look-back equal instances. Riff chains can either be consecutive (as in the example), or separated with instances in between. The third column simply provides the text for that instance.
 
-\subsubsection{SIAM hypotheses}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{10_riff}
+    \caption{Example of riffing in a size 10 run}
+\end{figure}
 
-\cite{nijstad_how_2006}
+The participant hits on the categories of using the device's hard drive for storage, recycling the device or its materials, and selling the device.  within these categories, they generate 2-3 ideas each. This is a fairly typical example of riffing. In larger conditions, it is common for participants to reach further back and return to an idea multiple time. Table TAB provides a summary of riffing between conditions.
+
+\begin{table}
+\begin{tabular}[h!]{r | l l l l l l l}
+    \hline \hline \textbf{condition} & 5 & 10 & 20  \\ \hline \hline
+    \% riffs & 13.65 & 19.28 & 25.17  \\
+    source instances & 10.58 & 12.92 & 15.01 \\
+    riffs per source & 1.29 & 1.49 & 1.68 \\
+    median length of consecutive chain & 2 & 2 & 2 \\
+    median distance to previous in chain & 1 & 2 & 2 \\
+    median distance to first in chain & 2 & 3 & 5 \\ \hline \hline
+    \textbf{condition} & 50 & 75 & 100 \\ \hline \hline
+    \% riffs & 39.6 & 32.81 & 42.81 \\
+    source instances & 19 & 17.19 & 18.13\\
+    riffs per source & 2.08 & 1.91 & 2.36\\
+    median length of consecutive chain & 2 & 2 & 2\\
+    median distance to previous in chain & 7 & 10 & 5\\
+    median distance to first in chain & 16.5 & 18 & 26.5 \\
+    \end{tabular}
+    \caption{Riffing statistics by condition}
+\end{table}
+
+The higher the number of instances requested, the more participants riff on their old ideas. Similarly, upper conditions use more of their ideas as sources for riffing, and riff more times on each of those ideas. The primary surprise is that they do not riff more consecutively. The median length of a consecutive riff chain remains low across conditions. This leaves us with the image of a participant in the upper conditions searching through their old ideas for something to build upon one instance at a time.
+
+Another outlier of note is the relatively short median distance to a previous idea in a chain for the 100 condition. Participants in the 100 condition may feel more pressure to remix, and return to earlier ideas more quickly than those in the 50 or 75 conditions.
+
+\subsubsection{Hypothesis 4}
+
+Riffing activity is analogous to idea production within an image as described by Nijstad and Stroebe's SIAM model \cite{nijstad_how_2006}. Thus, we should expect to confirm their hypothesis, \textbf{Hypothesis 4}, that an idea from one semantic category should more often by followed by an idea from the same category than expected by random chance.
+
+Test here...
+
+\subsection{Completion Time}
+
+As another aspect of how participants complete brainstorming runs, we are interested in the time spent on each response. The first, second and third quartiles for each condition are given in boxplots in figure FIG. The whiskers extend to 1.5 times the inner quartile range. Surprisingly, we see many instances taking up to 28018382ms (7.78 hours) to complete.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{time_spent_condition}
+    \caption{Time spent per instance}
+\end{figure}
+
+Either our participants were exceedingly concerned with crafting their responses, or there is another influence at work. Figure FIG gives the mean time spent on an instance by order, separated by condition. Most of the highly variant response times take place early in the brainstorming run. This suggests that at least one participant accepted a brainstorming task, took an initial stab at instances, and then left the task for up to 8 hours before continuing. Beyond this, we might expect to see time spent per instance go up as participants have to dig deeper to find responses, but no such effect is consistently observed.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{time_spent_order}
+    \caption{Time spent per instance}
+\end{figure}
+
+\subsubsection{Hypotheses 5}
+
+We must also consider time spent in light of the hypotheses made by Nijstad and Stroede \cite{nijstad_how_2006}. The second, \textbf{Hypothesis 5}, states that idea generation when changing semantic categories should take longer than idea generation within categories.
+
+Test here...
