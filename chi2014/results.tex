@@ -26,58 +26,61 @@ The third panel, which shows non-singleton categories over time, tells a distinc
 
 In lower conditions, brainstormers will quickly offer up big, popular, non-singleton categories. Beyond the inflection point, the category pool is saturated with these low-hanging fruit, and only brainstormers tasked with generating more ideas will find the smaller category. This is a more nuanced view of the tree node/instance quartiles in Section SEC; condition 5 brainstormers cover the spectrum of category sizes while condition 100 brainstormers pull from the smaller category trees in the forest.
 
-\subsection{Hypothesis 1}
+\subsubsection{Hypothesis 1}
 
 Visually, the rate of idea, category and singleton category generation seems to trend towards 0. We tested this hypothesis...
 
-Additionally Figure FIG indicates that there is some effect of number of ideas requested on the rate of generation. Generally, conditions with more requested responses generated ideas and categories at a higher rate. We tested this...
+Additionally Figure FIG indicates that there is some effect of number of ideas requested on the rate of generation. Generally, conditions with more requested responses generated ideas and categories at a higher rate.
+
+Test here...
+
+\subsubsection{Hypothesis 2}
+
+Test here...
 
 \subsection{Originality}
 
-We were also interested in the effect of the number requested condition on originality. Originality, as measured by o-scores at both the category and idea level, is compared cross condition in figure FIG. Some stat tests here...
+We measure differences in originality between conditions by examining the idea o-score and category o-score. The distributions of these scores are summarized in Figure FIG. The left panel compares idea o-score and the right compares category o-score.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{oscores_conditions}
+\end{figure}
+
+The more ideas requested, the more original the ideas produced. As suggested by the instance quartile range in section SEC, higher number conditions produce idea in trees with fewer instances, thus the high category o-score. We also see that these conditions produce \emph{ideas} with fewer instances.
+
+As the originality rises, however, so does the number of outliers. To understand this phenomenon, we need to more closely observe the distribution of originality scores between not just conditions, but ordinal position in a brianstorming run.
+
+Figure FIG provides this visualization. The upper panel gives the mean idea o-score as a function of ordinal position in all 100 condition brainstorming runs. The o-score for each ordinal position is the mean of all idea o-scores for that ordinal position in a run. Following this, the plot is further smoothed by making each point the mean of a sliding window of size 10 around its ordinal position. The bottom panel is a similar plot for category-oscore. To aid in interpretation, the first, second and third quartiles are also represented on the plot. The error bars are standard error.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\columnwidth]{subtree_oscore}
-    \includegraphics[width=0.9\columnwidth]{idea_oscore}
-    \caption{Error bars are standard error}
+    \includegraphics[width=0.9\columnwidth]{idea_oscore_order_100}
+    \caption{Idea o-score as a function of order (100 condition)}
+    \includegraphics[width=0.9\columnwidth]{cat_oscore_order_100}
+    \caption{Category o-score as a function of order (100 condition)}
 \end{figure}
 
-The more ideas requested, the more original the ideas produced. This provides support for the findings of Parnes et al \cite{parnes_effects_1961}, namely that more original ideas are found in extended idea generation events. This finding will be examined in the next section.
-
-
-
-
-\subsection{Brainstorming Runs}
-
-The large, experiment-scale trends we describe above are composed of ideas generated in many individual brainstorming runs.
-
-\subsubsection{Originality}
-
-In the previous section, we showed that originality at both the idea and category tree level rose as the number of responses solicited increased. Parnes et al fround that ideas generated in the latter half of a brainstorming session were rated more original in colocated, cotemporal idea generation groups \cite{parnes_effects_1961}. We hypothesize that we should see a difference in idea and category oscore as a function of position in the brainstorming run, with later ideas performing better. Figure FIG presents the mean oscroe ratings on this scale.
+The only part of the originality score that falls outside the first and third quartiles is the beginning of the run. Participants in the higher numbered conditions generate more original ideas overall, but not until they have exceeded some threshold of common ideas. Figure FIG replicates figure FIG but across all conditions, and the same pattern of originality growth until an originality peak - around 20 ideas - is reached. Note that because of the additional HITs, there are far more examples of early-order ideas in the 5, 10 and 20 conditions than in the 50, 75, or 100, so this pattern is present without any dominating affect by the upper conditions.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\columnwidth]{run_idea_oscore}
-    \includegraphics[width=0.9\columnwidth]{run_category_oscore}
-    \caption{Error bars are standard error}
+    \includegraphics[width=0.9\columnwidth]{idea_oscore_order}
+    \caption{Idea o-score as a function of order}
+    \includegraphics[width=0.9\columnwidth]{cat_oscore_order}
+    \caption{Category o-score as a function of order}
 \end{figure}
 
-There appears to be a clear, uniform increase in originality on both measures through the 20th idea, at which point originality peters out, or, in the case of category o-score, becomes highly variant. We tested the hypothesis that ideas were less creative after the 20th...
+A similar, although less severe, pattern is observed for category o-score. There is a gradual increase in category originality until the 20 instance threshold is reached, at which point variance of the scores increases rapidly and no clear pattern is observable. This is explained by the relationship between common ideas and common categories. We expect that unoriginal ideas belong to unoriginal categories, as a high instance count for an idea increases the instance count for its category tree. However, we cannot make the inverse assumption, that a high originality idea belongs to a high originality category. Once the common idea are exhausted, then, there is no relationship between idea originality and category originality.
 
-Thus, we confirm Parnes et al's prior result: later ideas are more original than those early in the run. Furthermore, we identify 20 ideas as a key inflection point past which participants have realiably exhausted their supply of readily available ideas and begin generating their most original ideas.
+\subsubsection{Hypothesis 6}
 
-\subsubsection{Generality}
+This threshold at 20 ideas brings us to \textbf{Hypothesis 6:} Ideas generated in the latter half of a brainstorming session are of higher originality than ideas generated in the former half. With our empirical evidence, we can instead test that ideas \emph{more than 20 instances into a brainstorming session} are more original than those in the first 20 instances, regardless of condition.
 
-Similarly, generatility was found to decrease as the number of ideas requested increased. Figure FIG shows generality over the course of a brainstorming run.
+Test here...
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\columnwidth]{run_height_in_subtree}
-    \caption{Error bars are standard error}
-\end{figure}
+\subsection{Riffing}
 
-Unsurprisingly, generality performs inversely to originality - the most general ideas are the least original. Also like originality, participants seem to exhaust their supply of general ideas by around the 20th idea, at which point they produce ideas at a fairly uniform generality. We tested this...
 
 \subsubsection{SIAM hypotheses}
 

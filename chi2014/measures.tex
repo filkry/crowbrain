@@ -1,0 +1,11 @@
+\section{Measures}
+
+\subsubsection{Originality}
+
+As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. The o-score for category trees is similarly calculated. We will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
+
+\subsubsection{Uniqueness}
+
+To examine the quantity of idea produced, we must first have some method of comparing two ideas to see if they are unique. We use three such comparisons. The first, \emph{idea equality}, equates two instances if they belong to the same idea node. The second, \emph{category equality}, equates two instances if their idea nodes are in the same tree. The former requires exact equality in meaning, while the latter requires only that the same strategy is employed.
+
+The final measure, \emph{look-back equality}, is non-symmetrical and has meaning only in the context of a single brainstorming run. An instance \emph{a} is look-back equal to an \emph{earlier} instance \emph{b} if \emph{b} is in either \emph{a}'s idea node or any of \emph{a}'s parents, siblings, or children. This definition specifically identifies when a later instance in a run can be considered to have been influenced by earlier instance.
