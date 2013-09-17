@@ -1,5 +1,8 @@
 *.swp
+*.tar
+*.tar.bz2
 *.pyc
+*.json
 .vagrant
 ipython_profile_server/security
 
