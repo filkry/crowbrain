@@ -73,6 +73,13 @@ The only part of the originality score that falls outside the first and third qu
 
 A similar, although less severe, pattern is observed for category o-score. There is a gradual increase in category originality until the 20 instance threshold is reached, at which point variance of the scores increases rapidly and no clear pattern is observable. This is explained by the relationship between common ideas and common categories. We expect that unoriginal ideas belong to unoriginal categories, as a high instance count for an idea increases the instance count for its category tree. However, we cannot make the inverse assumption, that a high originality idea belongs to a high originality category. Once the common idea are exhausted, then, there is no relationship between idea originality and category originality.
 
+\subsubsection{Hypothesis 3}
+
+This interpretation supports \textbf{Hypothesis 3:} There is a set of general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition. We test this interpretation by constructing a set of the top 66 (5\%) most common ideas. If our intuition is correct, these ideas should be more likely to appear in the first 5 instances of a run than they are to appear in any of the following instances. We designate two Bernoulli variables. The first, defined by parameter $\theta_f$, represents the probability that an instance is in the common set given it is in the first five instances of a run. The second, defined by parameter $\theta_l$, is the probability that an instance is in the common pool given it is one of the \emph{last} (>5) instances in a run..
+
+We fit these parameters using data from all runs with a total number of instances greater than 10. We chose this so that no run could contribute evidence to $\theta_f$ without also contributing to $\theta_l$. The resulting parameters were $\theta_f = 0.564$ (95\% HDI 0.517-0.611) and $\theta_l = 0.323$ (95\% HDI 0.303-0.342). This difference is significant, supporing the hypothesis that common ideas are over-represented in the early part of a brainstorming run, regardless of conditon.
+
+
 \subsubsection{Hypothesis 6}
 
 This threshold at 20 ideas brings us to \textbf{Hypothesis 6:} Ideas generated in the latter half of a brainstorming session are of higher originality than ideas generated in the former half. With our empirical evidence, we can instead test that ideas \emph{more than 20 instances into a brainstorming session} are more original than those in the first 20 instances, regardless of condition.
