@@ -1,21 +1,35 @@
 \section{Goals and Hypotheses}
 
-Our primary motivation is to develop baseline for brainstorming performance in crowd marketplaces. Brainstorming performance is often measured in terms of creativity. However, there any many interpretations of creativity [CITE a couple citations]. Instead we are interested in performance on variables that are commonly \emph{components} of a creativity score: quantity, originality, and surprise factor.
-
-As our primary goal, we examine these outcomes with respect to the number of answer requested from workers. This is the simplest of conditions that can vary when choosing a design for a crowd brainstorming problem. Furthermore, we detail the phenomenon of \emph{riffing} (known in the idea generation literature as \emph{clustering}, a term we must unfortunately reserve for it's classification-related meaning).
-
-In addition to the high-level goal of modelling quantity, originality and surprise factor in brainstorming results, we began with several explicit hypotheses. \textbf{Hypothesis 1:} the rate of new ideas will reduce towards 0 exponentially as a function of the number of responses gathered. Less formally, by continually soliciting solutions, we will eventually reach a saturation point at which the majority of new solutions are derivative of previously seen solutions.
-
-In addition, we expect this saturation to occur at a different rate between the conditions. \textbf{Hypothesis 2:} the rate of new ideas will reduce to 0 in some conditions more quickly than others.
-
-\textbf{Hypothesis 3:} there is a set general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition. 
-
-In addition, trends identified by prior work in spatial and temporal co-located brainstorming may or may not be exist in crowd brainstorming. We selected the trends most testable with our data set to replicate their findings. Nijstad and Stroebe's SIAM model \cite{nijstad_how_2006} makes three non-subjective predictions, two of which retain their applicability in this setting:
-
+To characterize brainstorming in microtask marketplaces, we are interested in modeling the following quantities:
 \begin{itemize}
-\item \textbf{Hypothesis 4:} An idea from one semantic category should more often be followed by an idea from the same category than expected by random chance
-\item \textbf{Hypothesis 5:} idea generation when changing semantic categories takes longer than when repetiting categories
+\item the rate of unique idea production
+\item the rate of production of unique \emph{categories} of ideas
+\item the relative originality of ideas
+\item individual practices in idea generation
 \end{itemize}
 
-Parnes et al \cite{parnes_effects_1961} showed that more high quality ideas were generated in the latter half of brainstorming run than the former half. In keeping of our philosophy regarding creativity and quality measurements, we restrict the content of this test to originality. \textbf{Hypothesis 6:} Ideas generated in the latter half of a brainstorming session are of higher originality than ideas generated in the former half.
+We will examine these rates as a function of the number of ideas requested from workers.
+
+%Our primary motivation is to develop baseline for brainstorming performance in crowd marketplaces. Brainstorming performance is often measured in terms of creativity. However, there any many interpretations of creativity [CITE a couple citations]. Instead we are interested in performance on variables that are commonly \emph{components} of a creativity score: quantity, originality, and surprise factor.
+
+%As our primary goal, we examine these outcomes with respect to the number of answer requested from workers. This is the simplest of conditions that can vary when choosing a design for a crowd brainstorming problem. Furthermore, we detail the phenomenon of \emph{riffing} (known in the idea generation literature as \emph{clustering}, a term we must unfortunately reserve for it's classification-related meaning).
+
+In modeling these quantities, we have several hypotheses related to results received in the aggregate (across all participants), as well as individuals' brainstorming processes.
+
+\textbf{Hypothesis 1:} The rate of new ideas will diminish exponentially toward zero as a function of the number of responses gathered. Less formally, by continually soliciting solutions, we will eventually reach a saturation point at which any idea a worker submits is likely to be the same or practically identical to previously seen solutions. Related to this, we expect the number of \emph{categories} of ideas to diminish exponentially as well.
+
+\textbf{Hypothesis 2:} The rate of new ideas will tend toward zero faster in some conditions than others. In particular, we expect conditions requesting a smaller number of ideas will tend toward zero faster, for reasons hypothesized next.
+
+\textbf{Hypothesis 3:} We anticipate there is a set of general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition. In other words, we expect there to be a relatively fixed set of ideas that ``everyone'' thinks of first.
+
+Parnes et al \cite{parnes_effects_1961} showed that more high quality ideas are generated in the latter half of a brainstorming run than the former half. Because of the difficulty in reliably assessing the quality of an idea for a brainstorming exercise, we instead consider the o-score of an idea to indirectly measure this concept.
+
+\textbf{Hypothesis 4:} Ideas generated in the second half of a brainstorming session have higher o-scores than ideas generated in the first half.
+
+With respect to individual brainstorming processes, we have several hypotheses derived from Nijstad and Stroebe's work and their SIAM model \cite{nijstad_how_2006}:
+
+\textbf{Hypothesis 5:} An idea from one semantic category of ideas should more often be followed by an idea from the same category than expected by random chance.
+
+\textbf{Hypothesis 6:} The time it takes to generate an idea should be longer when changing semantic categories than when generating ideas within a category.
+
 
