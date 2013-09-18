@@ -2,17 +2,24 @@
 
 \subsection{Idea Forest}
 
-Hierarchical clustering yielded an idea forest composed of 3007 instances, 1213 unique ideas, 335 category trees, and 129 non-singleton category trees. In general, category trees were shallow, with a maximum tree height of 5. The number of nodes within a category tree ranged from 1 to X, with the distribution of values roughly following a Poisson distribution. The number of instances per node (i.e., the number of equivalent idea instances) also roughly follows a Poisson distribution, with number of instances ranging from X to Y.
-
+Hierarchical clustering yielded an idea forest composed of 3007 instances, 1213 unique ideas, 335 category trees, and 129 non-singleton category trees (Table~\ref{tab:idea_forest}). In general, category trees were shallow, with a maximum tree height of 5. The number of nodes within a category tree ranged from 1 to 66, with the distribution of values roughly following a Poisson distribution. The number of instances per node (i.e., the number of equivalent idea instances) also roughly follows a Poisson distribution, with number of instances ranging from 1 to 63.
 \begin{table}
 	\begin{tabular}[h!]{r | l l l l l l l}
-	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
-	HITs & 57 & 47 & 23 & 10 & 10 & 10 & 146\\
-	instances & 293 & 471 & 453 & 500 & 634 & 855 & 3007\\
-	ideas & 171 & 249 & 278 & 341 & 443 & 177 &1212\\
-	category trees & 72 & 79 & 93 & 114 & 172 & 177 &321\\
-	non-singleton trees & 28 & 34 & 40 & 48 & 49 & 61 &92\\
+	\textbf{number condition} & 5 & 10 & 20 & 50 \\ \hline \hline
+	HITs & 57 & 47 & 23 & 10\\
+	instances & 293 & 471 & 453 & 500 \\
+	ideas & 171 & 249 & 278 & 341 \\
+	category trees & 72 & 79 & 93 & 114 \\
+	non-singleton trees & 28 & 34 & 40 & 48 \\ \hline \hline
+	\textbf{number condition} & 75 & 100 & all \\ \hline \hline
+    HITs & 10 & 10 & 146\\
+	instances & 634 & 855 & 3007\\
+	ideas & 443 & 177 &1212\\
+	category trees & 172 & 177 &321\\
+	non-singleton trees & 49 & 61 &92\\ 
 	\end{tabular}
+    \caption{Result counts between conditions}
+    \label{tab:idea_forest}
 \end{table}
 
 % are also roughly poisson distributed (Table TAB). In keeping with the findings for height, trees found in the upper number conditions are smaller than trees found in the lower conditions. The precipitous drop in median tree size suggests that in the largest condition, participants are finding rare ideas with only a few variants and less than 14 instances.
@@ -130,8 +137,10 @@ Our results suggest that individuals typically produce ideas from a common set i
     \centering
     \includegraphics[width=0.9\columnwidth]{idea_oscore_order}
     \caption{Idea o-score as a function of response number, all conditions}
+    \label{fig:idea_oscore_order}
     \includegraphics[width=0.9\columnwidth]{cat_oscore_order}
     \caption{Category o-score as a function of response number, all conditions}
+    \label{fig:cat_oscore_order}
 \end{figure}
 
 In both instances, we observe a steady increase in o-scores for the first 20-30 responses. After these first 20-30 responses, the o-scores essentially plateau, with no clear discernible pattern for either ideas or idea categories.
@@ -145,8 +154,38 @@ We fit these parameters using data from all runs that have more than 10 response
 
 %This is explained by the relationship between common ideas and common categories. We expect that unoriginal ideas belong to unoriginal categories, as a high instance count for an idea increases the instance count for its category tree. However, we cannot make the inverse assumption, that a high originality idea belongs to a high originality category. Once the common idea are exhausted, then, there is no relationship between idea originality and category originality.
 
-\subsubsection{Originality of Ideas}
-Complementing the view of what ideas are generated when, we now consider idea and idea category o-scores as a function of response number. This analysis allows us to examine hypothesis 4, or our expectation that o-scores increase as a function of response number. We examine o-scores for both ideas and idea categories.
+\subsubsection{Hypothesis 4}
+The steady increase in originality seen in the first 20 instances (Figure~\ref{fig:idea_oscore_order}, \ref{fig:cat_oscore_order}), provides evidence for \textbf{Hypothesis 4:} ideas generated in the second half a brainstorming session have higher o-scores than those in the first half.
+With the point of change seen at the 20 point, we use this as our division point, fitting two each for idea and category o-scores: instances in the first 20 of runs, and instances in the second 20 runs.
+In examining the data, it became clear that o-scores do not follow a remotely normal distribution. Instead, we fit a beta distributions to each data division. The results are in Table~\ref{tab:hyp4} and Figure~\ref{fig:idea_oscore_hyp4}.
+
+\begin{table}
+	\begin{tabular}[h!]{r | l l }
+	    & $\alpha$ median & $\alpha$ 95\% HDI \\ \hline \hline
+        idea o-score (\textless=20) & 135.86 & 122.39-149.72 \\
+        idea o-score (\textgreater20) & 259.84 & 240.47-278.81 \\ \hline \hline
+	    & $\beta$ median & $\beta$ 95\% HDI \\ \hline \hline
+        category o-score (\textless=20) & 1.16 & 1.08-1.25 \\
+        category o-score (\textgreater20) & 0.82 & 0.77-0.86 \\
+	\end{tabular}
+    \caption{Hypothesis 4 Beta models}
+    \label{tab:hyp4}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{hyp4_ideas}
+    \caption{Beta models for idea o-score}
+    \label{fig:idea_oscore_hyp4}
+    \includegraphics[width=0.9\columnwidth]{hyp4_cats}
+    \caption{Beta models for category o-score}
+    \label{fig:cat_oscore_hyp4}
+\end{figure}
+
+The idea o-score models are significantly different in the $\alpha$ parameter, with mean o-scores of 0.995 and 0.997 for the $\leq20$ and $\textgreater20$ conditions respectively. The category o-scores are significantly different in both parameters, with mean o-scores of 0.975 and 0.982.
+
+Participants generated more original ideas after their first 20 instances than they did after. Not only does this support the hypothesis, it provides a clear guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more cost-effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for less from more.
+
 
 
 
