@@ -60,13 +60,13 @@ Hierarchical clustering yielded an idea forest composed of 3007 instances, 1213 
 \subsection{Rates of Idea and Category Production}
 The idea forest allows us to model the rate at which new ideas and new categories of ideas are produced, testing hypotheses 1 and 2 (i.e., the notion that rates of new ideas and categories of ideas will diminish over time, and will do so as a function condition).
 
-Figure FIG shows the cumulative count of new ideas as a function of the number of instances gathered in the experiment. For reference, a perfect ``1:1'' idea generation line is also plotted.
+Figure~\ref{fig:cumulative_ideas} shows the cumulative count of new ideas as a function of the number of instances gathered in the experiment. For reference, a perfect ``1:1'' idea generation line is also plotted.
 
 We model this quantity using the following logarithmic model:
 \[n_{ideas} = b_0 + b_{cond} * \log (x_{scale} * x + x_{offset})\]
 where $n_{ideas}$ represents the number of new ideas, $b_0$, $x_{scale}$, and $x_{offset}$ are parameters shared between conditions that serve to position the curve, and $b_{cond}$ acts as a per-condition scaling factor. This model does not explicitly model variability due to different workers, a point we return to later.
 
-We fit the parameters to the data using a Bayesian approach [REF Kruschke], using the STAN modeling software to perform the actual fit [REF STAN]. In modeling the parameters, we use uninformative priors. The resulting posterior distributions allow us to determine whether the conditions are significantly different from one another by determining whether the highest density intervals (HDIs) of $b_{cond}$'s posterior distributions overlap or not. In our analyses, we use an HDI of 95\%.
+We fit the parameters to the data using a Bayesian approach \cite{kruschke_doing_201}, using the STAN modeling software to perform the actual fit \cite{stan-software:2013}. In modeling the parameters, we use uninformative priors. The resulting posterior distributions allow us to determine whether the conditions are significantly different from one another by determining whether the highest density intervals (HDIs) of $b_{cond}$'s posterior distributions overlap or not. In our analyses, we use an HDI of 95\%.
 
 Analysis of the HDIs of $b_{cond}$ reveals no significant differences between the 5 and 10 conditions, with all other conditions significantly different from one another except for the 50 and 100 conditions. [TODO: Table of fitted values and their HDIs.] Notable in our data is the 75 condition, which rises above the 100 condition in this plot. Further analysis reveals that a single worker is responsible for that additional rise in number of new ideas. Removing that worker from the data reveals that the 75 condition is not different from either the 50 or 100 conditions.
 
@@ -76,12 +76,14 @@ Taking the derivative of the models allows us to examine the same data, but as r
     \centering
     \includegraphics[width=0.9\columnwidth]{cumulative_ideas}
     \caption{Cumulative number of novel ideas}
+    \label{fig:cumulative_ideas}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.9\columnwidth]{cumulative_categories}
     \caption{Cumulative number of novel idea categories}
+    \label{fig:cumulative_categories}
 \end{figure}
 
 % \begin{figure}[h!]
@@ -104,7 +106,7 @@ Collectively, these results largely affirm hypotheses 1 and 2: The rates of new 
 We now turn our attention to individual runs, and characterize the ideas produced throughout a run.
 
 \subsubsection{Most Popular Ideas}
-Our results suggest that individuals typically produce ideas from a common set idea categories early in the brainstorming process, then diverge and produce more original ideas. This phenomenon can be observed by examining the o-scores of ideas and idea categories in Figures X and Y, which show the distribution of o-scores for individual ideas and idea categories, as a function of response number, across all conditions.
+Our results suggest that individuals typically produce ideas from a common set idea categories early in the brainstorming process, then diverge and produce more original ideas. This phenomenon can be observed by examining the o-scores of ideas and idea categories in Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order}, which show the distribution of o-scores for individual ideas and idea categories, as a function of response number, across all conditions.
 
 %As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. The o-score for category trees is similarly calculated. We will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
 
@@ -153,17 +155,18 @@ In both instances, we observe a steady increase in o-scores for the first 20-30 
 
 These graphs lend support for hypothesis 3, the notion that there is a set of general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition.
 
-To more explicitly confirm this hypothesis, we extracted the top 5\% most common ideas (66 in total). If our intuition is correct, these ideas should be more likely to appear in the first five instances of a run than they are to appear in any of the following instances. We introduce two Bernoulli random variables to model this. The first, defined by parameter $\theta_f$ represents the probability that a response instance is in the top 5\% most common ideas, given it is found in the first five instances of a run ($P(\theta_f|top)$). The second, defined by parameter $\theta_l$, is the probability that an instance is in the common pool given it is one of the \emph{last} (>5) instances in a run ($P(\theta_l|top)$).
+To more explicitly confirm this hypothesis, we extracted the top 5\% most common ideas (66 in total). If our intuition is correct, these ideas should be more likely to appear in the first five instances of a run than they are to appear in any of the following instances. We introduce two Bernoulli random variables to model this. The first, defined by parameter $\theta_f$ represents the probability that a response instance is in the top 5\% most common ideas, given it is found in the first five instances of a run ($P(\theta_f|top)$). The second, defined by parameter $\theta_l$, is the probability that an instance is in the common pool given it is one of the \emph{last} ($\textgreater5$) instances in a run ($P(\theta_l|\overline{top})$).
 
 We fit these parameters using data from all runs that have more than 10 responses. We chose this constraint so that no run could contribute evidence to $\theta_f$ without also contributing to $\theta_l$. The resulting parameters were $\theta_f = 0.564$ (95\% HDI 0.517-0.611) and $\theta_l = 0.323$ (95\% HDI 0.303-0.342). This difference is significant, supporing the hypothesis that common ideas are over-represented in the early part of a brainstorming run.
 
 
 %This is explained by the relationship between common ideas and common categories. We expect that unoriginal ideas belong to unoriginal categories, as a high instance count for an idea increases the instance count for its category tree. However, we cannot make the inverse assumption, that a high originality idea belongs to a high originality category. Once the common idea are exhausted, then, there is no relationship between idea originality and category originality.
 
-\subsubsection{Hypothesis 4}
-The steady increase in originality seen in the first 20 instances (Figure~\ref{fig:idea_oscore_order}, \ref{fig:cat_oscore_order}), provides evidence for \textbf{Hypothesis 4:} ideas generated in the second half a brainstorming session have higher o-scores than those in the first half.
-With the point of change seen at the 20 point, we use this as our division point, fitting two each for idea and category o-scores: instances in the first 20 of runs, and instances in the second 20 runs.
-In examining the data, it became clear that o-scores do not follow a remotely normal distribution. Instead, we fit a beta distributions to each data division. The results are in Table~\ref{tab:hyp4} and Figure~\ref{fig:idea_oscore_hyp4}.
+\subsubsection{Originality}
+
+The increase in o-score over time in Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order}) also supports hypothesis 4, suggest by Parnes et al \cite{parnes_effects_1961}, that ideas generated in the second half a brainstorming session have higher o-scores than those in the first half.
+We test a stronger guarantee implied by our data: that ideas after the first 20 have higher o-scores than the first 20.
+Although we expected the o-scores to be normally distributed in each condition, they were not. Instead, we fit Beta distributions to o-score for each of the $\leq20$, $\textgreater20$ conditions. Table~\ref{tab:hyp4} and Figure~\ref{fig:idea_oscore_hyp4} show the resulting parameters and models.
 
 \begin{table}
 	\begin{tabular}[h!]{r | l l }
@@ -188,19 +191,17 @@ In examining the data, it became clear that o-scores do not follow a remotely no
     \label{fig:cat_oscore_hyp4}
 \end{figure}
 
-The idea o-score models are significantly different in the $\alpha$ parameter, with mean o-scores of 0.995 and 0.997 for the $\leq20$ and $\textgreater20$ conditions respectively. The category o-scores are significantly different in both parameters, with mean o-scores of 0.975 and 0.982.
+The $\alpha$ parameter is significantly different in both the idea and category o-score comparison. The mean idea o-score is 0.997 in the $\textgreater20$ versus 0.995 in the $\leq20$ condition. Similarly, the $\leq20$ condition is favourable in category o-score with a mean of 0.982 vs 0.975.
 
-Participants generated more original ideas after their first 20 instances than they did after. Not only does this support the hypothesis, it provides a clear guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more cost-effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for less from more.
+This support the hypothesis, it provides a clear guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more cost-effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for less from more.
 
 
 
 
 \subsection{Idea Generation Patterns}
-Given the clear differences in characteristics of ideas as a function of response number, we now consider idea generation patterns observable from the data. In this section, we examine these patterns in the context of hypotheses 5 and 6. Specifically, these hypotheses draw upon the SIAM model and predict that individuals will generate ideas from an idea category until they exhaust that category, at which point they switch to another category (hypothesis 5). Furthermore, SIAM predicts that this category switching will be observable as taking more time to generate an idea in a new category than in the existing category (hypothesis 6).
+Given the clear differences in characteristics of ideas as a function of response number, we now consider idea generation patterns observable from the data. In this section, we examine these patterns in the context of hypotheses 5 and 6. Specifically, these hypotheses draw upon the SIAM model's conceptualization of brainstorming as a process in ideas are generated within one category image at a time.
 
-To determine category switching, we examine whether an idea was assigned to the same category tree as the previous, or whether it was assigned to a different category tree. We also examine the timing data collected from the web app to examine the time to generate an idea as a function of whether it is in the same category as the previous idea.
-
-Our data show clear evidence in support of both hypotheses. As an example, below is an example of a worker riffing on a single idea.
+In our data, we identify this pattern of creating new instances based on old ones as ``riffing'' (Table~\ref{tab:riffing}). The higher the number of instances requested, the more likely participants were to use old ideas as inspiration for new ideas (i.e., ``riff'' on previous ideas). However, these riff sequences are typically quite small in length, across conditions.
 
 %An example of a single participant's riffed responses is given in Figure FIG. The second column is dark if the response instance is a permutation of any idea earlier in the run. The first column is dark if the instance is a \emph{source} instance, meaning it is the source for later permutations. Permutation chains can either be consecutive (as in this example), or separated with instances in between. The third column simply provides the text for that instance.
 
@@ -230,23 +231,44 @@ Our data show clear evidence in support of both hypotheses. As an example, below
     median distance to first in chain & 16.5 & 18 & 26.5 \\
     \end{tabular}
     \caption{Riffing statistics by condition}
+    \label{tab:riffing}
 \end{table}
 
-Examining our data, we find that the higher the number of instances requested, the more likely participants are to use old ideas as inspiration for new ideas (i.e., ``riff'' on previous ideas). However, these riff sequences are typically quite small in length, across conditions.
+
+As an example of riffing, below is an excerpt of a particular participant's brainstorming run.
+
+\begin{quote}
+    \begin{enumerate}
+        \item recycle
+        \item take apart and refurbish
+        \item scrap it for any precious metals inside (some have gold contacts)
+    \end{enumerate}
+\end{quote}
+
+The participant first touches on the general idea of recycling. Then, they become more specific by reducing the scope of recyling to specific parts. Finally, they limit the scope of parts to precious metals, particularly gold. At this point, the participant exhausts their working memory of the category an moves on.
+
+SIAM predict that individuals will generate ideas from an idea category until they exhaust that category, at which point they switch to another category (hypothesis 5). Furthermore, SIAM predicts that this category switching will be observable as taking more time to generate an idea in a new category than in the existing category (hypothesis 6).
+
+\subsubsection{Category changing}
+
+To determine category switching, we examine whether an idea was assigned to the same category tree as the previous, or whether it was assigned to a different category tree. 
 
 To explicitly test hypothesis 5, we model the probability of any idea category being followed by the same idea category with a Bernoulli random variable. Using a uniform beta prior, we find the probability of a response instance being in the same idea category as the previous to be 15.6\% (95\% HDI 14.3\% - 17.0\%). To establish a baseline to understand whether this probability is greater than chance, the most popular category tree in our data set is \emph{music player}, representing 5.65\% of all instances. Thus, the greatest probability of one instance being in the same category as the previous instance, by chance, is 5.65\%, well below the 14.3\% lower bound of the calculated HDI. Thus, we accept the hypothesis that an instance follows a previous instance in the same category with greater probability than is explained by random chance.
 
-To test hypothesis 6, we now examine the time it takes to generate a response instance.
+\subsubsection{Idea generation time}
 
-An examination of the distribution of data for time spent per instance suggests a log-normal distribution to the data. Using STAN, we fit two models: $t_w = \text{lognormal}(\mu_w, \sigma_w)$ for within-category idea generation and $t_b = \text{lognormal}(\mu_b, \sigma_b)$ for between-category idea generation, where the $t$ parameter in each model represents the time spent generating an instance.
+To test hypothesis 6, we now examine the time it takes to generate a response instance. We calculate this as the time from the first activation of the form widget to the last.
+
+An examination of the distribution of data for time spent per instance suggests a log-normal distribution to the data. We fit two models: $t_w = \text{lognormal}(\mu_w, \sigma_w)$ for within-category idea generation and $t_b = \text{lognormal}(\mu_b, \sigma_b)$ for between-category idea generation, where the $t$ parameter in each model represents the time spent generating an instance.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.9\columnwidth]{hyp5_comparison}
     \caption{Time spent to generate an instance}
+    \label{fig:hyp5_comparison}
 \end{figure}
 
-The resulting fit models are shown in Figure FIG, overlapping the log-space histograms for observed values. The mean for the within-category condition was 9.5 in log space (13.4 seconds, 95\% HDI 9.4-9.6), while the mean for the between-categories condition was 10.2 (27.0 seconds, 95\% HDI 10.2-10.3). The variances were 1.1 (3 seconds) and 1.2 (3.3 seconds) respectively. These difference were both sigificant. Within-category instance generation took on average 12.6 seconds less than between-categories. This is consistent with the findings of Nijstad and Stoebe, who reported differences of 6-12 seconds between conditions. Thus, we find support for hypothesis 6 and also show the applicability of the SIAM model to brainstorming in microtask marketplaces.
+The resulting fit models are shown in Figure~\ref{fig:hyp5_comparison}, overlapping the log-space histograms for observed values. The mean for the within-category condition was 9.5 in log space (13.4 seconds, 95\% HDI 9.4-9.6), while the mean for the between-categories condition was 10.2 (27.0 seconds, 95\% HDI 10.2-10.3). The variances were 1.1 (3 seconds) and 1.2 (3.3 seconds) respectively. These difference were both sigificant. Within-category instance generation took on average 12.6 seconds less than between-categories. This is consistent with the findings of Nijstad and Stoebe, who reported differences of 6-12 seconds between conditions. Thus, we find support for hypothesis 6 and also show the applicability of the SIAM model to brainstorming in microtask marketplaces.
 
 %Figure FIG displays the mean time spent on an instance by order, separated by condition. Most of the highly variant response times take place early in the brainstorming run. This suggests that at least one participant accepted a brainstorming task, took an initial stab at instances, and then left the task for up to 8 hours before continuing. Beyond this, we might expect to see time spent per instance go up as participants have to dig deeper to find responses, but no such effect is consistently observed.
 
