@@ -66,23 +66,23 @@ An \emph{instance} is a single solution by a single participant to a brainstormi
 
 \begin{figure}[!h]
     \begin{enumerate}
-        \item "Use as a mirror"
-        \item "Mirror"
-        \item "Use it as a mirror for makeup"
-        \item "Tape it to a telephone pole and use as a reflector"
+        \item "Storage Container"
+        \item "Small Storage Box"
+        \item "Coin Storage"
+        \item "Travel Jewelry Case"
     \end{enumerate}
     \label{sample_instances}
 \end{figure}
 
 A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT by a single user. As stated above, after dropping repeat data, all brainstorming runs were completed by distinct participants.
 
-An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, and all instances in the same idea should be paraphrases of one another. In Figure FIG, "Use as a mirror" and "Mirror" belong to the same \emph{idea}. However, "Use it as a mirror for makeup" does not belong to the same idea, as it contains additional information.
+An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, and all instances in the same idea should be paraphrases of one another. In Figure FIG, "Storage Container" and "Small Storage Box" belong to the same \emph{idea}. However, "Coin Storage" does not belong to the same idea, as it contains additional information.
 
 Despite this, it is clear the ideas have some commonality. It is desireable to encode this relationship. To that end, we propose a hierarchical clustering of ideas in \emph{category trees}. In a category tree, ideas act as nodes. Each idea may have 0 or 1 parent idea (only the root has 0) and 0 or more child ideas. An example category tree for the instances in Figure FIG is given in Figure FIG.
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=0.9\columnwidth]{sample_category_tree}
+    \includegraphics[width=0.9\columnwidth]{example_instances}
 \end{figure}
 
 If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B: all instances in A are are suitably general to encompass all instances in B. This hierarchical clustering allows us to classify ideas as simultaneously different in solution stragy but different in solution details.
@@ -130,12 +130,12 @@ for each instance:
 The clustering algorithm relies on the human intelligence of the researcher for three key decisions:
 
 \subsubsection{Similarity}
-Two nodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Mirror" and "Tape it to a telephone pole and use as a reflector" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
+Two nodes a and b have high similarity if they solve the problem in the same way, and low similarity if their solutions have no common themes. For example, in Figure FIG, "Small Storage Box" and "Travel Jewelry Case" have high similarity, as they both solve the problem of using a broken MP3 player by using it to reflect light.
 
 \subsubsection{Coverage}
-A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Mirror" has high coverage of "Tape it to a telephone pole and use as a reflector", as the latter is a specific use for a mirror. On the other hand, the latter idea has low coverage of the former.
+A node a has high coverage of a node b if the problem solution in a is equal to or an abstraction of the problem solution in b. Coverage is not commutative. To return to the example, "Small Storage Box" has high coverage of "Travel Jewelry Case", as the latter is a just a specific use for the former. On the other hand, the latter idea has low coverage of the former.
 
 \subsubsection{Artificial Ideas}
-Occasionally, two nodes have high similarity but no coverage. For example, "Use it as a mirror for makeup" and "Tape it to a telephone pole and use as a reflector" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
+Occasionally, two nodes have high similarity but no coverage. For example, "Coin Storage" and "Travel Jewelry Case" use the MP3 player in the same way, but neither is a generalization of the other. In this case, the algorithm appeals to the human coder to provide a lable for a new idea that is a generalization of both.
 
 The primary author followed the algorithm to cluster the 3007 response instances into ideas and trees.
