@@ -124,6 +124,11 @@ Clustering was performed using a custom-built tool that assisted in finding inst
 
 The primary author clustered the 3007 response instances into ideas and category trees. A researcher not involved in the project randomly sampled 40 category trees to assess whether ideas within the tree should be there, and whether parent-child relationships correctly encoded generalizations of concepts. 10\% (HDI 6-14) of instances were marked as specific than their associated idea. 0.7\% (HDI 1.3-2.8\%) of instances were marked as not generalized by their parents. No significant effect was found between conditions for probability of either error.
 
+\subsection{Data Analysis}
+Throughout this paper, we will fit models to data and give confidence metrics for the parameters of those models. Our analysis techniques are based on Kruschke's \emph{Doing Bayesian Data Analysis: A Tutorial in R and Bugs} \cite{kruschke_doing_2010}. We express our confidence in parameters in terms of the 95\% HDI (highest density interval), or the interval which contains 95\% of the mass of our posterior belief distribution.
+
+To fit the models, we use the Bayesian inference software Stan \cite{stan-software:2013} via the package RStan.
+
 %In brief summary, the root idea that most closely matches the strategy in the instance is selected, and then that root idea and the new instance are compared in generality. This process may be repeated depending on this generality relationship, until instance is either placed in an existing idea or a new idea node is created.
 
 
