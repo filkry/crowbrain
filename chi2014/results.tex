@@ -1,16 +1,75 @@
 \section{Results}
 
-We can use the uniqueness measure to understand the rate at which new ideas arrive. As we gather more and more ideas in the course of an experiment, we expect that we will see fewer ideas that are not already in our idea pool. Figure FIG shows the cumulative count of ideas as a function of the number of instances gathered in the experiment. To smooth the plot, the order in which instances were received was shuffled 100 times, and the mean of the cumulative unique idea count was taken at each step.
+\subsection{Idea Forest}
+
+Hierarchical clustering yielded an idea forest composed of 3007 instances, 1213 unique ideas, 335 category trees, and 129 non-singleton category trees. In general, category trees were shallow, with a maximum tree height of 5. The number of nodes within a category tree ranged from 1 to X, with the distribution of values roughly following a Poisson distribution. The number of instances per node (denoting equivalent response instances) also roughly follows a Poisson distribution, with number of instances ranging from X to Y.
+
+\begin{table}
+	\begin{tabular}[h!]{r | l l l l l l l}
+	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
+	HITs & 57 & 47 & 23 & 10 & 10 & 10 & 146\\
+	instances & 293 & 471 & 453 & 500 & 634 & 855 & 3007\\
+	ideas & 171 & 249 & 278 & 341 & 443 & 177 &1212\\
+	category trees & 72 & 79 & 93 & 114 & 172 & 177 &321\\
+	non-singleton trees & 28 & 34 & 40 & 48 & 49 & 61 &92\\
+	\end{tabular}
+\end{table}
+
+% are also roughly poisson distributed (Table TAB). In keeping with the findings for height, trees found in the upper number conditions are smaller than trees found in the lower conditions. The precipitous drop in median tree size suggests that in the largest condition, participants are finding rare ideas with only a few variants and less than 14 instances.
+
+% \begin{table}
+% \begin{tabular}[h!]{r | l l l l l l l}
+% 	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
+% 	number of nodes& \\ \hline
+%     median &5&5&4&3&2&2&2 \\
+% 	first quartile &2&2&1&1&1&1&1 \\
+% 	third quartile &17&17&14&10&5&5&5 \\
+% 	number of instances& \\ \hline
+% 	median &14&14&12&10&4&4&4 \\
+%     first quartile &4&4&4&2&1&1&1 \\
+% 	third quartile &47&45&30&23&13&13&13 \\
+% 	\end{tabular}
+% 	\caption{Number of ideas and instances in trees}
+% \end{table}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.9\columnwidth]{idea_forest}
+%     \caption{Idea Forest}
+% \end{figure}
+
+% The height of category trees follows a roughly Poisson distribution, with the maximum tree height observed at 5. Summary statistics across condition are in table TAB. The third quartile drops as the number condition increases. While the upper conditions still discover categories trees with heights as great as 5, they generate many more "short" trees. This suggests that the ideas generated in the upper conditions are less common.
+
+% \begin{table}
+% 	\begin{tabular}[h!]{r | l l l l l l l}
+% 	\textbf{number condition} & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline \hline
+% 	median & 2 & 2 & 2 & 2 & 2 & 2 & 2\\
+% 	first quartile & 2 & 2  & 1 & 1 & 1 & 1 & 1\\
+% 	third quartile & 3 & 3 &3 &3 &2 &2 & 2\\
+% 	\end{tabular}
+% 	\caption{Category tree height}
+% \end{table}
+
+\subsection{Rates of Idea and Category Production}
+The idea forest allows us to model the rate at which new ideas and new categories of ideas are produced, testing hypotheses 1 and 2 (i.e., rates of new ideas and categories of ideas will diminish over time, and will do so differentially per condition).
+
+Figure FIG shows the cumulative count of new ideas as a function of the number of instances gathered in the experiment. For reference, a perfect ``1:1'' idea generation line is also plotted.
+
+We model this quantity using the following logarithmic model:
+
+TODO: num_of_new_ideas = b0 + b_cond * log(x_scale * x + x_trans)
+
+In our model, we assume b0, x_scale, and x_trans do not vary between conditions, while b_cond (essentially, a scaling factor) varies on a per-condition basis. We fit the parameters to the data using a Bayesian approach [REF Kruschke], using the STAN modeling software to perform the actual fit [REF STAN]. The resulting posterior distributions for the parameters allow us to determine whether the conditions are significantly different from one another by comparing whether the posterior distributions' highest density intervals (HDIs) overlap or not. In our analyses, we use an HDI of 95\%.
+
+Analysis of the b_cond HDIs reveals that there are no significant differences between the 5 and 10 conditions, with all other conditions significantly different from one another except for the 50 and 100 conditions.
+
+Taking the derivative of the models allows us to examine the same data, but as rates at which new ideas are produced. As expected, rates of new ideas quickly taper off as a function of the number of ideas received.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.9\columnwidth]{ideas_over_time}
     \caption{Cumulative idea count}
 \end{figure}
-
-The horizontal line in Figure FIG represent the idea case, in which each instance represents a different idea (i.e. every answer we receive is a new, unique idea). As expected, the rate at which ideas are gained appears to taper off.
-
-Figure FIG more closely examines the rate, the primary property of interest. The panels, from top to bottom, are the rate at which new ideas, categories, and non-singleton categories are generated, respectively. Similar to Figure FIG, these are based on shuffling the order of instances 10000 times and taking the mean of the derivative at each point. In this case, the ideal (a 1:1:1 instance:idea:category ratio) is represented by the horizontal bar across the top of the chart.
 
 \begin{figure}[h!]
     \centering
@@ -20,23 +79,29 @@ Figure FIG more closely examines the rate, the primary property of interest. The
     \caption{Rate of idea generation}
 \end{figure}
 
-The number of ideas, categories and non-singleton each drop off exponentially over time. It is unsurprising that the number of new categories should drop off faster than the number of new ideas, as we expect that there are fewer categories of ideas than there are individual ideas themselves.
+We can perform a similar analysis for the number of new idea categories that arrive over time. As would be surmised from the previous graphs, we observe a similar pattern, which can also be modeled using a logarithmic model. As would also be expected, the number of new idea categories produced increases more slowly than the number of new ideas.
+
+We see a very similar story with respect to differences in rates between conditions. The 5 and 10 conditions are virtually identical, while all other conditions are significantly different from one another.
+
+Collectively, these results largely affirm hypotheses 1 and 2: The rate of new idea and new idea categories production quickly tapers off and tends toward zero over time. Furthermore, with a few exceptions, rates differ between conditions.
+
+
 
 The third panel, which shows non-singleton categories over time, tells a distinctly different story from the others. While in the idea and category plots, the height-ordering of rates of generation between categories remains generally identical, there is a point of intersection and reversal in the non-singleton category plot at around the 30 instances point. Before this point, the lower conditions actually generate new categories at a \emph{faster} rate.
 
 In lower conditions, brainstormers will quickly offer up big, popular, non-singleton categories. Beyond the inflection point, the category pool is saturated with these low-hanging fruit, and only brainstormers tasked with generating more ideas will find the smaller category. This is a more nuanced view of the tree node/instance quartiles in Section SEC; condition 5 brainstormers cover the spectrum of category sizes while condition 100 brainstormers pull from the smaller category trees in the forest.
 
-\subsubsection{Hypothesis 1}
 
-Visually, the rate of idea, category and singleton category generation seems to trend towards 0. We tested this hypothesis...
 
-Additionally Figure FIG indicates that there is some effect of number of ideas requested on the rate of generation. Generally, conditions with more requested responses generated ideas and categories at a higher rate.
+The final measure, \emph{look-back equality}, is non-symmetrical and has meaning only in the context of a single brainstorming run. An instance \emph{a} is look-back equal to an \emph{earlier} instance \emph{b} if \emph{b} is in either \emph{a}'s idea node or any of \emph{a}'s parents, siblings, or children. This definition specifically identifies when a later instance in a run can be considered to have been influenced by earlier instance.
 
-Test here...
 
-\subsubsection{Hypothesis 2}
+\subsubsection{Originality}
 
-Test here...
+As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. The o-score for category trees is similarly calculated. We will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
+
+\subsubsection{Uniqueness}
+
 
 \subsection{Originality}
 
