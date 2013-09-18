@@ -13,30 +13,26 @@ While we observed that individuals are likely to draw from a common pool of idea
 
 This individual's responses were responsible for clearly raising the observed uniqueness of ideas in the 75 condition when plotted against the other conditions.
 
-Other individuals filled their quotas by creating uninspiring idea templates that they varied only slightly between responses. For example:
+Other individuals filled their quotas by creating uninspiring idea templates that they varied only slightly between responses. For example, this individual provides a list of essentially equivalent responses:
 
 \begin{itemize}
+\item a gift for a cousin
+\item a gift for a niece
+\item a gift for a nephew
+\item a gift for a second cousin
 \end{itemize}
 
+This variability in worker responses prevented us from modeling any potential effects that the number of questions requested might have on individuals' responses. Thus, while it is clear that there is little advantage to requesting 5 or 10 ideas from workers, it is not clear whether it is preferable to request 20, 50, 75, or 100 ideas. We suspect that requesting 50 or 75 is the ``sweet'' spot, but are not able to empirically support that recommendation at this time.
+
 \subsection{Future Work}
-The most immediate work that follows from this is to examine the same phenomena for multiple questions. A design space for brainstorming taks must be defined and tested to see how variations impact the rate of idea generation, originality, etc.
+The results of this research suggest several avenues for future work.
 
-The saturation point of unique ideas and categories presents an obstacle to large-scale brainstorming on microtask marketplaces. One could conceivable develop interventions to overcome and reset this stagnation behaviour. For example, ideas from previous responders could be interspersed in response fields of the task to promote riffing or combination.
+One of the most natural next steps is to explore interventions to overcome the tendency of workers to generate the most common and obvious ideas and idea categories. For example, ideas from previous workers could be strategically interspersed in response fields to promote riffing or exploration of a design space in certain directions. 
 
-We identified that ideas are more likely to be followed by one from the same category, and that changing categories takes time. Combining these models with others (such a natural language measures for text similarity), one could construct a posterior belief model for whether a participant is currently riffing.
+Our results show that ideas are more likely to be followed by one from the same category, and that changing categories takes time. Combining these models with others (such as natural language measures for text similarity), one could imagine constructing a posterior belief model to infer whether a participant is currently riffing or not. If we can infer riffing and the general categories in which workers are riffing, one could imagine techniques to guide the crowd to explore different areas of the design space. For example, the system could encourage workers to generate ideas within new or rare categories.
 
-The change in idea and category o-scores at the 20 instance point is reflected in other metrics not discussed in this paper. It is likely this represents a distinct strategy change. By modelling this strategy change explicitly, we may be able to identify more explicitly when this change happens and make predictions about later strategies based on those employed early in the brainstorming run.
+In addition to studying potential interventions, we are also interested in whether there are differences in idea generation for different types of questions. For example, the results observed for the MP3 player condition may differ from questions for which the workers have more or less familiarity. For example, it would be interesting to see how the idea generation process differs if workers were asked for suggestions for improving Amazon's Mechanical Turk interface.
 
-
-
-
-\subsection{Implications}
-
-From these, we draw several implications. First, that there is a saturation point in number of unique ideas or idea categories received, beyond which results will stagnate.
-
-anyone seeking creative brainstorming results in microtask environments should ask for more than 20 ideas per participant.
-
-Although idea o-score goes up over time, category o-score increases and then reaches a point of high variability. This implies a change in the strategy of how categories are used. It may be that beyond 20 ideas, high idea o-scores are maintained via a mix of remixing within existing categories (low category o-score) and establishing entirely new images (high category o-score).
 
 
 
@@ -52,15 +48,18 @@ Although idea o-score goes up over time, category o-score increases and then rea
 
 \section{Conclusion}
 
-In this work, we developed models of idea generation, category geneartion, originality, and individual practice in brainstorming on microtask markets.
-These models provide a baseline for both structure and performance in this context. They allow us to provide recommendations for idea solicitors, and starting points and comparison statistics for researchers.
+In this work, we developed models of idea generation, category generation, originality, and individual practices for brainstorming on microtask markets. These models provide guidance and a baseline for both practitioners and researchers alike.
 
- We summarize our findings:
+To summarize, we found that:
 
 \begin{itemize}
 \item The rate of idea and category generation decays non-linearly over time. 
 \item Common ideas are more likely to be proposed early in a run. 
 \item Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. This relationship also holds for idea categories.
 \item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance.
-\item The time it takes to generate an idea when changing categories is longer than the time when generating within a category.
+\item The time it takes to generate an idea when changing categories is longer than the time taken when generating ideas within a category.
 \end{itemize}
+
+The most obvious implication from these findings is that it is advisable to request more than 20 ideas from each participant; requesting 20 or fewer ideas is not cost effective.
+
+With respect to future research, this work suggests a need for interventions that can help people escape common areas of the design space. For example, systems that can help people transition out of familiar idea categories into less popular idea categories are likely to lead to more unique and novel ideas.
