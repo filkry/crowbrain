@@ -56,12 +56,10 @@ The idea forest allows us to model the rate at which new ideas and new categorie
 Figure FIG shows the cumulative count of new ideas as a function of the number of instances gathered in the experiment. For reference, a perfect ``1:1'' idea generation line is also plotted.
 
 We model this quantity using the following logarithmic model:
+\[n_{ideas} = b_0 + b_{cond} * \log (x_{scale} * x + x_{offset})\]
+where $n_{ideas}$ represents the number of new ideas, $b_0$, $x_{scale}$, and $x_{offset}$ are parameters shared between conditions that serve to position the curve, and $b_{cond}$ acts as a per-condition scaling factor. We fit the parameters to the data using a Bayesian approach [REF Kruschke], using the STAN modeling software to perform the actual fit [REF STAN]. In modeling the parameters, we use uninformative priors. The resulting posterior distributions allow us to determine whether the conditions are significantly different from one another by determining whether the highest density intervals (HDIs) of $b_{cond}$'s posterior distributions overlap or not. In our analyses, we use an HDI of 95\%.
 
-TODO: num_of_new_ideas = b0 + b_cond * log(x_scale * x + x_trans)
-
-In our model, we assume b0, x_scale, and x_trans do not vary between conditions, while b_cond (essentially, a scaling factor) varies on a per-condition basis. We fit the parameters to the data using a Bayesian approach [REF Kruschke], using the STAN modeling software to perform the actual fit [REF STAN]. The resulting posterior distributions for the parameters allow us to determine whether the conditions are significantly different from one another by comparing whether the posterior distributions' highest density intervals (HDIs) overlap or not. In our analyses, we use an HDI of 95\%.
-
-Analysis of the b_cond HDIs reveals that there are no significant differences between the 5 and 10 conditions, with all other conditions significantly different from one another except for the 50 and 100 conditions.
+Analysis of the HDIs of $b_{cond}$ reveals that there are no significant differences between the 5 and 10 conditions, with all other conditions significantly different from one another except for the 50 and 100 conditions. [TODO: Table of fitted values and their HDIs.]
 
 Taking the derivative of the models allows us to examine the same data, but as rates at which new ideas are produced. As expected, rates of new ideas quickly taper off as a function of the number of ideas received.
 
@@ -81,31 +79,27 @@ Taking the derivative of the models allows us to examine the same data, but as r
 
 We can perform a similar analysis for the number of new idea categories that arrive over time. As would be surmised from the previous graphs, we observe a similar pattern, which can also be modeled using a logarithmic model. As would also be expected, the number of new idea categories produced increases more slowly than the number of new ideas.
 
-We see a very similar story with respect to differences in rates between conditions. The 5 and 10 conditions are virtually identical, while all other conditions are significantly different from one another.
+We see a very similar story with respect to differences in rates between conditions. The 5 and 10 conditions are virtually identical, while all other conditions are significantly different from one another. [TODO: Table of values and HDIs]
 
-Collectively, these results largely affirm hypotheses 1 and 2: The rate of new idea and new idea categories production quickly tapers off and tends toward zero over time. Furthermore, with a few exceptions, rates differ between conditions.
+Collectively, these results largely affirm hypotheses 1 and 2: The rate of new idea and new idea categories production quickly tapers off and tends toward zero over time. Furthermore, with a few exceptions, rates differ between conditions -- new idea and idea category production is generally linked to the number of ideas requested.
 
+Given the observed differences in production of new ideas and idea categories, it is worthwhile to better understand \emph{why} these differences exist. 
 
+%The third panel, which shows non-singleton categories over time, tells a distinctly different story from the others. While in the idea and category plots, the height-ordering of rates of generation between categories remains generally identical, there is a point of intersection and reversal in the non-singleton category plot at around the 30 instances point. Before this point, the lower conditions actually generate new categories at a \emph{faster} rate.
 
-The third panel, which shows non-singleton categories over time, tells a distinctly different story from the others. While in the idea and category plots, the height-ordering of rates of generation between categories remains generally identical, there is a point of intersection and reversal in the non-singleton category plot at around the 30 instances point. Before this point, the lower conditions actually generate new categories at a \emph{faster} rate.
-
-In lower conditions, brainstormers will quickly offer up big, popular, non-singleton categories. Beyond the inflection point, the category pool is saturated with these low-hanging fruit, and only brainstormers tasked with generating more ideas will find the smaller category. This is a more nuanced view of the tree node/instance quartiles in Section SEC; condition 5 brainstormers cover the spectrum of category sizes while condition 100 brainstormers pull from the smaller category trees in the forest.
-
-
-
-The final measure, \emph{look-back equality}, is non-symmetrical and has meaning only in the context of a single brainstorming run. An instance \emph{a} is look-back equal to an \emph{earlier} instance \emph{b} if \emph{b} is in either \emph{a}'s idea node or any of \emph{a}'s parents, siblings, or children. This definition specifically identifies when a later instance in a run can be considered to have been influenced by earlier instance.
-
-
-\subsubsection{Originality}
+Early in the brainstorming process, individuals typically produce the same sets of ideas from the same sets of idea categories. It is only after the produce about 20 ideas that they start producing less generic ideas. This phenomenon can be observed by examining the o-scores of ideas and idea categories, as well as the size of the category trees. [TODO] [Mike stopped here for the night]
 
 As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. The o-score for category trees is similarly calculated. We will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
 
-\subsubsection{Uniqueness}
-
-
-\subsection{Originality}
-
 We measure differences in originality between conditions by examining the idea o-score and category o-score. The distributions of these scores are summarized in Figure FIG. The left panel compares idea o-score and the right compares category o-score.
+
+%. Beyond the inflection point, the category pool is saturated with these low-hanging fruit, and only brainstormers tasked with generating more ideas will find the smaller category. This is a more nuanced view of the tree node/instance quartiles in Section SEC; condition 5 brainstormers cover the spectrum of category sizes while condition 100 brainstormers pull from the smaller category trees in the forest.
+
+
+
+% The final measure, \emph{look-back equality}, is non-symmetrical and has meaning only in the context of a single brainstorming run. An instance \emph{a} is look-back equal to an \emph{earlier} instance \emph{b} if \emph{b} is in either \emph{a}'s idea node or any of \emph{a}'s parents, siblings, or children. This definition specifically identifies when a later instance in a run can be considered to have been influenced by earlier instance.
+
+
 
 \begin{figure}[h!]
     \centering
