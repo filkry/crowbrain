@@ -1,11 +1,34 @@
 \section{Conclusion}
 
-We set out to establish a baseline for brainstorming performance in crowd marketplaces, a new setting for idea generation in with spatial and temporal co-presence are not guaranteed. We did this by establishing a corpus of brainstorming responses, publically available at URL. Furthermore, we introduce the \emph{idea forest}, an encoding of brainstorming responses that captures differences in generality we discovered, an introduced an algorithm for producing idea forests.
+In this work, we developed models of idea generation, category geneartion, originality, and individual practice in brainstorming on microtask markets.
+These models provide a baseline for both structure and performance in this context. They allow us to provide recommendations for idea solicitors, and starting points and comparison statistics for researchers.
 
-We found that originality increased as brainstorming participants were asked to generate more ideas individually. Generality, however, decreased. In both cases, we found a "sweet spot" for this change at the 20 idea mark; participants' ideas reach their peak creativity and minimum generality after their 20th contribution.
+ We summarize our findings:
 
-Furthermore, we verified that the findings and predictions of prior work in which participants were spatially and temporally copresent. We found that, in line with the predictions of Jigstad and Stroebe's SIAM model \cite{nijstad_how_2006}, ideas are more likely to follow an idea of the same category than would be randomly expected, and that the time spent to generate an idea within-category is lesser than that to generate ideas between categories. Furthermore, we recreated the finding of Parnes et al \cite{parnes_effects_1961} that responses in the latter part of a participant's idea generation process are more creative than those earlier.
+\begin{itemize}
+\item The rate of idea and category generation decays non-linearly over time. 
+\item Common ideas are more likely to be proposed early in a run. 
+\item Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. This relationship also holds for idea categories.
+\item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance
+\item The time it takes to generate an idea when changing categories is longer than the time when generating within a category
+\end{itemize}
 
-We identified three qualitative phenomena in of brainstorming results. First, that brainstorming results are subject to the popular consciousness of the time they are gathered. Second, that workers are more likely to take HITs with higher absolute payout, even if relative payout is identical.
+\subsection{Implications}
 
-The most salient recommendation we can make is easily summarized: if you use the crowd for brainstorming and desire originality, it is most productive to ask few participants for more than 20 ideas each.
+From these, we draw several implications. First, that there is a saturation point in number of unique ideas or idea categories received, beyond which results will stagnate.
+
+anyone seeking creative brainstorming results in microtask environments should ask for more than 20 ideas per participant.
+
+Although idea o-score goes up over time, category o-score increases and then reaches a point of high variability. This implies a change in the strategy of how categories are used. It may be that beyond 20 ideas, high idea o-scores are maintained via a mix of remixing within existing categories (low category o-score) and establishing entirely new images (high category o-score).
+
+
+
+%We set out to establish a baseline for brainstorming performance in crowd marketplaces, a new setting for idea generation in with spatial and temporal co-presence are not guaranteed. We did this by establishing a corpus of brainstorming responses, publically available at URL. Furthermore, we introduce the \emph{idea forest}, an encoding of brainstorming responses that captures differences in generality we discovered, an introduced an algorithm for producing idea forests.
+
+%We found that originality increased as brainstorming participants were asked to generate more ideas individually. Generality, however, decreased. In both cases, we found a ``sweet spot" for this change at the 20 idea mark; participants' ideas reach their peak creativity and minimum generality after their 20th contribution.
+
+%Furthermore, we verified that the findings and predictions of prior work in which participants were spatially and temporally copresent. We found that, in line with the predictions of Jigstad and Stroebe's SIAM model \cite{nijstad_how_2006}, ideas are more likely to follow an idea of the same category than would be randomly expected, and that the time spent to generate an idea within-category is lesser than that to generate ideas between categories. Furthermore, we recreated the finding of Parnes et al \cite{parnes_effects_1961} that responses in the latter part of a participant's idea generation process are more creative than those earlier.
+
+%We identified three qualitative phenomena in of brainstorming results. First, that brainstorming results are subject to the popular consciousness of the time they are gathered. Second, that workers are more likely to take HITs with higher absolute payout, even if relative payout is identical.
+
+%The most salient recommendation we can make is easily summarized: if you use the crowd for brainstorming and desire originality, it is most productive to ask few participants for more than 20 ideas each.
