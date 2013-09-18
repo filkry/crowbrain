@@ -27,9 +27,16 @@ Initially, workers were randomly paired with a question from a pool of questions
 
 Upon accepting a HIT, participants were asked to give consent for participating in the study, and informed that they could leave the study at any point without financial consequences. Under more realistic, real-world conditions, workers would be expected to complete all responses to receive compensation. As we will report later, the incidence of workers abusing this policy was relatively low.
 
-The brainstorming task was presented in a standard web-based form that included an introduction, the specific brainstorming problem, a series of fields for entering the individual responses, and a larger text area where workers could enter additional ideas (TODO: Figure X).
+The brainstorming task was presented in a standard web-based form that included an introduction, the specific brainstorming problem, a series of fields for entering the individual responses, and a larger text area where workers could enter additional ideas (Figure~\ref{fig:sample_task}).
 
-The introduction Osborne's four rules of brainstorming \cite{osborn_applied_1957}, adapted to this context:
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{sample_task}
+    \caption{Sample task on Mechanical Turk}
+    \label{fig:sample_task}
+\end{figure}
+
+The introduction listed Osborne's four rules of brainstorming \cite{osborn_applied_1957}, adapted to this context:
 
 \begin{enumerate}
 \item There are no bad ideas. Don't criticise your choices.
@@ -46,16 +53,19 @@ Initially, we sought 10 HITs for each condition. However, we found that collecti
 
 In total, 154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. Accordingly, we remove that data from our analysis.
 
-If a worker completed multiple HITs (i.e., generated responses for multiple conditions), there is the risk their responses and idea generation processes evolved over time, making it difficult to compare their responses in the second HIT with responses from others who are performing the same HIT without any previous exposure to the problem. Accordingly, we retain only the first HIT submitted by the same worker.
+If a worker completed multiple HITs (i.e., generated responses for multiple conditions), there is the risk their responses and idea generation processes evolved over time, making it difficult to compare their responses in the second HIT with responses from others who are performing the same HIT without any previous exposure to the problem. Accordingly, we retain only the first HIT submitted by each worker.
 
-After removing these data, we are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. A breakdown of responses across conditions is given in table TODO: TAB.
+After removing these data, we are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. A breakdown of responses across conditions is given in Table~\ref{tab:data_collected}.
 
-\begin{tabular}[h!]{r | l l l l l l }
-& 5 & 10 & 20 & 50 & 75 & 100 \\ \hline \hline
-HITs completed & 59 & 49 & 23 & 10 & 10 & 10 \\
-HITs completed (no repeats) & 57 & 39 & 21 & 9 & 10 & 10 \\
-solutions (no repeats) & 283 & 372 & 413 & 450 & 635 & 855 \\
+\begin{table}[h!]
+\begin{tabular}{r | l l l l l l l }
+    & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline
+    participants & 57 & 39 & 21 & 9 & 10 & 10 & 146 \\
+    solutions & 283 & 372 & 413 & 450 & 635 & 855 & 3007
 \end{tabular}
+\caption{Data after removing unlimited condition and repeats}
+\label{tab:data_collected}
+\end{table}
 
 %To uniquely identify participants, we computed a hash of their Mechanical Turk worker ID. A hash was used to protect privacy after data release.
 
@@ -64,17 +74,14 @@ solutions (no repeats) & 283 & 372 & 413 & 450 & 635 & 855 \\
 To analyze the data, we organized it into sets hierarchical clusters, where the clusters encode similarity relationships between ideas. Specifically, parent nodes are more generalized versions of child nodes. This clustering enables a wide range of data analysis. We introduce specific terminology, then describe the clusters and the process used to create them.
 
 \subsubsection{Clustering: Terminology}
-An \emph{instance} is a single solution by a single participant to a brainstorming question. Most concretely, it is the text entered into a single field in the web form. For example, figure~\ref{fig:sample_instances} provides an example of four \emph{instances} from workers.
+An \emph{instance} is a single solution by a single participant to a brainstorming question. Most concretely, it is the text entered into a single field in the web form. For example, four \emph{instances} from the data set:
 
-\begin{figure}[!h]
-    \begin{enumerate}
-        \item "Storage Container"
-        \item "Small Storage Box"
-        \item "Coin Storage"
-        \item "Travel Jewelry Case"
-    \end{enumerate}
-    \label{sample_instances}
-\end{figure}
+\begin{enumerate}
+    \item "Storage Container"
+    \item "Small Storage Box"
+    \item "Coin Storage"
+    \item "Travel Jewelry Case"
+\end{enumerate}
 
 A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT by a single worker.
 
@@ -82,11 +89,13 @@ An \emph{idea} is a unique solution to the brainstorming problem. An instance is
 
 Despite the differences in specificity between ``Coin Storage'' and the more generic containers, it is useful to encode the fact that these ideas are related. We use hierarchical clustering to encode that relationship. We call a hierarchical cluster of ideas a \emph{category trees}.
 
-In a category tree, ideas act as nodes. Each idea may optionally have a single parent idea, and zero or more child ideas. If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B. An example category tree for the instances in Figure FIG is given in Figure FIG.
+In a category tree, ideas act as nodes. Each idea may optionally have a single parent idea, and zero or more child ideas. If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B. An example category tree for the instances above is given in Figure~\ref{fig:example_instances}.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.9\columnwidth]{example_instances}
+    \caption{Example category tree}
+    \label{fig:example_instances}
 \end{figure}
 
 Category trees can either be \emph{singletons} or \emph{non-singletons}. A singleton category tree is composed of only one \emph{idea node}, the root. A non-singleton category tree has \emph{at least two idea nodes}. Non-singleton category trees correspond to the ``images'' described in Nisjstad and Stroebe's SIAM model \cite{nijstad_how_2006}.
