@@ -117,9 +117,11 @@ Another outlier of note is the relatively short median distance to a previous id
 
 \subsubsection{Hypothesis 4}
 
-Riffing activity is analogous to idea production within an image as described by Nijstad and Stroebe's SIAM model \cite{nijstad_how_2006}. Thus, we should expect to confirm their hypothesis, \textbf{Hypothesis 4}, that an idea from one semantic category should more often by followed by an idea from the same category than expected by random chance.
+Riffing activity is analogous to idea production within an image as described by Nijstad and Stroebe's SIAM model \cite{nijstad_how_2006}. Thus, we should expect to confirm their hypothesis, \textbf{Hypothesis 4}, that \emph{an idea from one semantic category should more often by followed by an idea from the same category than expected by random chance}.
 
-Test here...
+To test this, we modelled the probability of any category being followed by the same category with a Bernoulli distribution. Each instance not the first in its run was a trial. If the instance was in the same category tree as the previous instance, the trial was a pass. Otherwise, it was a failure. The Bernoulli $\theta$ was 0.156 (95\% HDI 0.143 - 0.170).
+
+The most common category tree in our data set, \emph{music player}, represents only 5.65\% of instances. This is well below the 0.143 lower-bound of HDI. Thus, we accept the hypothesis that an instance follows a previous instance in the same category with greater probability than is explained by random chance.
 
 \subsection{Completion Time}
 
