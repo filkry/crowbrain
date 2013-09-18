@@ -1,17 +1,34 @@
-\section{Conclusion}
+\section{Discussion and Future Work}
 
-In this work, we developed models of idea generation, category geneartion, originality, and individual practice in brainstorming on microtask markets.
-These models provide a baseline for both structure and performance in this context. They allow us to provide recommendations for idea solicitors, and starting points and comparison statistics for researchers.
+In this paper, we have primarily focused on the uniqueness of ideas and idea categories in quantitative terms. In this section, we provide a more qualitative perspective on the data collected, then describe future work.
 
- We summarize our findings:
+\subsection{Variability of Worker Input}
+While we observed that individuals are likely to draw from a common pool of ideas early on in the brainstorming process, there were outliers in the data. For example, one individual in the 75 ideas condition consistently produced some of most original ideas for old MP3 players:
 
 \begin{itemize}
-\item The rate of idea and category generation decays non-linearly over time. 
-\item Common ideas are more likely to be proposed early in a run. 
-\item Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. This relationship also holds for idea categories.
-\item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance
-\item The time it takes to generate an idea when changing categories is longer than the time when generating within a category
+\item With displays - could be attached to a small solar panel (like the USB chargers w/multi attachments, including solar and car, etc.) and all the power could be sent to the screen as a small, portable light, then sent to countries lacking power in rural areas.
+\item They could be loaded with coordinates or other info and sealed in containers, then used in ocean current studies - once the container was collected they could be plugged in and read, and the data could be sent to whomever.
+\item They could be plugged in at a base camp at the bottom of Everest, and then potential climbers could record their name, loved ones' address, and any last words before attempting the climb. 
 \end{itemize}
+
+This individual's responses were responsible for clearly raising the observed uniqueness of ideas in the 75 condition when plotted against the other conditions.
+
+Other individuals filled their quotas by creating uninspiring idea templates that they varied only slightly between responses. For example:
+
+\begin{itemize}
+\end{itemize}
+
+\subsection{Future Work}
+The most immediate work that follows from this is to examine the same phenomena for multiple questions. A design space for brainstorming taks must be defined and tested to see how variations impact the rate of idea generation, originality, etc.
+
+The saturation point of unique ideas and categories presents an obstacle to large-scale brainstorming on microtask marketplaces. One could conceivable develop interventions to overcome and reset this stagnation behaviour. For example, ideas from previous responders could be interspersed in response fields of the task to promote riffing or combination.
+
+We identified that ideas are more likely to be followed by one from the same category, and that changing categories takes time. Combining these models with others (such a natural language measures for text similarity), one could construct a posterior belief model for whether a participant is currently riffing.
+
+The change in idea and category o-scores at the 20 instance point is reflected in other metrics not discussed in this paper. It is likely this represents a distinct strategy change. By modelling this strategy change explicitly, we may be able to identify more explicitly when this change happens and make predictions about later strategies based on those employed early in the brainstorming run.
+
+
+
 
 \subsection{Implications}
 
@@ -32,3 +49,18 @@ Although idea o-score goes up over time, category o-score increases and then rea
 %We identified three qualitative phenomena in of brainstorming results. First, that brainstorming results are subject to the popular consciousness of the time they are gathered. Second, that workers are more likely to take HITs with higher absolute payout, even if relative payout is identical.
 
 %The most salient recommendation we can make is easily summarized: if you use the crowd for brainstorming and desire originality, it is most productive to ask few participants for more than 20 ideas each.
+
+\section{Conclusion}
+
+In this work, we developed models of idea generation, category geneartion, originality, and individual practice in brainstorming on microtask markets.
+These models provide a baseline for both structure and performance in this context. They allow us to provide recommendations for idea solicitors, and starting points and comparison statistics for researchers.
+
+ We summarize our findings:
+
+\begin{itemize}
+\item The rate of idea and category generation decays non-linearly over time. 
+\item Common ideas are more likely to be proposed early in a run. 
+\item Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. This relationship also holds for idea categories.
+\item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance.
+\item The time it takes to generate an idea when changing categories is longer than the time when generating within a category.
+\end{itemize}
