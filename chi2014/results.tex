@@ -141,6 +141,12 @@ Either our participants were exceedingly concerned with crafting their responses
 
 \subsubsection{Hypotheses 5}
 
-We must also consider time spent in light of the hypotheses made by Nijstad and Stroede \cite{nijstad_how_2006}. The second, \textbf{Hypothesis 5}, states that idea generation when changing semantic categories should take longer than idea generation within categories.
+The Nijstad and Stroede \cite{nijstad_how_2006} model also provides \textbf{Hypothesis 5}: \emph{idea generation when changing semantic categories should take longer than idea generation within categories}. An examination of the distribution of data for time spent per instance suggested a log-normal distribution, with the frequency of occurances quickly rising until a peak was reached, followed by a gradual drop-off. As with previous tests, we used the Stan package for Bayesian inference [CITE]. We fit, two models: $t_w = \text{lognormal}(\mu_w, \sigma_w)$ for within-category idea generation and $t_b = \text{lognormal}(\mu_b, \sigma_b)$ for between-category idea generation, where the $t$ parameter in each model represents the time spent generating an instance.
 
-Test here...
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{hyp5_comparison}
+    \caption{Time spent to generate an instance}
+\end{figure}
+
+The resulting fit models are shown in Figure FIG, overlapping the log-space histograms for observed values. The mean for the within-category condition was 9.5 in log space (13.4 seconds, 95\% HDI 9.4-9.6), while the mean for the between-categories condition was 10.2 (27.0 seconds, 95\% HDI 10.2-10.3). The variances were 1.1 (3 seconds) and 1.2 (3.3 seconds) respectively. These difference were both sigificant. Within-category instance generation took on average 12.6 seconds less than between-categories. This is consistent with the findings of Nijstad and Stoebe, who reported differences of 6-12 seconds.
