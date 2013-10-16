@@ -152,7 +152,7 @@ These solve the original problem, but simultaneously re-open the problem under s
 
 \subsection{Strategy use}
 
-In this section, we briefly describe how strategies were employed by participants. The primary author again coded 30 randomly selected runs (5 from each condition, 1150 instances total) for the strategies identified above. Note that examples of riffing identified in this section are distinct from the algorithmic/quantitative identification of riffing described in the method section above. The prevalence of each strategy as a function of total number of instances is given in Table TAB.
+In this section, we briefly describe how strategies were employed by participants. The primary author again coded 30 randomly selected runs (5 from each condition, 1150 instances total) for the strategies identified above. Note that examples of riffing identified in this section are distinct from the algorithmic/quantitative identification of riffing described in the method section above. The prevalence of each strategy as a function of total number of instances is given in Table TAB, and a comparative plot in Figure FIG.
 
 \begin{table}
     \begin{tabular}{r | l l}
@@ -179,6 +179,13 @@ In this section, we briefly describe how strategies were employed by participant
     \end{tabular}
 \end{table}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\columnwidth]{strategy_counts}
+    \caption{presence of strategies}
+    \label{fig:strategy_counts}
+\end{figure}
+
 Outward scoping is by far the most commons strategy, occurring in 72\% of instances. Riffing is also very common, with 40\% of instances employing some form of riffing. Riffs are most often consecutive (linear riffing), and hold riffing is the most common type.
 
 Partial solutions are fairly uncommon (16.3\%), and most often involve passing the problem (6\%). Continuation riffing and scoping without solution are the least common strategies, each with only 3 instances.
@@ -188,28 +195,31 @@ Partial solutions are fairly uncommon (16.3\%), and most often involve passing t
 We also consider where in a brainstorming run the strategies are more likely to occur. The results are summarized in Table TAB.
 
 \begin{table}
-    \begin{tabular}{r | l}
-        \textbf{strategy} & \textbf{mean position in run} \\
-        inward scoping & 26.2 \\
-        outward scoping & 34.8 \\
-        no scoping & 18.1 \\
+    \begin{tabular}{r | l l l l l l}
+        \textbf{strategy} & \textbf{5} & \textbf{10} & \textbf{25} & \textbf{50} & \textbf{75} & \textbf{100} \\
+        inward scoping & 2 & 5 & 11 & 23 & 29 & 44 \\
+        outward scoping & 3 & 3 & 8.5 & 27.5 & 39.5 & 41 \\
+        no scoping & 3 & 5 & 9 & 18 & 22.5 & 20.5 \\
         \hline \hline
-        hold riffing & 34.9 \\
-        continuation riffing & 16.3 \\
-        repeat riffing & 40.3 \\
-        generalization riffing & 26.4 \\
+        hold riffing & 3 & 8 & 12.5 & 24 & 44.5 & 57.5 \\
+        continuation riffing & - & - & 18 & 4 & 27 & - \\
+        repeat riffing & 4 & 7 & 2 & 25 & 49.5 & 45 \\
+        generalization riffing & 4 & 4 & 11 & 29.5 & 34 & 30 \\
         \hline
-        pair & 31.9 \\
-        reach back & 33.1 \\
+        pair & 3.5 & 7.5 & 12.5 & 25.5 & 40 & 33.5 \\
+        reach back & 3.5 & 6 & 11 &29.5 & 40 & 47.5 \\
         \hline \hline
-        scoping without solution & 39.7 \\
-        passing the problem & 40 \\
-        plan without goal & 29.6 \\
-        goal without plan & 20.0 \\ 
+        scoping without solution & - & - & - & 13 & - & 53 \\
+        passing the problem & 1.5 & - & 14.5 & 40 & 35.5 & 60.5  \\
+        plan without goal & - & - & 6 & 18 & 38.5 & 30 \\
+        goal without plan & - & 3 & 2 & 15 & 11 & 29 \\ 
     \end{tabular}
+    \caption{Median position of strategy in run by condition}
 \end{table}
 
-Most of the differences run position between strategies are minimal. Most discriminatory are the differences in scoping. Lack of scoping is, on average, very early in the run, while scoping inward towards some detail of the problem occurs later. Outward scoping, or dropping details of the problem, occurs latest of all. This gradual increase hints that more "outside the box" ideas may not show up until later in runs, after participants have finished exploring specific details of the problem.
+The distributions of strategy occurence across position in run tend towards uniform when there are more than a few examples. The notable exception to this is problem scoping. There are fewer occurences of the inward scoping strategy later in brainstorming runs.
+
+The number of reach-backs increase with position. This may simply be because there are more ideas to draw from for inspiration later in a run.
 
 \subsubsection{Strategy co-occurrence}
 
