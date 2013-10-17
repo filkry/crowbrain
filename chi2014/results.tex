@@ -64,7 +64,7 @@ Figure~\ref{fig:cumulative_ideas} shows the cumulative count of unique ideas per
 
 We model this quantity using the following exponential model:
 \[n_{ideas} = y_{scale} * x^{rate}\]
-where $n_{ideas}$ represents the number of unique ideas, $y_{scale}$ serves to scale the model, $x$ is the response number, and $rate$ models the rate of novel ideas. Importantly, this simplified model does not model either the condition or the effects of workers. In our analysis of the data, we found that individual workers introduced considerable variation, preventing us from separating the effects of the condition from the worker. Accordingly, we only consider this simplified model.
+where $n_{ideas}$ represents the number of unique ideas, $y_{scale}$ serves to scale the model, $x$ is the response number, and $rate$ models the rate of novel ideas. Importantly, this model does not model either the condition or the effects of workers. In our analysis of the data, we found that individual workers introduced considerable variation, preventing us from separating the effects of the condition from the worker. Accordingly, we only consider this simplified model.
 
 Fitting this model with Stan, we obtain a $y_{scale}$ value of 1.49 (HDI 1.44-1.55) and a $rate$ value of 0.87 (HDI 0.86-0.88). Because $rate$'s HDI does not include 1, we find support for hypothesis 1: the number of unique ideas is non-linear as a function of the number of responses received. The fitted model is shown as the ``Best Fit'' line in Figure~\ref{fig:cumulative_ideas}.
 
@@ -92,7 +92,7 @@ Fitting this model with Stan, we obtain a $y_{scale}$ value of 1.49 (HDI 1.44-1.
 
 We use an identical model for modeling the rate at which new idea categories are introduced over time. Figure~\ref{fig:cumulative_categories} shows the data and fitted model for the cumulative number of novel categories over time. For this model, we obtain a $y_{scale}$ value of 2.1 (HDI 2.0-2.2), with a $rate$ of 0.67 (HDI 0.66-0.67). Again, we find very clear support that the rate of novel categories is non-linear as a function of the number of responses received.
 
-The visibly lower rate of growth for novel categories growth suggests workers are more likely to produce new ideas within existing categories, rather than create both novel ideas that also represent novel categories. We more closely examine characteristics of individuals' brainstorming runs next.
+The visibly lower rate of growth for novel categories suggests workers are more likely to produce new ideas within existing categories, rather than create both novel ideas that also represent novel categories. We more closely examine characteristics of individuals' brainstorming runs next.
 
 %Given the observed differences in production of new ideas and idea categories, it is worthwhile to better understand \emph{why} these differences exist. 
 
@@ -101,9 +101,8 @@ The visibly lower rate of growth for novel categories growth suggests workers ar
 \subsection{Characteristics of an Idea Within a Run}
 
 \subsubsection{Most Popular Ideas}
-Our data suggest that individuals typically produce ideas from a common set of idea categories early in the brainstorming process, then diverge and produce more original ideas. This phenomenon can be observed by examining the o-scores of ideas and idea categories.
 
-Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} show the o-scores for response instances and idea categories, within a sliding window of size 10. Each point represents the mean o-score within that sliding window, with standard error bars provided for each point.
+Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} show the o-scores for response instances and idea categories, within a sliding window of size 10. Each point represents the mean o-score within that sliding window, with standard error bars.
 
 
 %As our measure of originality, we use \emph{o-score}, introduced by Jansson and Smith \cite{jansson_design_1991}. An idea's o-score is $1 - p(idea)$, where $p(idea) = (number of instances of that idea)/(number of instances total)$. The o-score for category trees is similarly calculated. We will occasionally refer to the \emph{category o-score} of an idea. This simply refers to the o-score of the category tree to which that idea belongs.
@@ -151,9 +150,9 @@ Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} show the o-sc
 
 In both cases, we observe a steady increase in o-scores for the first 20-30 responses. After these first 20-30 responses, the o-scores plateau, with no clear discernible pattern for either ideas or idea categories.
 
-These graphs lend support for hypothesis 2, the notion that there is a set of general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition.
+This lends support for hypothesis 2, the notion that there is a set of general, common ideas that make up the first several responses of every crowd brainstorming session, regardless of condition.
 
-To more explicitly confirm this hypothesis, we extracted the top 5\% most common ideas (66 in total). If individuals are more likely to initially generate the same set of ideas, the top 5\% of the ideas should be more likely to appear in the first five instances of a run than they are to appear in any of the following instances. We introduce two Bernoulli random variables to model this. The first, defined by parameter $\theta_f$ represents the probability that a response instance is in the top 5\% most common ideas, given it is found in the first five instances of a run (i.e., $P(\theta_f|top)$). The second, defined by parameter $\theta_l$, is the probability that an instance is in the top \% given it is one of the \emph{last} ($\textgreater5$) instances in a run (i.e., $P(\theta_l|\overline{top})$).
+To confirm this hypothesis, we extracted the top 5\% most common ideas (66 in total). If individuals are more likely to initially generate the same set of ideas, the top 5\% of the ideas should be more likely to appear in the first five instances of a run than they are to appear in any of the following instances. We introduce two Bernoulli random variables to model this. The first, defined by parameter $\theta_f$ represents the probability that a response instance is in the top 5\% most common ideas, given it is found in the first five instances of a run (i.e., $P(\theta_f|first)$). The second, defined by parameter $\theta_l$, is the probability that an instance is in the top \% given it is one of the \emph{last} ($\textgreater5$) instances in a run (i.e., $P(\theta_l|\overline{first})$).
 
 We fit these parameters using data from all runs that have more than 10 responses. We chose this constraint so that no run could contribute evidence to $\theta_f$ without also contributing to $\theta_l$. Using an uninformative beta prior, the resulting parameters are $\theta_f = 0.56$ (HDI 0.52-0.61) and $\theta_l = 0.32$ (HDI 0.30-0.34). This difference is significant, supporting the hypothesis that common ideas are over-represented in the early part of a brainstorming run.
 
@@ -164,9 +163,9 @@ We fit these parameters using data from all runs that have more than 10 response
 
 The increase in o-score over time in Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} also supports hypothesis 3, the notion that ideas generated in the second half a brainstorming session have higher o-scores than those in the first half. We test a stronger guarantee of this hypothesis that is implied by our data: that ideas after the first 20 have higher o-scores than the first 20.
 
-Partitioning the data into instances $\leq20$ and $\textgreater20$, we found that these distributions of o-scores are best modeled using beta distributions. Figures~\ref{fig:idea_oscore_hyp4} and \ref{fig:cat_oscore_hyp4} show the data and fitted models. Examining the HDIs of the resultant model parameters shows significant differences between the models, confirming hypothesis 3.
+Partitioning the data into instances $\leq20$ and $\textgreater20$, we found that these distributions of o-scores are best modeled using beta distributions. Figures~\ref{fig:idea_oscore_hyp4} and \ref{fig:cat_oscore_hyp4} show the data and fitted models. We found significant differences between model parameters, confirming hypothesis 3.
 
-Collectively, these results provide a clear guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more cost-effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for fewer ideas from more individuals.
+Collectively, these results provide a guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for fewer ideas from more individuals.
 
 
 %The $\alpha$ parameter is significantly different in both the idea and category o-score comparison. The mean idea o-score is 0.997 in the $\textgreater20$ versus 0.995 in the $\leq20$ condition. Similarly, the $\leq20$ condition is favourable in category o-score with a mean of 0.982 vs 0.975.
@@ -201,7 +200,7 @@ Collectively, these results provide a clear guideline for maximizing originality
 
 
 \subsection{Idea Generation Patterns}
-Given the clear differences in idea characteristics as a function of response number, we now consider idea generation patterns observable from the data. In this section, we examine these patterns in the context of hypotheses 4 and 5, the hypotheses that draw upon the SIAM model of brainstorming. This model predicts individuals will generate ideas within ``images'' or categories of ideas (i.e., ``riff'' on an idea or concept) before switching to a new category.
+Given the differences in originality and rarity as a function of response number, we now consider idea generation patterns observable from the data. We examine these patterns in the context of hypotheses 4 and 5, which draw upon the SIAM model of brainstorming. This model predicts individuals will generate ideas within ``images'' or categories of ideas (i.e., ``riff'' on an idea or concept) before switching to a new category.
 
 In our clustered data, we can identify riffing by examining whether a response instance belongs to the same category tree as the previous instance. We can then derive a number of statistics from these data.
 
@@ -257,7 +256,7 @@ SIAM predict that individuals will generate ideas from an idea category until th
 
 To determine category switching, we examine whether an idea is assigned to the same category tree as the previous instance, or whether it was assigned to a different category tree. 
 
-We model the probability of any idea category being followed by the same idea category with a Bernoulli random variable. Using a uniform beta prior, we find the probability of a response instance being in the same idea category as the previous to be 15.6\% (HDI 14.3\% - 17.0\%). To establish a baseline to understand whether this probability is greater than chance, the most popular category tree in our data set is \emph{music player}, representing 5.65\% of all instances. Thus, an upper bound on the greatest probability of an instance being in the same category as the previous instance, by chance, is 5.65\%, well below the 14.3\% lower bound of the calculated HDI. Thus, we accept the hypothesis that an instance follows a previous instance in the same category with greater probability than is explained by random chance.
+We model the probability of any idea category being followed by the same idea category with a Bernoulli random variable. Using a uniform beta prior, we find the probability of a response instance being in the same idea category as the previous to be 15.6\% (HDI 14.3\% - 17.0\%). To understand whether this probability is greater than chance, we use the most popular category tree in our data set (\emph{music player}), representing 5.65\% of all instances as an upper bound. This well below the 14.3\% lower bound of the calculated HDI. Thus, we accept the hypothesis that an instance follows a previous instance in the same category with greater probability than is explained by random chance.
 
 \subsubsection{Idea generation time}
 
