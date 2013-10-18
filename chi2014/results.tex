@@ -159,12 +159,11 @@ We fit these parameters using data from all runs that have more than 10 response
 
 %This is explained by the relationship between common ideas and common categories. We expect that unoriginal ideas belong to unoriginal categories, as a high instance count for an idea increases the instance count for its category tree. However, we cannot make the inverse assumption, that a high originality idea belongs to a high originality category. Once the common idea are exhausted, then, there is no relationship between idea originality and category originality.
 
-\subsubsection{Originality}
+The above plots also suggest that there is a pivot point around 20 ideas after which o-scores are higher.
 
-The increase in o-score over time in Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} also supports hypothesis 3, the notion that ideas generated in the second half a brainstorming session have higher o-scores than those in the first half. We test a stronger guarantee of this hypothesis that is implied by our data: that ideas after the first 20 have higher o-scores than the first 20.
+%The increase in o-score over time in Figures~\ref{fig:idea_oscore_order} and \ref{fig:cat_oscore_order} also supports hypothesis, the notion that ideas generated in the second half a brainstorming session have higher o-scores than those in the first half. We test a stronger guarantee of this hypothesis that is implied by our data: that ideas after the first 20 have higher o-scores than the first 20.
 
-Partitioning the data into instances $\leq20$ and $\textgreater20$, we found that these distributions of o-scores are best modeled using beta distributions. Figures~\ref{fig:idea_oscore_hyp4} and \ref{fig:cat_oscore_hyp4} show the data and fitted models. We found significant differences between model parameters, confirming hypothesis 3.
-
+Partitioning the data into instances $\leq20$ and $\textgreater20$, we found that these distributions of o-scores are best modeled using beta distributions. Figure~\ref{fig:idea_oscore_hyp4} shows the data and fitted models. We found significant differences between model parameters.
 Collectively, these results provide a guideline for maximizing originality in brainstorming tasks on microtask marketplaces: it is more effective to solicit $\textgreater20$ ideas from a smaller pool of participants than to ask for fewer ideas from more individuals.
 
 
@@ -189,9 +188,9 @@ Collectively, these results provide a guideline for maximizing originality in br
     \includegraphics[width=0.9\columnwidth]{hyp4_ideas}
     \caption{Beta models for idea o-score}
     \label{fig:idea_oscore_hyp4}
-    \includegraphics[width=0.9\columnwidth]{hyp4_cats}
-    \caption{Beta models for category o-score}
-    \label{fig:cat_oscore_hyp4}
+    %\includegraphics[width=0.9\columnwidth]{hyp4_cats}
+    %\caption{Beta models for category o-score}
+    %\label{fig:cat_oscore_hyp4}
 \end{figure}
 
 
@@ -202,9 +201,7 @@ Collectively, these results provide a guideline for maximizing originality in br
 \subsection{Idea Generation Patterns}
 Given the differences in originality and rarity as a function of response number, we now consider idea generation patterns observable from the data. We examine these patterns in the context of hypotheses 4 and 5, which draw upon the SIAM model of brainstorming. This model predicts individuals will generate ideas within ``images'' or categories of ideas (i.e., ``riff'' on an idea or concept) before switching to a new category.
 
-In our clustered data, we can identify riffing by examining whether a response instance belongs to the same category tree as the previous instance. We can then derive a number of statistics from these data.
-
-To contextualize this process, below is an excerpt of a particular participant's brainstorming run.
+We can identify riffing by examining whether a response instance belongs to the same category tree as the previous instance. We can then derive a number of statistics from these data. Below is an excerpt of a particular participant's brainstorming run.
 
 \begin{quote}
     \begin{enumerate}
@@ -214,7 +211,7 @@ To contextualize this process, below is an excerpt of a particular participant's
     \end{enumerate}
 \end{quote}
 
-The participant first touches on the general idea of recycling, then becomes more specific by reducing the scope of recycling to specific parts. Finally, they limit the scope of parts to precious metals, particularly gold. At this point, the participant exhausts their working memory of the category and moves on.
+The participant first touches on the general idea of recycling, then becomes more specific by reducing the scope of recycling to specific parts, and then to precious metals.
 
 Table~\ref{tab:riffing} provides a summary of riffing statistics observed in our data set. We find that the higher the number of instances requested, the more likely participants are to use old ideas as inspiration for new ideas. However, we observe that riff sequences are typically quite small in length, across conditions.
 
@@ -250,7 +247,7 @@ Table~\ref{tab:riffing} provides a summary of riffing statistics observed in our
 \end{table}
 
 
-SIAM predict that individuals will generate ideas from an idea category until they exhaust that category, at which point they switch to another category (hypothesis 4). Furthermore, SIAM predicts that this category switching will be observable as taking more time to generate an idea in a new category than in the existing category (hypothesis 5). We examine each of these hypotheses in turn.
+SIAM predict that individuals will generate ideas from an idea category until they exhaust that category, at which point they switch to another category (hypothesis 3). Furthermore, SIAM predicts that this category switching will be observable as taking more time to generate an idea in a new category than in the existing category (hypothesis 4). We examine each of these hypotheses in turn.
 
 \subsubsection{Category changing}
 
@@ -271,7 +268,7 @@ An examination of the timing data suggests a log-normal distribution. We fit two
     \label{fig:hyp5_comparison}
 \end{figure}
 
-The resulting models fitted to the data are shown in Figure~\ref{fig:hyp5_comparison}. The mean for the within-category condition was 9.5 in log space (13.4 seconds, HDI 9.4-9.6), while the mean for the between-categories condition was 10.2 (27.0 seconds, HDI 10.2-10.3). The differences in mean are significant and confirm hypothesis 5. Notably, within-category instance generation took an average of 12.6 seconds less than between-categories instance generation, consistent with the findings of Nijstad and Stroebe, who reported differences of 6-12 seconds between these two idea generation processes.
+The resulting models fitted to the data are shown in Figure~\ref{fig:hyp5_comparison}. The mean for the within-category condition was 9.5 in log space (13.4 seconds, HDI 9.4-9.6), while the mean for the between-categories condition was 10.2 (27.0 seconds, HDI 10.2-10.3). The differences in mean are significant and confirm hypothesis 4. Notably, within-category instance generation took an average of 12.6 seconds less than between-categories instance generation, consistent with the findings of Nijstad and Stroebe, who reported differences of 6-12 seconds.
 
 %Figure FIG displays the mean time spent on an instance by order, separated by condition. Most of the highly variant response times take place early in the brainstorming run. This suggests that at least one participant accepted a brainstorming task, took an initial stab at instances, and then left the task for up to 8 hours before continuing. Beyond this, we might expect to see time spent per instance go up as participants have to dig deeper to find responses, but no such effect is consistently observed.
 

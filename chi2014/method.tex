@@ -7,7 +7,7 @@ To study brainstorming in a crowd environment, we published brainstorming HITs (
 HITs were placed on the marketplace asking for 5, 10, 20, 50, 75, 100, or an unlimited number of ideas for a brainstorming problem. We paid a fixed amount per HIT, computed at a rate of approximately 3.5 cents per idea requested, yielding reward amounts of 18 cents (5), 35 cents (10), 70 cents (20), \$1.75 (50), \$2.65 (75), and \$3.50 (100). For the unlimited condition, we offered \$1.75, pricing it the same as the 50 ideas condition. HITs were advertised with the number of responses requested. Workers had 18 hours to submit the HIT once accepted.
 
 \subsection{Brainstorming Question: Uses for an Old MP3 Player}
-In conducting this research, we tested several brainstorming questions, including classic brainstorming questions (e.g., ``provide alternative uses for a mop''); a request to brainstorm factors that influence weight gain and weight loss; and more goal-oriented questions, such as one requesting people to brainstorm ways to raise funds for a charity. Ultimately, we found the goal-oriented brainstorming questions to be the most compelling since they reflect what we believe would be real-world uses of brainstorming on Mechanical Turk.
+In conducting this research, we tested several brainstorming questions, including classic brainstorming questions from prior work (e.g., ``provide alternative uses for a mop''); a request to brainstorm factors that influence weight gain and weight loss; and more goal-oriented questions, such as one requesting people to brainstorm ways to raise funds for a charity. Ultimately, we found the goal-oriented brainstorming questions to be the most compelling since they reflect what we believe would be real-world uses of brainstorming on Mechanical Turk.
 
 The final brainstorming question we chose for this research is the following:
 \begin{quote}
@@ -43,7 +43,7 @@ The introduction listed Osborne's four rules of brainstorming \cite{osborn_appli
 \item Combinations of ideas count as new ideas.
 \end{enumerate}
 
-In addition to the visible text input fields, HITs were instrumented to collect timing data. Specifically, we recorded the time of the first activation and last de-activation of each form element, the time the HIT was accepted, and the time it was submitted.
+In addition to the visible text input fields, HITs were instrumented to collect the time of the first activation and last de-activation of each form element.
 
 \subsection{Data Collected}
 
@@ -51,24 +51,24 @@ Initially, we sought 10 HIT responses per condition. However, we found that coll
 
 154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. Accordingly, we remove that data from our analysis.
 
-If a worker completed multiple HITs (i.e., generated responses for multiple conditions), there is the possibility that their responses and idea generation processes evolved over time. Accordingly, we retain only the first HIT submitted by each worker.
+If a worker completed multiple HITs, there is the possibility that their responses and idea generation processes evolved over time. Accordingly, we retain only the first HIT submitted by each worker.
 
 After removing these data, we are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. A breakdown of responses across conditions is given in Table~\ref{tab:data_collected}.
 
-\begin{table}[h!]
-\begin{tabular}{r | l l l l l l l }
-    & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline
-    participants & 57 & 39 & 21 & 9 & 10 & 10 & 146 \\
-    solutions & 283 & 372 & 413 & 450 & 635 & 855 & 3007
-\end{tabular}
-\caption{Data after removing unlimited condition and repeats}
-\label{tab:data_collected}
-\end{table}
+%\begin{table}[h!]
+%\begin{tabular}{r | l l l l l l l }
+%    & 5 & 10 & 20 & 50 & 75 & 100 & all \\ \hline
+%    participants & 57 & 39 & 21 & 9 & 10 & 10 & 146 \\
+%    solutions & 283 & 372 & 413 & 450 & 635 & 855 & 3007
+%\end{tabular}
+%\caption{Data after removing unlimited condition and repeats}
+%\label{tab:data_collected}
+%\end{table}
 
 %To uniquely identify participants, we computed a hash of their Mechanical Turk worker ID. A hash was used to protect privacy after data release.
 
 \subsection{Hierarchical Clustering}
-One of the primary goals of this research is to model the rate at which novel ideas and categories of ideas arrive. A significant challenge to creating these models is efficiently identifying what ideas and categories of ideas are similar to one another. To address this problem, we organized the data into sets of hierarchical clusters, where parent nodes are more generalized versions of child nodes. With this relationship, we are then able to calculate quantities such as the rate of novel ideas or novel idea categories, as a function of responses received. 
+A significant challenge to creating model of brainstorming is efficiently identifying what ideas and categories of ideas are similar to one another. To address this problem, we organized the data into sets of hierarchical clusters, where parent nodes are more generalized versions of child nodes. %With this relationship, we are then able to calculate quantities such as the rate of novel ideas or novel idea categories, as a function of responses received. 
 
 In the rest of this section, we introduce terminology useful for describing these hierarchical clusters, then describe the clusters and the process used to create them.
 
@@ -84,9 +84,9 @@ An \emph{instance} or \emph{response instance} is a single solution by a single 
 
 A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT by a single worker.
 
-An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, though multiple instances can be associated with the same idea (i.e., when multiple workers come up with the same idea). Multiple instances of the same idea do not need to be identically phrased to refer to the same idea. For example, in Figure~\ref{fig:example_instances}, we consider ``Storage Container'' and ``Small Storage Box'' as two instances of the same \emph{idea}. However, we do not consider ``Coin Storage'' to be the same idea, since it provides a more specific use case than the previous two.
+An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, though multiple instances can be associated with the same idea. Multiple instances of the same idea do not need to be identically phrased to refer to the same idea. For example, in Figure~\ref{fig:example_instances}, we consider ``Storage Container'' and ``Small Storage Box'' as two instances of the same \emph{idea}. However, we do not consider ``Coin Storage'' to be the same idea, since it provides a more specific use case than the previous two.
 
-Despite the differences in specificity between ``Coin Storage'' and the more generic containers, it is useful to encode the fact that these ideas are related. We use hierarchical clusters to encode these relationships. We call a hierarchical cluster of ideas a \emph{category tree}.
+Despite the differences in specificity between ``Coin Storage'' and the more generic containers, it is useful to encode their relationship. We use hierarchical clusters to encode these relationships. We call a hierarchical cluster of ideas a \emph{category tree}.
 
 In a category tree, ideas act as nodes. Each idea may optionally have a single parent idea, and zero or more child ideas. If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B. An example category tree for the instances above is given in Figure~\ref{fig:example_instances}.
 
