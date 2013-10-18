@@ -19,13 +19,11 @@ The final brainstorming question we chose for this research is the following:
 
 We chose to focus on this problem because a) we expected workers to be familiar with problem area (old MP3 players), b) it represents a real-world problem (what to do with old electronics that are still partially functional) for which innovative solutions are welcome, and c) we anticipated there to be a wide range of creative solutions possible. All data presented in this paper refer only to responses received to this particular question.
 
-Initially, workers were randomly paired with a question from a pool of questions. However, we eventually dropped all other questions, so workers would only receive the MP3 player question. %When testing multiple questions, we attempted to prevent workers from answering the same question twice (for example, if they chose the HIT requesting 10 responses, then the HIT requesting 20 responses) . However, we were not always successful in preventing this from happening. Thus, we only use a worker's first set of responses if they answered the question multiple times.
-
 %Because workers could choose which \emph{number of ideas} condition to participate in, self-selection bias is a reasonable concern. However, this bias is also present in real-world HIT choice behaviour. 
 
 \subsection{Worker's Brainstorming Interface}
 
-Upon accepting a HIT, participants were asked to give consent for participating in the study, and informed that they could leave the study at any point without financial consequences. Under more realistic, real-world conditions, workers would be expected to complete all responses to receive compensation.
+Upon accepting a HIT, participants were asked to give consent for participating in the study, and informed that they could leave the study at any point without financial consequences. Under real-world conditions, workers would be expected to complete all responses to receive compensation.
 
 The brainstorming task was presented in a standard web-based form that included the following components: an introduction, the specific brainstorming problem, a series of fields for entering the individual responses, and a larger text area where workers could enter additional ideas (Figure~\ref{fig:sample_task}).
 
@@ -51,9 +49,9 @@ In addition to the visible text input fields, HITs were instrumented to collect 
 
 Initially, we sought 10 HIT responses per condition. However, we found that collecting only 10 responses for the lower response conditions (5, 10, 20 responses) limited our ability to make meaningful comparisons between responses received from the larger response conditions (50, 75, 100). Accordingly, we sought to collect a minimum of 400 ideas for each condition. However, we found the 5 and 10 conditions to be particularly unpopular, and were not able to reach this minimum for these conditions.
 
-In total, 154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. Accordingly, we remove that data from our analysis.
+154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. Accordingly, we remove that data from our analysis.
 
-If a worker completed multiple HITs (i.e., generated responses for multiple conditions), there is the possibility that their responses and idea generation processes evolved over time, making it difficult to compare the responses to their second HIT with responses from others who are performing the same HIT for the first time. Accordingly, we retain only the first HIT submitted by each worker.
+If a worker completed multiple HITs (i.e., generated responses for multiple conditions), there is the possibility that their responses and idea generation processes evolved over time. Accordingly, we retain only the first HIT submitted by each worker.
 
 After removing these data, we are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. A breakdown of responses across conditions is given in Table~\ref{tab:data_collected}.
 
@@ -70,7 +68,7 @@ After removing these data, we are left with 146 distinct participants for a tota
 %To uniquely identify participants, we computed a hash of their Mechanical Turk worker ID. A hash was used to protect privacy after data release.
 
 \subsection{Hierarchical Clustering}
-One of the primary goals of this research is to model the rate at which novel ideas and categories of ideas arrive. A significant challenge to creating these models is efficiently identifying what ideas and categories of ideas are similar to one another, given the volume of data collected. To address this problem, we organized the data into sets of hierarchical clusters, where the clusters encode similarity relationships between ideas. Specifically, parent nodes are more generalized versions of child nodes. With this information encoded in the clusters, we are then able to calculate quantities such as the rate of novel ideas or novel idea categories, as a function of responses received. 
+One of the primary goals of this research is to model the rate at which novel ideas and categories of ideas arrive. A significant challenge to creating these models is efficiently identifying what ideas and categories of ideas are similar to one another. To address this problem, we organized the data into sets of hierarchical clusters, where parent nodes are more generalized versions of child nodes. With this relationship, we are then able to calculate quantities such as the rate of novel ideas or novel idea categories, as a function of responses received. 
 
 In the rest of this section, we introduce terminology useful for describing these hierarchical clusters, then describe the clusters and the process used to create them.
 
@@ -123,7 +121,7 @@ If a node was a generalization of a second node, the second node was introduced 
 
 Clustering was performed using a custom-built tool that assisted in finding similar instances. Briefly, the tool represented each instance using a bag-of-words model that included synonyms for instance's words. The words were stemmed, then individual instances were ranked according to a cosine similarity metric.
 
-The primary author clustered the 3007 response instances into ideas and category trees. A researcher not involved in the project randomly sampled 40 category trees to assess whether ideas within the tree should be there, and whether parent-child relationships correctly encoded generalizations of concepts. 10\% of the instances were marked as more specific than their associated idea, while 0.7\% of the instances were judged to be misclassified with their associated cluster.
+The primary author clustered the 3007 response instances into ideas and category trees. A researcher not involved in the project randomly sampled 40 category trees to assess whether ideas within the tree should be there, and whether parent-child relationships correctly encoded generalizations of concepts. 10\% of the instances were marked as more specific than their associated idea, while 0.7\% of the instances were judged to be misclassified with their associated cluster tree.
 
 \subsection{Data Analysis}
 Throughout this paper, we employ Bayesian data analysis methods for modeling the data \cite{kruschke_doing_2010}. We express our results in terms of mean values and highest density intervals (HDI), or the interval that contains the most probable mass of the posterior distributions. In line with common practice, we choose an HDI of 95\%. To fit the models, we use the Bayesian inference software Stan \cite{stan-software:2013}, and choose uninformative priors for all modeled variables.
