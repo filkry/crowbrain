@@ -1,35 +1,10 @@
-\section{Discussion and Future Work}
+\section{Future Work}
 
-In this paper, we have primarily focused on the uniqueness of ideas and idea categories in quantitative terms. In this section, we provide a more qualitative perspective on the data collected, then describe future work.
-
-\subsection{Variability of Worker Input}
-While we observed that individuals are likely to draw from a common pool of ideas early on in the brainstorming process, there were outliers in the data. For example, one individual in the 75 ideas condition consistently produced some of most original ideas for old MP3 players:
-
-\begin{itemize}
-\item With displays - could be attached to a small solar panel (like the USB chargers w/multi attachments, including solar and car, etc.) and all the power could be sent to the screen as a small, portable light, then sent to countries lacking power in rural areas.
-\item They could be loaded with coordinates or other info and sealed in containers, then used in ocean current studies - once the container was collected they could be plugged in and read, and the data could be sent to whomever.
-\item They could be plugged in at a base camp at the bottom of Everest, and then potential climbers could record their name, loved ones' address, and any last words before attempting the climb. 
-\end{itemize}
-
-This individual's responses were responsible for clearly raising the observed uniqueness of ideas in the 75 condition when plotted against the other conditions.
-
-Other individuals filled their quotas by creating uninspiring idea templates that they varied only slightly between responses. For example, this individual provides a list of essentially equivalent responses:
-
-\begin{itemize}
-\item a gift for a cousin
-\item a gift for a niece
-\item a gift for a nephew
-\item a gift for a second cousin
-\end{itemize}
-
-This variability in worker responses prevented us from modeling any potential effects that the number of questions requested might have on individuals' responses. Thus, while it is clear that there is little advantage to requesting 5 or 10 ideas from workers, it is not clear whether it is preferable to request 20, 50, 75, or 100 ideas. We suspect that requesting 50 or 75 is the ``sweet'' spot, but are not able to empirically support that recommendation at this time.
-
-\subsection{Future Work}
 The results of this research suggest several avenues for future work.
 
 One of the most natural next steps is to explore interventions to overcome the tendency of workers to generate the most common and obvious ideas and idea categories. For example, ideas from previous workers could be strategically interspersed in response fields to promote riffing or exploration of a design space in certain directions. 
 
-Our results show that ideas are more likely to be followed by one from the same category, and that changing categories takes time. Combining these models with others (such as natural language measures for text similarity), one could imagine constructing a posterior belief model to infer whether a participant is currently riffing or not. If we can infer riffing and the general categories in which workers are riffing, one could imagine techniques to guide the crowd to explore different areas of the design space. For example, the system could encourage workers to generate ideas within new or rare categories.
+Our results show that ideas are more likely to be followed by one from the same category, and that changing categories takes time. One could imagine constructing a posterior belief model to infer whether a participant is currently riffing or not, guide the crowd to explore ideas within new or rare categories.
 
 In addition to studying potential interventions, we are also interested in whether there are differences in idea generation for different types of questions. For example, the results observed for the MP3 player condition may differ from questions for which the workers have more or less familiarity. For example, it would be interesting to see how the idea generation process differs if workers were asked for suggestions for improving Amazon's Mechanical Turk interface.
 
@@ -54,10 +29,9 @@ To summarize, we found that:
 
 \begin{itemize}
 \item The rate of idea and category generation decays non-linearly over time. 
-\item Common ideas are more likely to be proposed early in a run. 
-\item Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. This relationship also holds for idea categories.
-\item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance.
-\item The time it takes to generate an idea when changing categories is longer than the time taken when generating ideas within a category.
+\item Common ideas are more likely to be proposed early in a run. Conversely, ideas beyond the first 20 are rarer and more original, as measured by o-scores. %This relationship also holds for idea categories.
+\item Ideas are more likely to be followed by another idea from the same category than would be expected by random chance. The time it takes to generate an idea is longer when changing categories.
+\item There are repeatedly observable strategies employed by workers brainstorming in microtask marketplaces
 \end{itemize}
 
 The most obvious implication from these findings is that it is advisable to request more than 20 ideas from each participant; requesting 20 or fewer ideas is not cost effective.
