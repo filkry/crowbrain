@@ -2,14 +2,14 @@
 In this section, we first describe our process of recruiting and remunerating participants, the brainstorming question selected for our experiments, and the user interface provided to workers. We then describe the data collected, and our method of organizing it into a hierarchical cluster for analysis.
 
 \subsection{Recruitment and Remuneration}
-To study brainstorming in a crowd environment, we published brainstorming HITs (human intelligence tasks) on Amazon's Mechanical Turk. We restricted our worker pool to residents of the United States to increase the chances of English language comprehension and a shared cultural background. No other screening was performed on workers.
+We published brainstorming HITs (human intelligence tasks) on Amazon's Mechanical Turk. Workers were residents of the United States to increase the chances of English language comprehension and a shared cultural background.
 
-HITs were placed on the marketplace asking for 5, 10, 20, 50, 75, 100, or an unlimited number of ideas for a brainstorming problem. We paid a fixed amount per HIT, computed at a rate of approximately 3.5 cents per idea requested, yielding reward amounts of 18 cents (5), 35 cents (10), 70 cents (20), \$1.75 (50), \$2.65 (75), and \$3.50 (100). For the unlimited condition, we offered \$1.75, pricing it the same as the 50 ideas condition. HITs were advertised with the number of responses requested. Workers had 18 hours to submit the HIT once accepted.
+HITs were placed on the marketplace asking for 5, 10, 20, 50, 75, 100, or as many possible ideas. HITs paid approximately 3.5 cents per idea requested, yielding reward amounts of 18 cents (5), 35 cents (10), 70 cents (20), \$1.75 (50), \$2.65 (75), and \$3.50 (100). For the unlimited condition, we offered \$1.75, pricing it the same as the 50 ideas condition. HITs were advertised with the number of responses requested. Workers had 18 hours to submit the HIT once accepted.
 
 \subsection{Brainstorming Question: Uses for an Old MP3 Player}
-In conducting this research, we tested several brainstorming questions, including classic brainstorming questions from prior work (e.g., ``provide alternative uses for a mop''); a request to brainstorm factors that influence weight gain and weight loss; and more goal-oriented questions, such as one requesting people to brainstorm ways to raise funds for a charity. Ultimately, we found the goal-oriented brainstorming questions to be the most compelling since they reflect what we believe would be real-world uses of brainstorming on Mechanical Turk.
+In conducting this research, we tested several brainstorming questions, including classic brainstorming questions from prior work (e.g., ``provide alternative uses for a mop''); a request to brainstorm factors that influence weight gain and weight loss; and more goal-oriented questions, such as one requesting people to brainstorm ways to raise funds for a charity. Ultimately, we chose the goal-oriented brainstorming questions since they reflect what we believe would be real-world uses of brainstorming.
 
-The final brainstorming question we chose for this research is the following:
+The final brainstorming question we chose is the following:
 \begin{quote}
 {\em Many people have old MP3 players or MP3 players that they no longer use. Please brainstorm N uses for old MP3 players/MP3 players. Assume that the devices' batteries no longer work, though they can be powered via external power sources. Also be aware that devices may {\em not \/} have displays. Be as specific as possible in your descriptions.\/}
 \end{quote}
@@ -17,7 +17,7 @@ The final brainstorming question we chose for this research is the following:
 
 %This served as the independent variable in all data gathering. It must be stated that under normal brainstorming conditions, participants are asked to generate as many ideas as possible within a fixed time frame, instead of a fixed number. We excluded such a condition for two reasons. First, it is practice in crowd creativity tasks to solicit a fixed number of ideas (e.g. Yu and Nickerson \cite{yu_cooks_2011}). Secondly, we piloted asking respondants for "as many ideas as possible" in a generous time frame. Over N respondents, we received a mean of N ideas (std N), despite giving a financial of \$\$\$\$. This suggested a propensity to "game the system", a behaviour we wanted to exclude.
 
-We chose to focus on this problem because a) we expected workers to be familiar with problem area (old MP3 players), b) it represents a real-world problem (what to do with old electronics that are still partially functional) for which innovative solutions are welcome, and c) we anticipated there to be a wide range of creative solutions possible. All data presented in this paper refer only to responses received to this particular question.
+We focus on this problem because a) we expected workers to be familiar with problem area (old MP3 players), b) it represents a real-world problem (what to do with old electronics that are still partially functional), and c) we anticipated there to be a wide range of creative solutions possible. All data presented in this paper refer only to responses received to this particular question.
 
 %Because workers could choose which \emph{number of ideas} condition to participate in, self-selection bias is a reasonable concern. However, this bias is also present in real-world HIT choice behaviour. 
 
@@ -34,26 +34,24 @@ The brainstorming task was presented in a standard web-based form that included 
     \label{fig:sample_task}
 \end{figure}
 
-The introduction listed Osborne's four rules of brainstorming \cite{osborn_applied_1957}, adapted to this context:
-
-\begin{enumerate}
-\item There are no bad ideas. Don't criticise your choices.
-\item Wild ideas and building off of old ideas are okay.
-\item Quantity of ideas is prioritized.
-\item Combinations of ideas count as new ideas.
-\end{enumerate}
-
+The introduction listed Osborne's four rules of brainstorming \cite{osborn_applied_1957}, adapted to this context.
+%\begin{enumerate}
+%\item There are no bad ideas. Don't criticise your choices.
+%\item Wild ideas and building off of old ideas are okay.
+%\item Quantity of ideas is prioritized.
+%\item Combinations of ideas count as new ideas.
+%\end{enumerate}
 In addition to the visible text input fields, HITs were instrumented to collect the time of the first activation and last de-activation of each form element.
 
 \subsection{Data Collected}
 
 Initially, we sought 10 HIT responses per condition. However, we found that collecting only 10 responses for the lower response conditions (5, 10, 20 responses) limited our ability to make meaningful comparisons between responses received from the larger response conditions (50, 75, 100). Accordingly, we sought to collect a minimum of 400 ideas for each condition. However, we found the 5 and 10 conditions to be particularly unpopular, and were not able to reach this minimum for these conditions.
 
-154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. Accordingly, we remove that data from our analysis.
+154 workers submitted 170 HITs, for a total of 3292 responses. As we received data in the unlimited condition, it became obvious that this was a poor strategy to employ -- the number of responses received was less than 15 in all cases. We remove that data from our analysis.
 
-If a worker completed multiple HITs, there is the possibility that their responses and idea generation processes evolved over time. Accordingly, we retain only the first HIT submitted by each worker.
+If a worker completed multiple HITs, there is the possibility that their responses and idea generation processes evolved over time. Only the first HIT submitted by each worker is retained.
 
-After removing these data, we are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. A breakdown of responses across conditions is given in Table~\ref{tab:data_collected}.
+We are left with 146 distinct participants for a total of 146 HITs, yielding 3007 responses. %A breakdown of responses across conditions is given in Table~\ref{tab:data_collected}.
 
 %\begin{table}[h!]
 %\begin{tabular}{r | l l l l l l l }
@@ -82,11 +80,9 @@ An \emph{instance} or \emph{response instance} is a single solution by a single 
     \item ``Travel Jewelry Case"
 \end{enumerate}
 
-A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT by a single worker.
+A \emph{brainstorming run}, or \emph{run}, is the temporally-ordered series of instances that were received in a single HIT.
 
-An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, though multiple instances can be associated with the same idea. Multiple instances of the same idea do not need to be identically phrased to refer to the same idea. For example, in Figure~\ref{fig:example_instances}, we consider ``Storage Container'' and ``Small Storage Box'' as two instances of the same \emph{idea}. However, we do not consider ``Coin Storage'' to be the same idea, since it provides a more specific use case than the previous two.
-
-Despite the differences in specificity between ``Coin Storage'' and the more generic containers, it is useful to encode their relationship. We use hierarchical clusters to encode these relationships. We call a hierarchical cluster of ideas a \emph{category tree}.
+An \emph{idea} is a unique solution to the brainstorming problem. An instance is associated with exactly one \emph{idea}, though multiple instances can be associated with the same idea. For example, in Figure~\ref{fig:example_instances}, we consider ``Storage Container'' and ``Small Storage Box'' as two instances of the same \emph{idea}. However, we do not consider ``Coin Storage'' to be the same idea, since it provides a more specific use case than the previous two. We use hierarchical clusters to encode these relationships. We call a hierarchical cluster of ideas a \emph{category tree}.
 
 In a category tree, ideas act as nodes. Each idea may optionally have a single parent idea, and zero or more child ideas. If an idea \emph{A} is a parent of idea \emph{B}, A is a generalization of B. An example category tree for the instances above is given in Figure~\ref{fig:example_instances}.
 
@@ -113,13 +109,13 @@ Finally, the \emph{idea forest} is the collection of all category trees.
 
 
 \subsubsection{Clustering: Process}
-To produce the idea forest, the primary author added instances to the idea forest one at a time using the following method.
+To produce the idea forest, the primary author added instances to the idea forest using the following method.
 
 If an instance described an idea already represented as a node in the forest, the instance was added to that node. Otherwise, a new node was produced.
 
 If a node was a generalization of a second node, the second node was introduced as a child of the first. In some cases, two ideas were clearly related, though no generalization of the two existed in the data set. In these cases, we introduced a node that was a generalization of the two. For example, if we received only ``Coin Storage'' and ``Travel Jewelry Case'' as ideas, we would create a node labeled ``Storage Case'' to capture the fact that the two are related concepts. These ``artificial'' nodes were marked to distinguish them from true generalizations found in the data.
 
-Clustering was performed using a custom-built tool that assisted in finding similar instances. Briefly, the tool represented each instance using a bag-of-words model that included synonyms for instance's words. The words were stemmed, then individual instances were ranked according to a cosine similarity metric.
+Clustering was performed using a custom-built tool that assisted in finding similar instances. The tool represented each instance using a query-expanded bag-of-words model ranked according to a cosine similarity metric.
 
 The primary author clustered the 3007 response instances into ideas and category trees. A researcher not involved in the project randomly sampled 40 category trees to assess whether ideas within the tree should be there, and whether parent-child relationships correctly encoded generalizations of concepts. 10\% of the instances were marked as more specific than their associated idea, while 0.7\% of the instances were judged to be misclassified with their associated cluster tree.
 
