@@ -1,0 +1,85 @@
+require(rstan)
+
+kruschke_script_dir = '/home/mterry/Documents/probability_work/kruschke_scripts'
+do_plot_post = function(data) {
+  cur_dir = getwd()
+  setwd(kruschke_script_dir)
+  source('plotPost.R')
+  plotPost(data)
+  setwd(cur_dir)
+}
+  
+do_stan_hypothesis_5_bernoulli = function(df) {
+model_string = "
+data {
+  int<lower=0> N;
+  int<lower=0, upper=1> y[N];
+}
+
+parameters {
+  real<lower=0, upper=1> theta;
+}
+
+transformed parameters {
+}
+
+model {
+  for (i in 1:N) {
+      y[i] ~ bernoulli(theta);
+  }
+}
+";
+  data_list = list(
+    N = nrow(df),
+    y = df[,followed_by_same],
+  );
+
+  n_chains = 3;
+  num_saved_steps = 20000;
+  n_iter = ceiling(num_saved_steps / n_chains)
+  print(paste("Fitting Bernoulli for", measure))
+  fit = stan(model_code = model_string, data = data_list, iter = n_iter, chains = n_chains)
+
+  print(paste("Bernoulli model for", measure))
+  print(fit)
+  par(mfrow=c(1,1))
+  plot(fit)
+
+  list_of_arrays = extract(fit, permuted=TRUE)
+  theta = list_of_arrays$theta
+
+  par(mfrow=c(2,2))
+  hist(b0_list, main=paste("b0", measure))
+  hist(x_scale_list, main=paste("x_scale", measure))
+  hist(x_trans_list, main=paste("x_trans", measure))
+  hist(sigma_list, main=paste("sigma", measure))
+  b_cond = array(dim=c(num_conditions))
+  for (i in 1:num_conditions) {
+    print(paste("Stats for b_cond", i))
+    print(summary(b_cond_list[,i]))
+    print(sd(b_cond_list[,i]))
+    hist(b_cond_list[,i], main=paste("b_cond", i, measure))
+    do_plot_post(b_cond_list[,i])
+    b_cond[i] = mean(b_cond_list[,i])
+  }
+  b0 = mean(b0_list)
+  x_scale = mean(x_scale_list)
+  x_trans = mean(x_trans_list)
+  print(paste("b0", b0, measure))
+  print(paste("x_scale", x_scale, measure))
+  print(paste("x_trans", x_trans, measure))
+  plot_fn_factory = function(cond_num) {
+    plot_fn = function(x) {
+      return(b0 + b_cond[cond_num] * log(x_scale * x + x_trans))
+    }
+    return(plot_fn)
+  }
+  plot_model(df, measure, plot_fn_factory, "Log Model")
+  return(c(fit, plot_fn_factory))
+}
+
+df = read.csv('hyp5_data.csv', header=TRUE, sep='\t')
+results = c()
+results = c(results, do_stan_hypothesis_5_bernoulli(df))
+dev.off()
+
