@@ -3,7 +3,9 @@
 apt-get update
 apt-get install -y python-pip python-dev python-requests build-essential sqlite3 libfreetype6-dev libpng-dev python-scipy python-matplotlib python-tornado python-zmq python-nltk pandoc python-pygments python-sphinx pyside-tools r-base graphviz graphviz-dev pkg-config
 pip install --upgrade ipython
-pip install turkflow numpy pyyaml pandas pygraphviz
+pip install turkflow numpy pyyaml pandas pygraphviz 
+#pip install Cython
+#pip install pystan
 
 ln -s -f /home/host/.boto /home/vagrant/.boto
 
