@@ -300,12 +300,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
 
     # ========================================================
-    # CLUSTER TOPOLOGY
-    # ========================================================
-
-    cluster_forests = {qc: cluster_forest(cluster_tree_csvs[qc]) for qc in cluster_tree_csvs.keys()}
-
-    # ========================================================
     # INSTANCE DATA
     # ========================================================
 
@@ -360,6 +354,13 @@ def do_format_data(processed_data_folder, filter_instances = None):
     # ======================================================== 
     if filter_instances:
         df = filter_instances(df)
+    
+    # ========================================================
+    # CLUSTER TOPOLOGY
+    # ========================================================
+
+    cluster_forests = {qc: cluster_forest(cluster_tree_csvs[qc]) for qc in cluster_tree_csvs.keys()
+            if len(df[df['question_code'] == qc]) > 0}
 
 
     # ========================================================
@@ -390,6 +391,9 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
     for qc in qc_conds:
         sub_df = df[df['question_code'] == qc]
+        if len(sub_df) == 0:
+            continue
+
         #print len(sub_df)
         #print sum(sub_df['is_repeat_worker'])
         
