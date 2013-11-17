@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    </head>
+    <body>
+        <div id='idea_pixels'>
+            {% for idea in ideas %}
+            <div class = 'pixel {{ idea.time }}'
+                style="display:inline; max-width:3px; max-height:3px; background-color: {{ idea.color }};">
+                &nbsp;
+            </div>
+            {% endfor %}
+        </div>
+        <div>
+            Point in time:
+            <input id='time_slider' type='range'
+                   min='0' max='{{ ideas | count }}'
+                   onchange='showIdeas(this.value)'/>
+        </div>
+
+        <script language='Javascript'>
+            function showIdeas(max_time) {
+                $('.pixel').css('visibility', 'hidden');
+                for(i = 0; i <= max_time; i++) {
+                    $('.time' + i.toString()).css('visibility', 'visible');
+                }
+            }
+        </script>
+    </body>
+</html>
