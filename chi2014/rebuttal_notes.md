@@ -1,3 +1,48 @@
+# Text of rebuttal
+
+Below are responses and revisions (REV) to address the 7 points identified by the AC, follow by a general discussion.
+
+1) Generalizability
+We did not intend to suggest the findings were generalizable, but rather to provide evidence in support of the hypotheses as well as present models that can be applied to generalized datasets. Exploring a single problem is not unusual in creativity literature, and the paper cites several examples in psychology (3, 4, 17, 22) and crowd creativity research that do similarly (28, 29).
+REV: change language to limit generalizability to study data
+
+2) Motivation
+As stated in the introduction, brainstorming has been independently introduced as either a component of a task or a major task itself in prior crowd creativity work [16, 29]. It is desirable to have a set of models and guidelines to inform task design in these cases. It cannot be assumed that findings in group or electronic brainstorming are generalizable to the microtask marketplace context.
+
+3) Number of ideas produced
+The models assume all instances that occur in the same ordinal (run) position have similar characteristics, across condition. We tested for differences in ordinal originality scores between condition, and found no significantly differences. In addition, the Bayesian methods applied do not require equivalent sample sizes in compared model fits - adding more samples to either model simply tightens the posterior parameter distributions for that model.
+REV: state assumption and supporting evidence explicitly
+
+4) Off-topic answers
+Off-topic answers were flagged in the coding process. The criteria was that the use case for the iPod could not be visualized. There were 12 off-topic instances total, showing that participants took the task very seriously. All hypothesis tests held with or without off-topic answers included. The AC and R3 both felt that asking for 100 ideas would result in noise. This work is a necessary exploration of this kind of task design by intuition, and participants in fact generated primarily non-random ideas.
+REV: a brief treatment of off-topic answers in analysis
+
+5) O-scores
+O-scores were computed as follows. A count of all instances in the idea node (for idea o-score) or category tree (for category o-score) was taken. This was divided by the total number of instances and subtracted from one to arrive at the o-score. The o-score is a relative measure dominated by the total number of unique responses. The "squishing" of scores into the .994-.999 range is an artifact of the volume of the data set and representative of the diversity of responses.
+REV: clarify o-score measure and response range
+
+6) Clustering validity
+Our analyses were primarily concerned with originality, computed as a function of number of instances in an idea node. The clustering validity test found 0.7% of the instances were falsely identified as belonging to a cluster to which they had no relation.
+TODO: discovered a problem here with our upper bound theory, need another angle of attack
+
+7) Hypotheses
+We agree that the first and second hypotheses would benefit by being expressed as research questions. The other three hypotheses are informed by prior work.
+REV: As suggested.
+
+This is the first work to examine crowd creativity with such a large volume of ideas (3292 reponses). As stated by R1, the approach taken is "very scientific in its application --- something very difficult in the domain of creativity". Even in the context of a single question and a single output of interest (uniqueness/originality), our methods and models contribute an approach for understanding idea generation at a massive scale. 
+
+The primary criticisms are of methodology, which we would like to further address:
+The AC questioned giving the rules of brainstorming are often given in an individual context. This is often done, including in comparisons of group vs nominal brainstorming [27].
+The AC further suggested that appropriateness should have been examined. We chose to emphasize uniqueness as a core component in all creativity measures. Number of unique ideas also correlates with quality overall [7, 4, 22, 21, 25, 6], and can be evaluated domain-independently, which appropriateness cannot. Cross-domain applicability is key to a comparable baseline.
+
+R1 questioned the lack of model validation. This paper leverages its models to test hypotheses, not for predictive power. In addition the fit of a Bayesian model is determined by its posterior distribution over parmameters, which we report. Regardless, we evaluated the idea rate model in a 10-fold cross validation, and found a mean squared error of 341.58 (about 18 ideas).
+
+R3 suggested a Mann-Whitney U test to better compare originality conditions. We performed this test and found a difference (p < 0.01) for both ideas and categories.
+R3 also expressed a slight misunderstanding of the test for common ideas (page 7). We tested the difference between the first 5 instances and the remaining 5-95 instances (not the last 5 instances) in a run. This test was performed only for runs with >=10 instances, so runs in all conditions contributed samples to both distributions.
+REV: revise description of hypothesis test to be more clear
+
+Finally, we appreciate the related work and formatting error revisions, and gladly accept them.
+
 # Main rebuttal content
 
 ## M1
@@ -21,7 +66,8 @@ the same or similar. Claiming generalizability of models trained on only
 a single data set is a major limitation of the work. It does not mean the
 work is bad, only that a larger data set would greatly strengthen the
 work. Even R1, the strongest advocate for the paper, observes that there
-is no validation of the model and questions its validity, which is the
+is no validation of the model and quesfrom the reader’s perspective? Also, as noted by R3, the o-scores
+tions its validity, which is the
 main contribution of the work.
 
 It was not our intention to suggest the findings were highly generalizable, but rather to provide evidence in support of the stated hypotheses as well as present models that can be applied to generalized datasets. Examining phenomena in the context of a single problem is not unusual in creativity literature, and the paper cites several examples in psychology (3, 4, 17, 22) and crowd creativity research specifically (28, 29).
