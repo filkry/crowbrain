@@ -16,16 +16,14 @@ def read_files(fils):
         return rows
 
 def read_base_data(dirs):
-    rows = []
+    dfs = []
+
     for d in dirs:
       for f in os.listdir(d):
         full_name = os.path.join(d,f)
-        if os.path.isdir(full_name):
-            print("I deleted the code here")
-        else:
-          if f == 'answers.csv':
-            rows = rows + read_file(full_name)
-    return rows
+        if f == 'answers.csv':
+            dfs.append(pd.read_csv(full_name, sep=',', quotechar='|', quoting=csv.QUOTE_NONNUMERIC, parse_dates=[12, 13]))
+    return pd.concat(dfs)
 
 def read_file(f):
     with open(f) as fin:
@@ -184,189 +182,7 @@ def run_mean(run, value_func):
         t += value_func(row)
     return t / len(run)
 
-def compute_mixing(clustered_df, df, cluster_forests):
-    dist = pd.Series([None for i in df.index], index=df.index)
-    dist_im = pd.Series([None for i in df.index], index=df.index)
-    im = pd.Series([0 for i in df.index], index=df.index)
-    mm = pd.Series([0 for i in df.index], index=df.index)
-    om = pd.Series([0 for i in df.index], index=df.index)
-    last_sim = pd.Series([None for i in df.index], index=df.index)
-    related_inmix = pd.Series([None for i in df.index], index=df.index)
-    
-    for (nr, wid, qc), run in clustered_df.groupby(['num_requested', 'worker_id', 'question_code']):
-        for ii, i in enumerate(run.index):
-            if ii == 0:
-                continue
-            for jj, j in reversed(list(enumerate(run.index[0:ii]))):
-                j_clus = run['idea'][j]
-                hcm_nc = cluster_forests[qc].node[j_clus]['remix_of']
-                if run['idea'][i] in hcm_nc:
-                    last_sim[i] = j
-                    dist[i] = ii - jj
-                    mm[j] = 1
-                    
-                    if om[j] > 0:
-                        dist_im[i] = dist[i] + dist_im[j]
-                        related_inmix[i] = related_inmix[j]
-                    else:
-                        im[j] = 1
-                        dist_im[i] = dist[i]
-                        related_inmix[i] = j
-                    
-                    om[i] = 1
-                    assert dist[i] > 0
-                    break
-    return dist, im, om, mm, dist_im, last_sim, related_inmix
-
-def do_format_data(processed_data_folder, filter_instances = None):
-    """
-    This function is pretty gigantic and ugly. It's a copy-paste of about half
-    an iPython notebook that was gradually built up to get my data into usable
-    form. Now that this part is rarely, if ever, touched, I wanted to get it
-    out of the way.
-
-    Takes the folder that holds all the data, and returns instance dataframe,
-    cluster dataframe, run dataframe, and cluster forests
-    """
-
-    base_data_dirs = [
-                  '/%s/pilot18' % processed_data_folder,
-                  '/%s/pilot17' % processed_data_folder,
-                  '/%s/pilot16' % processed_data_folder,
-                  '/%s/pilot14' % processed_data_folder,
-                  '/%s/pilot13' % processed_data_folder,
-                  '/%s/pilot12' % processed_data_folder,
-                  '/%s/pilot11' % processed_data_folder,]
-
-
-    prefix = '%s/pilot18_metrics/' % processed_data_folder
-    manual_csvs = list(map(lambda x: prefix + '%s-scores.csv' % x,
-                             ['fil', 'mike']))
-    
-
-    idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
-                         #['charity', 'iPod', 'forgot_name', 'turk']}
-    cluster_tree_csvs = {qc: metrics_folder(processed_data_folder, "_%s_clusters.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
-                         #['charity', 'iPod', 'forgot_name', 'turk']}
-        
-    df_output_csv = '/%s/pilot18_notebook_output/instances.csv' % processed_data_folder
-    rmdf_output_csv = '/%s/pilot18_notebook_output/runs.csv' % processed_data_folder
-    clustersdf_output_csv = '/%s/pilot18_notebook_output/cluster_trees.csv' % processed_data_folder
-
-    # Read in a bunch of base data
-
-    
-
-    merge_column_names = ['worker_id', 'question_code', 'answer_num', 'num_requested']
-        
-    # Read in the main processed data files
-    all_rows = read_base_data(base_data_dirs)
-    num_responses = len(all_rows)
-
-    bad_times = [(0 if (r[9] == 'missing' or r[10] == 'missing' or \
-                        int(r[9]) <=0 or int(r[10]) <= 0) else 1) for r in all_rows]
-
-    df_base = pd.DataFrame({'worker_id': pd.Series([row[0] for row in all_rows], dtype=object),
-                'question_code': pd.Series([row[2] for row in all_rows], dtype=object),
-                'num_requested': pd.Series([row[5] for row in all_rows], dtype=uint8),
-                'answer_num': pd.Series([row[6] for row in all_rows], dtype=uint8),
-                'answer': pd.Series([row[7] for row in all_rows], dtype=object),
-                'word_count': pd.Series([row[8] for row in all_rows], dtype=uint32),
-                'submit_datetime': pd.Series(pd.to_datetime([row[12] for row in all_rows])),
-                'accept_datetime': pd.Series(pd.to_datetime([row[13] for row in all_rows])),
-                'start_time': series_from_row(all_rows, 9, uint64),
-                'end_time': series_from_row(all_rows, 10, uint64),
-                'valid_time': pd.Series(bad_times, dtype=uint8),
-                'batch_file': series_from_row(all_rows, 14, object),
-    })
-
-    qc_conds = set(df_base['question_code'])
-
-    #print len(df_base)
-
-    ## Dropping unlimited condition
-    #print "With unlimited", len(df_base)
-
-    #print "iPod unlimited"
-    #ipodf = df_base[df_base['question_code']=='iPod']
-    #print "num instances", len(ipodf)
-
-    #groups = ipodf.groupby(['worker_id', 'submit_datetime'])
-    #print "num hits", len(groups)
-
-    #print "num workers", len(set(ipodf['worker_id']))
-
-
-    # ========================================================
-    # INSTANCE DATA
-    # ========================================================
-
-
-    df_base = df_base[~(df_base['num_requested'] == 0)]
-    #print "Without unlimited", len(df_base)
-
-    # Check for repeat workers
-    is_repeat = pd.Series([0 for i in df_base.index], index=df_base.index)
-    df_base = df_base.sort(['submit_datetime'])
-    runs = df_base.groupby(['worker_id', 'question_code', 'num_requested', 'submit_datetime'])
-
-    last_sdt = None
-    seen_keys = set()
-
-    for (wid, qc, nr, sdt), run in runs:
-        assert (last_sdt is None or sdt >= last_sdt)
-        assert (nr >= len(run))
-        if (wid, qc) in seen_keys:
-            for i in run.index:
-                is_repeat[i] = 1
-        else:
-            seen_keys.add((wid, qc))
-                
-    df_base['is_repeat_worker'] = is_repeat
-
-
-    # Read in heirarchical clusters
-    rows = [r for key in idea_cluster_csvs
-              for r in read_file(idea_cluster_csvs[key])]
-    #print len(rows)
-    df = pd.merge(df_base,
-                  pd.DataFrame({'worker_id': series_from_row(rows, 5, object),
-                      'question_code': series_from_row(rows, 0, object),
-                      'num_requested': series_from_row(rows, 7, uint8),
-                      'answer_num': series_from_row(rows, 4, uint8),
-                      'idea': series_from_row(rows, 2, uint64),
-                      'answer': series_from_row(rows, 3, object),
-                      'valid_cluster': pd.Series([1 for row in rows], dtype=uint8),}),
-                  'left', merge_column_names + ['answer'])
-
-
-    #print "After clusters:", len(df)
-
-    # Read in manual codes
-    df = pd.merge(df, read_manual_csv('mike', manual_csvs), 'left', merge_column_names)
-    df = pd.merge(df, read_manual_csv('fil', manual_csvs), 'left', merge_column_names)
-
-
-    # ========================================================
-    # FILTER DATA
-    # ======================================================== 
-    if filter_instances:
-        df = filter_instances(df)
-    
-    # ========================================================
-    # CLUSTER TOPOLOGY
-    # ========================================================
-
-    cluster_forests = {qc: cluster_forest(cluster_tree_csvs[qc]) for qc in cluster_tree_csvs.keys()
-            if len(df[df['question_code'] == qc]) > 0}
-
-
-    # ========================================================
-    # CLUSTER DATA
-    # ========================================================
-
+def mk_cluster_df(instance_df, cluster_forests):
     # Put cluster metrics in their own dataframe
     ids = []
     labels = []
@@ -390,7 +206,7 @@ def do_format_data(processed_data_folder, filter_instances = None):
     #print qc_conds
 
     for qc in qc_conds:
-        sub_df = df[df['question_code'] == qc]
+        sub_df = instance_df[instance_df['question_code'] == qc]
         if len(sub_df) == 0:
             continue
 
@@ -463,47 +279,55 @@ def do_format_data(processed_data_folder, filter_instances = None):
     clusters_df['subtree_oscore'] = 1 - clusters_df['subtree_probability']
     clusters_df['idea_oscore'] = 1 - clusters_df['idea_probability']
 
-    # Merge idea dataframe with cluster dataframe
+    return clusters_df
 
-    #print "Pre cluster merge data size:", len(df)
-    df = pd.merge(df, clusters_df, 'left', ['idea', 'question_code'])
-    #print "Post cluster merge data size:", len(df)
 
-    #print df
+def compute_mixing(clustered_df, df, cluster_forests):
+    dist = pd.Series([None for i in df.index], index=df.index)
+    dist_im = pd.Series([None for i in df.index], index=df.index)
+    im = pd.Series([0 for i in df.index], index=df.index)
+    mm = pd.Series([0 for i in df.index], index=df.index)
+    om = pd.Series([0 for i in df.index], index=df.index)
+    last_sim = pd.Series([None for i in df.index], index=df.index)
+    related_inmix = pd.Series([None for i in df.index], index=df.index)
+    
+    for (nr, wid, qc), run in clustered_df.groupby(['num_requested', 'worker_id', 'question_code']):
+        for ii, i in enumerate(run.index):
+            if ii == 0:
+                continue
+            for jj, j in reversed(list(enumerate(run.index[0:ii]))):
+                j_clus = run['idea'][j]
+                hcm_nc = cluster_forests[qc].node[j_clus]['remix_of']
+                if run['idea'][i] in hcm_nc:
+                    last_sim[i] = j
+                    dist[i] = ii - jj
+                    mm[j] = 1
+                    
+                    if om[j] > 0:
+                        dist_im[i] = dist[i] + dist_im[j]
+                        related_inmix[i] = related_inmix[j]
+                    else:
+                        im[j] = 1
+                        dist_im[i] = dist[i]
+                        related_inmix[i] = j
+                    
+                    om[i] = 1
+                    assert dist[i] > 0
+                    break
+    return dist, im, om, mm, dist_im, last_sim, related_inmix
 
-    df['time_spent'] = df['end_time'] - df['start_time']
-
-    sub_df = df[(df['valid_time'] > 0)]
-    assert(min(sub_df['time_spent']) > 0)
-
-    # Compute outmixing/inmixing
-
-    clustered_df = df[df['valid_cluster'] == 1]
-    dist, im, om, mm, dist_im, last_sim, related_inmix = compute_mixing(clustered_df, df, cluster_forests)
-
-    df['distance_from_similar'] = dist
-    df['is_inmix'] = im
-    df['is_midmix'] = mm
-    df['is_outmix'] = om
-    df['distance_from_inmix'] = dist_im
-    df['previous_similar_index'] = last_sim
-    df['inmix_index'] = related_inmix
-
-    # ========================================================
-    # RUN DATA
-    # ========================================================
-
-    # Generate run-level metrics
-
-    runs = df.groupby(['num_requested', 'worker_id', 'question_code', 'submit_datetime', 'accept_datetime'])
+def mk_run_df(instance_df):
+    runs = instance_df.groupby(['num_requested', 'worker_id',
+        'question_code', 'submit_datetime', 'accept_datetime',
+        'run_id'])
 
     wids = pd.Series([wid for ((nr, wid, qc, sdt, adt), run) in runs], dtype=object)
     qcs = pd.Series([qc for ((nr, wid, qc, sdt, adt), run) in runs], dtype=object)
     nrs = pd.Series([nr for ((nr, wid, qc, sdt, adt), run) in runs], dtype=float64) # make float for normalization purposes
     nrc = pd.Series([len(run) for (name, run) in runs], dtype=float64) # make float for normalization purposes
 
-    # Assign run IDs to df
-    rids = pd.Series([None for i in df.index], index=df.index)
+    # TODO: generate run IDs in the instance DF
+    rids = pd.Series([None for i in instance_df.index], index=instance_df.index)
     for i, (name, run) in enumerate(runs):
         for j in run.index:
             rids[j] = i
@@ -541,9 +365,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
     nus = pd.Series([len(set(run['subtree_root'])) for (name, run) in runs], dtype=uint16)
 
-    mso_val = lambda x: x['subtree_oscore']
-    mso = pd.Series([run_mean(run, mso_val) for (name, run) in runs], dtype=float64)
-
     ni = pd.Series([sum(run['is_inmix']) for name, run in runs], dtype=float64)
 
     no = pd.Series([sum(run['is_outmix']) for name, run in runs], dtype=float64)
@@ -554,13 +375,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
     tv_test = lambda run: len(run) == len(run[(run['valid_time'] > 0)])
     tv = pd.Series([tv_test(run) for name, run in runs], dtype=uint8)
 
-    # Drop redundant data from original dataframe
-    df = df.drop('accept_datetime', 1)
-    df = df.drop('submit_datetime', 1)
-    df = df.drop('worker_id', 1)
-    df = df.drop('num_requested', 1)
-    df = df.drop('question_code', 1)
-
     rmdf = pd.DataFrame({'worker_id': wids,
                                 'question_code': qcs,
                                 'num_requested': nrs,
@@ -569,17 +383,215 @@ def do_format_data(processed_data_folder, filter_instances = None):
                                 'submit_datetime': sdts,
                                 #'is_repeat_worker': irw,
                                 'r_mean_word_count': mwc,
-                                'r_num_unique_ideas': nu,
-                                'r_num_unique_subtrees': nus,
-                                #'mean_subtree_oscore': mhclo,# Think about where I use this; is it better to just take from all ideas?
-                                'num_inmix': ni, # same as above
-                                'num_outmix': no, # same as above
+                                #'r_num_unique_ideas': nu,
+                                #'r_num_unique_subtrees': nus,
+                                #'num_inmix': ni, # same as above
+                                #'num_outmix': no, # same as above
                                 'r_valid_cluster': cv,
                                 'r_valid_time': tv,
                                 })
 
+    return rmdf
+
+
+
+
+
+def do_format_data(processed_data_folder, filter_instances = None):
+    """
+    This function is pretty gigantic and ugly. It's a copy-paste of about half
+    an iPython notebook that was gradually built up to get my data into usable
+    form. Now that this part is rarely, if ever, touched, I wanted to get it
+    out of the way.
+
+    Takes the folder that holds all the data, and returns instance dataframe,
+    cluster dataframe, run dataframe, and cluster forests
+    """
+
+    base_data_dirs = [
+                  '/%s/pilot18' % processed_data_folder,
+                  '/%s/pilot17' % processed_data_folder,
+                  '/%s/pilot16' % processed_data_folder,
+                  '/%s/pilot14' % processed_data_folder,
+                  '/%s/pilot13' % processed_data_folder,
+                  '/%s/pilot12' % processed_data_folder,
+                  '/%s/pilot11' % processed_data_folder,]
+
+
+    prefix = '%s/pilot18_metrics/' % processed_data_folder
+    manual_csvs = list(map(lambda x: prefix + '%s-scores.csv' % x,
+                             ['fil', 'mike']))
+    
+
+    idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
+                         ['iPod', 'turk']}
+                         #['charity', 'iPod', 'forgot_name', 'turk']}
+    cluster_tree_csvs = {qc: metrics_folder(processed_data_folder, "_%s_clusters.csv" % qc) for qc in \
+                         ['iPod', 'turk']}
+                         #['charity', 'iPod', 'forgot_name', 'turk']}
+        
+    df_output_csv = '/%s/pilot18_notebook_output/instances.csv' % processed_data_folder
+    rmdf_output_csv = '/%s/pilot18_notebook_output/runs.csv' % processed_data_folder
+    clustersdf_output_csv = '/%s/pilot18_notebook_output/cluster_trees.csv' % processed_data_folder
+
+    # Read in a bunch of base data
 
     
+
+    merge_column_names = ['worker_id', 'question_code', 'answer_num', 'num_requested']
+        
+    # Read in the main processed data files
+    base_df = read_base_data(base_data_dirs)
+    print(base_df)
+
+
+    num_responses = len(all_rows)
+
+    bad_times = [(0 if (r[9] == 'missing' or r[10] == 'missing' or \
+                        int(r[9]) <=0 or int(r[10]) <= 0) else 1) for r in all_rows]
+
+    df_base = pd.DataFrame({'worker_id': pd.Series([row[0] for row in all_rows], dtype=object),
+                'question_code': pd.Series([row[2] for row in all_rows], dtype=object),
+                'num_requested': pd.Series([row[5] for row in all_rows], dtype=uint8),
+                'answer_num': pd.Series([row[6] for row in all_rows], dtype=uint8),
+                'answer': pd.Series([row[7] for row in all_rows], dtype=object),
+                'word_count': pd.Series([row[8] for row in all_rows], dtype=uint32),
+                'submit_datetime': pd.Series(pd.to_datetime([row[12] for row in all_rows])),
+                'accept_datetime': pd.Series(pd.to_datetime([row[13] for row in all_rows])),
+                'start_time': series_from_row(all_rows, 9, uint64),
+                'end_time': series_from_row(all_rows, 10, uint64),
+                'valid_time': pd.Series(bad_times, dtype=uint8),
+                'batch_file': series_from_row(all_rows, 14, object),
+    })
+
+    qc_conds = set(df_base['question_code'])
+
+    #print len(df_base)
+
+    ## Dropping unlimited condition
+    #print "With unlimited", len(df_base)
+
+    #print "iPod unlimited"
+    #ipodf = df_base[df_base['question_code']=='iPod']
+    #print "num instances", len(ipodf)
+
+    #groups = ipodf.groupby(['worker_id', 'submit_datetime'])
+    #print "num hits", len(groups)
+
+    #print "num workers", len(set(ipodf['worker_id']))
+
+
+    # ========================================================
+    # INSTANCE DATA
+    # ========================================================
+
+
+    df_base = df_base[~(df_base['num_requested'] == 0)]
+    #print "Without unlimited", len(df_base)
+
+    # Check for repeat workers
+    is_repeat = pd.Series([0 for i in df_base.index], index=df_base.index)
+    df_base = df_base.sort(['submit_datetime'])
+    runs = df_base.groupby(['worker_id', 'question_code', 'num_requested', 'submit_datetime'])
+
+    last_sdt = None
+    seen_keys = set()
+    rids = []
+
+    for rid, ((wid, qc, nr, sdt), run) in enumerate(runs):
+        assert (last_sdt is None or sdt >= last_sdt)
+        assert (nr >= len(run))
+        if (wid, qc) in seen_keys:
+            for i in run.index:
+                is_repeat[i] = 1
+        else:
+            seen_keys.add((wid, qc))
+        rids.append(rids)
+                
+    df_base['run_id'] = pd.Series(rids)
+    df_base['is_repeat_worker'] = is_repeat
+
+
+    # Read in heirarchical clusters
+    rows = [r for key in idea_cluster_csvs
+              for r in read_file(idea_cluster_csvs[key])]
+    #print len(rows)
+    df = pd.merge(df_base,
+                  pd.DataFrame({'worker_id': series_from_row(rows, 5, object),
+                      'question_code': series_from_row(rows, 0, object),
+                      'num_requested': series_from_row(rows, 7, uint8),
+                      'answer_num': series_from_row(rows, 4, uint8),
+                      'idea': series_from_row(rows, 2, uint64),
+                      'answer': series_from_row(rows, 3, object),
+                      'valid_cluster': pd.Series([1 for row in rows], dtype=uint8),}),
+                  'left', merge_column_names + ['answer'])
+
+
+    #print "After clusters:", len(df)
+
+    # Read in manual codes
+    df = pd.merge(df, read_manual_csv('mike', manual_csvs), 'left', merge_column_names)
+    df = pd.merge(df, read_manual_csv('fil', manual_csvs), 'left', merge_column_names)
+
+
+    # ========================================================
+    # FILTER DATA
+    # ======================================================== 
+    if filter_instances:
+        df = filter_instances(df)
+    
+    # ========================================================
+    # CLUSTER TOPOLOGY
+    # ========================================================
+
+    cluster_forests = {qc: cluster_forest(cluster_tree_csvs[qc]) for qc in cluster_tree_csvs.keys()
+            if len(df[df['question_code'] == qc]) > 0}
+
+
+    # ========================================================
+    # CLUSTER DATA
+    # ========================================================
+
+    clusters_df = mk_cluster_df(df, cluster_forests)
+
+    # Merge idea dataframe with cluster dataframe
+
+    #print "Pre cluster merge data size:", len(df)
+    df = pd.merge(df, clusters_df, 'left', ['idea', 'question_code'])
+    #print "Post cluster merge data size:", len(df)
+
+    #print df
+
+    #df['time_spent'] = df['end_time'] - df['start_time']
+
+    # Compute outmixing/inmixing
+
+    #clustered_df = df[df['valid_cluster'] == 1]
+    #dist, im, om, mm, dist_im, last_sim, related_inmix = compute_mixing(clustered_df, df, cluster_forests)
+
+    #df['distance_from_similar'] = dist
+    #df['is_inmix'] = im
+    #df['is_midmix'] = mm
+    #df['is_outmix'] = om
+    #df['distance_from_inmix'] = dist_im
+    #df['previous_similar_index'] = last_sim
+    #df['inmix_index'] = related_inmix
+
+    # ========================================================
+    # RUN DATA
+    # ========================================================
+
+    # Generate run-level metrics
+    rmdf = mk_run_df(df)
+
+        # Drop redundant data from original dataframe
+    df = df.drop('accept_datetime', 1)
+    df = df.drop('submit_datetime', 1)
+    df = df.drop('worker_id', 1)
+    df = df.drop('num_requested', 1)
+    df = df.drop('question_code', 1)
+
+       
 
     
 
@@ -596,3 +608,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
     clusters_df.to_csv(clustersdf_output_csv)
 
     return df, rmdf, clusters_df, cluster_forests
+
+if __name__ == "__main__":
+    do_format_data("/home/fil/enc_projects/crowbrain/processed_data")
