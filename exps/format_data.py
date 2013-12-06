@@ -88,29 +88,10 @@ def all_nodes_under(forest, node):
         ret += all_nodes_under(forest, s)
     return ret
 
-def mk_cluster_forest(structure_csv):
-    f = nx.DiGraph()
-    f.graph['subtree_roots'] = set()
-    f.graph['subtree_max_depth'] = defaultdict(int)
-    
-    rows = read_file(structure_csv)
-        
-    if len(rows) == 0:
-        return f
-    
-    for qc, child, parent, label, fn in rows:
-        c = int(child)
-        p = int(parent)
-        if parent != '':
-            f.add_edge(p, c)
-        else:
-            f.add_node(c)
-        f.node[c]['label'] = dumb_strip(label) if len(label) > 0 else None
-            
-    # delete the single root node
-    root = nx.topological_sort(f)[0]
-    f.remove_nodes_from([root])
-    
+
+def annotated_cluster_forest(f):
+    f = f.copy()
+
     for node in f.nodes():        
         # Subtree root
         cur = node
@@ -152,19 +133,37 @@ def mk_cluster_forest(structure_csv):
         targets = targets.union(set(f.node[n]["all_nodes_under"]))
         
         f.node[n]['remix_of'] = targets
+
+    return f
+     
+
+def mk_cluster_forest(structure_csv):
+    f = nx.DiGraph()
+    f.graph['subtree_roots'] = set()
+    f.graph['subtree_max_depth'] = defaultdict(int)
+    
+    rows = read_file(structure_csv)
         
+    if len(rows) == 0:
+        return f
+    
+    for qc, child, parent, label, fn in rows:
+        c = int(child)
+        p = int(parent)
+        if parent != '':
+            f.add_edge(p, c)
+        else:
+            f.add_node(c)
+        f.node[c]['label'] = dumb_strip(label) if len(label) > 0 else None
+            
+    # delete the single root node
+    root = nx.topological_sort(f)[0]
+    f.remove_nodes_from([root])
+    
     return f
 
 def num_instances_in(df, clusters):
     return sum(len(df[df['idea'] == c]) for c in clusters)
-
-def run_count(run, pass_func):
-    count = 0
-    for i in run.iterrows():
-        row = i[1]
-        if pass_func(row):
-            count += 1
-    return count
 
 # TODO: function will need revision with new data model
 def compute_mixing(clustered_df, df, cluster_forests):
@@ -201,8 +200,14 @@ def compute_mixing(clustered_df, df, cluster_forests):
                     break
     return dist, im, om, mm, dist_im, last_sim, related_inmix
 
+def mk_run_count(instance_df):
+    runs = instance_df.groupby(['num_requested', 'worker_id',
+        'question_code', 'submit_datetime', 'accept_datetime'])
+    return runs.size()
+
+
 def mk_run_df(instance_df, agg_dict, column_names):
-    runs = base_df.groupby(['num_requested', 'worker_id',
+    runs = instance_df.groupby(['num_requested', 'worker_id',
         'question_code', 'submit_datetime', 'accept_datetime'],
         as_index=False)
 
