@@ -22,7 +22,13 @@ def read_base_data(dirs):
       for f in os.listdir(d):
         full_name = os.path.join(d,f)
         if f == 'answers.csv':
-            dfs.append(pd.read_csv(full_name, sep=',', quotechar='|', quoting=csv.QUOTE_NONNUMERIC, parse_dates=[12, 13]))
+            dfs.append(pd.read_csv(full_name, sep=',', quotechar='|',
+                quoting=csv.QUOTE_NONNUMERIC, parse_dates=[12, 13],
+                header=None, skiprows=1,
+                names=['worker_id', 'question', 'question_code', 'post_date',
+                    'screenshot', 'num_requested', 'answer_num', 'answer',
+                    'word_count', 'start_time', 'end_time', 'answer_code',
+                    'submit_datetime', 'accept_datetime']))
     return pd.concat(dfs)
 
 def read_file(f):
@@ -45,33 +51,6 @@ def read_file(f):
             rows.append(row + [f])
             
         return rows
-
-def clean_missing(v):
-    return 0 if v == '' or v == 'missing' else v
-
-def series_from_row(rows, index, t):      
-    if t == object:
-        return pd.Series([row[index] for row in rows], dtype=t)
-    elif t == datetime64:
-        return pd.Series([np.datetime64(row[index]) for row in rows], dtype=t)
-    else:
-        s = pd.Series([clean_missing(row[index]) for row in rows], dtype=t)
-        return s
-
-def read_manual_csv(name, manual_csvs):
-    index = 0 if name == 'fil' else 1
-    rows = read_file(manual_csvs[index])
-    
-    df = pd.DataFrame({'worker_id': series_from_row(rows, 0, object),
-            'question_code': series_from_row(rows, 2, object),
-            'num_requested': series_from_row(rows, 5, uint8),
-            'answer_num': series_from_row(rows, 6, uint8),
-            ('utility_%s' % name): series_from_row(rows, 13, uint8),
-            ('realistic_%s' % name): series_from_row(rows, 14, uint8),
-            ('distance_%s' % name): series_from_row(rows, 16, uint8),
-            ('valid_%s' % name): pd.Series([1 for row in rows], dtype=uint8),
-    })
-    return df
 
 def dumb_strip(s):
     return ''.join([c for c in s if c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -174,13 +153,6 @@ def run_count(run, pass_func):
         if pass_func(row):
             count += 1
     return count
-
-def run_mean(run, value_func):
-    t = 0.0
-    for i in run.iterrows():
-        row = i[1]
-        t += value_func(row)
-    return t / len(run)
 
 def mk_cluster_df(instance_df, cluster_forests):
     # Put cluster metrics in their own dataframe
@@ -316,37 +288,24 @@ def compute_mixing(clustered_df, df, cluster_forests):
                     break
     return dist, im, om, mm, dist_im, last_sim, related_inmix
 
-def mk_run_df(instance_df):
-    runs = instance_df.groupby(['num_requested', 'worker_id',
-        'question_code', 'submit_datetime', 'accept_datetime',
-        'run_id'])
+def mk_run_df(base_df):
+    runs = base_df.groupby(['num_requested', 'worker_id',
+        'question_code', 'submit_datetime', 'accept_datetime'],
+        as_index=False)
 
-    wids = pd.Series([wid for ((nr, wid, qc, sdt, adt), run) in runs], dtype=object)
-    qcs = pd.Series([qc for ((nr, wid, qc, sdt, adt), run) in runs], dtype=object)
-    nrs = pd.Series([nr for ((nr, wid, qc, sdt, adt), run) in runs], dtype=float64) # make float for normalization purposes
-    nrc = pd.Series([len(run) for (name, run) in runs], dtype=float64) # make float for normalization purposes
+    rmdf = runs.agg({'answer': len,
+        'word_count': np.mean})
 
-    # TODO: generate run IDs in the instance DF
-    rids = pd.Series([None for i in instance_df.index], index=instance_df.index)
-    for i, (name, run) in enumerate(runs):
+    #rmdf.columns = ['num_requested', 'worker_id', 'question_code',
+    #        'submit_datetime', 'accept_datetime', 'num_received']
+    print(rmdf)
+
+    # assign run IDs
+    base_run_mappings = dict()
+    for rid, (name, run) in enumerate(runs):
         for j in run.index:
-            rids[j] = i
-    df['run_id'] = rids
+            base_run_mappings[j] = rid
 
-    # Test worked
-    for i in nrc.index:
-        run_df = df[df['run_id'] == i]
-        assert(nrc[i] == len(run_df))
-            
-    for i in nrs.index:
-        assert(nrs[i] >= nrc[i])
-
-    adts = pd.Series(pd.to_datetime([adt for (nr, wid, qc, sdt, adt), run in runs]))
-    sdts = pd.Series(pd.to_datetime([sdt for (nr, wid, qc, sdt, adt), run in runs]))
-
-    mwc_val = lambda x: x['word_count']
-    mwc = pd.Series([run_mean(run, mwc_val) for (name, run) in runs],
-                    dtype=float64)
 
     nu = pd.Series([len(set(run['idea'])) for name, run in runs],
                     dtype=uint16)
@@ -374,6 +333,9 @@ def mk_run_df(instance_df):
 
     tv_test = lambda run: len(run) == len(run[(run['valid_time'] > 0)])
     tv = pd.Series([tv_test(run) for name, run in runs], dtype=uint8)
+
+    # Thing to include in augmented dataframe:
+    # number of unique ideas
 
     rmdf = pd.DataFrame({'worker_id': wids,
                                 'question_code': qcs,
@@ -419,8 +381,8 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
 
     prefix = '%s/pilot18_metrics/' % processed_data_folder
-    manual_csvs = list(map(lambda x: prefix + '%s-scores.csv' % x,
-                             ['fil', 'mike']))
+    #manual_csvs = list(map(lambda x: prefix + '%s-scores.csv' % x,
+    #                         ['fil', 'mike']))
     
 
     idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
@@ -441,11 +403,11 @@ def do_format_data(processed_data_folder, filter_instances = None):
     merge_column_names = ['worker_id', 'question_code', 'answer_num', 'num_requested']
         
     # Read in the main processed data files
-    base_df = read_base_data(base_data_dirs)
-    print(base_df)
+    idf_base = read_base_data(base_data_dirs)
+    print(idf_base['start_time'].min())
+    #idf_base['valid_time'] = idf_base['
 
 
-    num_responses = len(all_rows)
 
     bad_times = [(0 if (r[9] == 'missing' or r[10] == 'missing' or \
                         int(r[9]) <=0 or int(r[10]) <= 0) else 1) for r in all_rows]
@@ -487,7 +449,7 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
 
     df_base = df_base[~(df_base['num_requested'] == 0)]
-    #print "Without unlimited", len(df_base)
+    #print "Without unlimited", len(df_base
 
     # Check for repeat workers
     is_repeat = pd.Series([0 for i in df_base.index], index=df_base.index)
