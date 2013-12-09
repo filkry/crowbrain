@@ -206,10 +206,14 @@ def mk_run_count(instance_df):
     return runs.size()
 
 
-def mk_run_df(instance_df, agg_dict, column_names):
-    runs = instance_df.groupby(['num_requested', 'worker_id',
+def mk_redundant_run_helper(full_df):
+    runs = full_df.groupby(['num_requested', 'worker_id',
         'question_code', 'submit_datetime', 'accept_datetime'],
         as_index=False)
+
+    agg_dict = {'answer': len }
+    column_names = ['num_requested', 'worker_id', 'question_code',
+            'submit_datetime', 'accept_datetime', 'num_received']
 
     rmdf = runs.agg(agg_dict)
     rmdf.columns = column_names
@@ -245,6 +249,90 @@ def dump_csvs(processed_data_folder, idf):
 
     idf.to_csv(df_output_csv)
     #clusters_df.to_csv(clustersdf_output_csv)
+
+def mk_redundant(idf, cluster_forests):
+    # annotate the cluster_forests
+    ann_cfs = {key:annotated_cluster_forest(cluster_forests[key]) for key in cluster_forests} 
+
+    # build cluster dataframe
+    clusters_df = mk_redundant_cluster_df_helper(idf, ann_cfs)
+    full_df = pd.merge(idf, clusters_df, 'left', ['idea', 'question_code'])
+
+    full_df['time_spent'] = full_df['end_time'] - full_df['start_time']
+    #assert(min(full_df[!full_df['time_spent'].isnull()]['time_spent']) > 0)
+
+    full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
+
+    rmdf = mk_redundant_run_helper(full_df) # TODO: needs a lot more metrics
+
+    return full_df, rmdf, clusters_df, ann_cfs
+
+
+def mk_redundant_riffing_helper(full_df, ann_cluster_forests):
+    cv_df = full_df[~full_df['idea'].isnull()]
+    dist, im, om, mm, dist_im, last_sim, related_inmix = compute_mixing(cv_df,
+            full_df, ann_cluster_forests)
+
+    full_df['distance_from_similar'] = dist
+    full_df['is_inmix'] = im
+    full_df['is_midmix'] = mm
+    full_df['is_outmix'] = om
+    full_df['distance_from_inmix'] = dist_im
+    full_df['previous_similar_inmix'] = last_sim
+    full_df['inmix_index'] = related_inmix
+
+    return full_df
+
+
+def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
+    fields = defaultdict(list)
+    for qc in ann_cluster_forests.keys():
+        sub_df = idf[idf['question_code'] == qc]
+        if len(sub_df) == 0:
+            continue
+
+        f = ann_cluster_forests[qc]
+        for idea in f.nodes():
+            nd = f.node[idea]
+            
+            fields['idea'].append(idea)
+            fields['idea_label'].append(nd['label'])
+            preds = f.predecessors(idea)
+            fields['parent'].append(preds[0] if len(preds) > 0 else -1)
+            fields['is_root'].append(idea == nd['subtree_root'])
+            fields['is_leaf'].append(len(f.successors(idea)) == 0)
+            fields['num_children'].append(len(f.successors(idea)))
+            fields['subtree_root'].append(nd['subtree_root'])
+            fields['depth_in_subtree'].append(nd['depth'])
+            fields['height_in_subtree'].append(nd['height'])
+            fields['question_code'].append(qc)
+            fields['num_nodes_under'].append(len(nd['all_nodes_under']))
+
+            # Metrics requiring instance info
+            fields['num_instances_under'].append(num_instances_in(sub_df, nd['all_nodes_under']))
+            nus = num_instances_in(sub_df, f.node[nd['subtree_root']]['all_nodes_under'])
+            fields['subtree_probability'].append(float(nus) / len(sub_df))
+
+            nii = num_instances_in(sub_df,[idea])
+            fields['idea_probability'].append(float(nii) / len(sub_df))
+            fields['num_ideas_under'].append(nii)
+
+            instance_df = sub_df[sub_df['idea'] == idea]
+            fields['num_instances'].append(len(instance_df))
+            fields['num_workers'].append(len(set(instance_df['worker_id'])))
+
+    clusters_df = pd.DataFrame(
+        {key: pd.Series(fields[key]) for key in fields})
+
+    clusters_df['subtree_oscore'] = 1 - clusters_df['subtree_probability']
+    clusters_df['idea_oscore'] = 1 - clusters_df['idea_probability']
+
+    return clusters_df
+            
+
+          
+
+    
 
 
 def do_format_data(processed_data_folder, filter_instances = None):
