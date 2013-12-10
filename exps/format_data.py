@@ -9,12 +9,6 @@ from collections import defaultdict, OrderedDict
 def metrics_folder(pd_folder, x):
         return '/%s/pilot18_metrics/%s' % (pd_folder, x)
 
-def read_files(fils):
-        rows = []
-        for f in fils:
-            rows = rows + read_file(f)
-        return rows
-
 def read_base_data(dirs):
     dfs = []
 
@@ -29,7 +23,9 @@ def read_base_data(dirs):
                     'screenshot', 'num_requested', 'answer_num', 'answer',
                     'word_count', 'start_time', 'end_time', 'answer_code',
                     'submit_datetime', 'accept_datetime']))
-    return pd.concat(dfs)
+
+    con = pd.concat(dfs, ignore_index = True)
+    return con
 
 def read_cluster_data(files):
     dfs = []
@@ -227,13 +223,16 @@ def mk_redundant_run_helper(full_df):
 
 def mk_repeat_workers_series(adf):
     adf = adf.copy() # don't sort the passed dataframe
+    
     is_repeat = pd.Series([0 for i in adf.index], index=adf.index)
     adf = adf.sort(['submit_datetime'])
     runs = adf.groupby(['worker_id', 'question_code', 'num_requested', 'submit_datetime'])
+    print("repeat worker check count", len(list(runs)))
 
     seen_keys = set()
     for rid, ((wid, qc, nr, sdt), run) in enumerate(runs):
-        assert (nr >= len(run))
+        assert (nr >= len(run) or nr == 0)
+
         if (wid, qc) in seen_keys:
             for i in run.index:
                 is_repeat[i] = 1
@@ -264,6 +263,11 @@ def mk_redundant(idf, cluster_forests):
     full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
 
     rmdf = mk_redundant_run_helper(full_df) # TODO: needs a lot more metrics
+
+    full_df = pd.merge(full_df,
+            rmdf,
+            'left',
+            ['num_requested', 'worker_id', 'question_code', 'submit_datetime', 'accept_datetime'])
 
     return full_df, rmdf, clusters_df, ann_cfs
 
@@ -381,7 +385,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
                   'left', merge_column_names, suffixes=('', '_clus'))
 
 
-
     # ========================================================
     # FILTER DATA
     # ======================================================== 
@@ -405,3 +408,5 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
 if __name__ == "__main__":
     idf, cfs = do_format_data("/home/fil/enc_projects/crowbrain/processed_data")
+    
+    print(idf)
