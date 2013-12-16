@@ -20,6 +20,7 @@ from imp import reload
 import random
 import math
 import matplotlib.pyplot as plt
+import json
 
 from collections import defaultdict, OrderedDict
 
@@ -39,6 +40,8 @@ from collections import defaultdict, OrderedDict
 
 pystan_test_mode = False # When this variable is on, we do single chains and few iterations, to go fast
 pystan_fit_cache = dict()
+
+error_df = None
 
 # <codecell>
 
@@ -322,23 +325,37 @@ def view_exp_model_fit(dat, fit):
 
 # <codecell>
 
-def hyp_test(dats, model_string, testfunc, cache_key):
-    n_chain = 1 if pystan_test_mode else 3
-    n_saved_steps = 100 if pystan_test_mode else 10000
+def hyp_test(dats, model_string, testfunc, cache_key, df = None):
+    n_chain = 2 if pystan_test_mode else 3 
+    n_saved_steps = 1000 if pystan_test_mode else 10000
     
     fits = []
     for i, dat in enumerate(dats):
+        #print(dat)
         ck = cache_key + str(i)
         if ck not in pystan_fit_cache:
-            fit = pystan.stan(model_code=model_string,
+            try:
+                fit = pystan.stan(model_code=model_string,
                               data=dat,
                               iter=math.ceil(n_saved_steps/n_chain), chains=n_chain)
-            pystan_fit_cache[ck] = fit
-            fits.append(fit)
+                pystan_fit_cache[ck] = fit
+                fits.append(fit)
+            except:
+                print("Exception")
+                dat2 = {'N': dat['N'],
+                        'y': [float(y) for y in dat['y']]}
+                with open('ipython_output/exception_dat.json', 'w') as f:
+                    f.write(json.dumps(dat2))
+                if not df is None:
+                    with open('ipython_output/exception_ideas.json', 'w') as f:
+                        f.write(json.dumps([int(i) for i in df['idea']]))
+                    with open('ipython_output/exception_cats.json', 'w') as f:
+                        f.write(json.dumps([int(i) for i in df['subtree_root']]))
+                #raise
         else:
             fits.append(pystan_fit_cache[ck])
         
-    success = testfunc(fits)
+    success = testfunc(fits) if len(fits) == len(dats) else 'error' 
     return fits, success
 
 
@@ -498,7 +515,8 @@ def split_20_beta_model_dat(df, field):
                  'y': left_df[field] }
     right_dat = { 'N': len(right_df),
                   'y': right_df[field] }
-    
+
+
     return left_dat, right_dat
 
 def view_split_20_beta_model_fit(left_fit, right_fit):
@@ -536,7 +554,7 @@ def hyp_test_split_20_beta_model(df, field, cache_key):
                     return True
         return False
     
-    fits, success = hyp_test(dats, beta_model, testfunc, cache_key)
+    fits, success = hyp_test(dats, beta_model, testfunc, cache_key, df)
     
     return dats, fits, success
 
@@ -610,7 +628,7 @@ def lognormal_time_model_dat(df):
 
     changing_dat = { 'N': len(changing_times), 'y': changing_times }
     within_dat = { 'N': len(within_times), 'y': within_times }
-    
+
     return [changing_dat, within_dat]
     
 
@@ -857,21 +875,109 @@ def introduce_single_node_error(new_forest, instance_df, n1, n2):
     new_forest.remove_node(lose)
     
     new_idea = instance_df['idea']
+
     for idx in new_idea.index:
         if new_idea[idx] == lose:
             new_idea[idx] = keep
-            
+
     instance_df['idea'] = new_idea
     
     return lose
 
-def simulate_error(instance_df, cluster_forest, bins, parent_child_bern_grid,
+def one_normalize(alist):
+    total = sum(alist)
+    return [float(v) / total for v in alist]
+
+
+# This is really ugly, I should use more generalizable distribution/
+# marginalization code, but fast > good sigh
+def bern_grid_marginalize_bin2(bern_grid, bins):
+    total_len_bins = sum(len(b) for b in bins)
+    p_bins = [float(len(b)) / total_len_bins for b in bins]
+
+    new_bern = dict()
+
+    bin1s = sorted(list(set(b1 for b1, b2 in bern_grid.keys())))
+    bin2s = sorted(list(set(b2 for b1, b2 in bern_grid.keys())))
+
+    for bin1 in bin1s:
+        sum_parts = []
+        for bin2 in bin2s:
+            bern_mean = bern_grid_sym(bern_grid, bin1, bin2)[0]
+            sum_parts.append(bern_mean * p_bins[bin2])
+        new_bern[bin1] = (sum(sum_parts), one_normalize(sum_parts))
+
+    return new_bern
+
+def get_error_node2(err_bern, n1bin, bins, exclude_nodes):
+    x = random.random()
+    for binno, rate in enumerate(err_bern[n1bin][1]):
+        if x <= rate:
+            sample_set = set(bins[binno]).difference(set(exclude_nodes))
+            assert(len(sample_set) > 0)
+            n2 = random.sample(sample_set, 1)[0]
+            return n2
+        x -= rate
+
+    assert(False)
+
+def simulate_error_node(instance_df, cluster_forest, bins, parent_child_bern_grid,
+                         artificial_bern_grid, single_node_bern_grid):
+    new_forest = cluster_forest.copy()
+    new_idf = instance_df.copy()
+    
+    real_nodes = [n for n in cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
+    print("Number of nodes", len(real_nodes))
+    
+    err_berns = [bern_grid_marginalize_bin2(parent_child_bern_grid, bins),
+            bern_grid_marginalize_bin2(artificial_bern_grid, bins),
+            bern_grid_marginalize_bin2(single_node_bern_grid, bins)]
+
+    lost_nodes = []
+    
+    for j, n1 in enumerate(real_nodes):
+        print("Simulating error on forest %i/%i" % (j, len(real_nodes)), end='\r')
+        
+        if n1 in lost_nodes:
+            continue
+        
+        n1bin = get_node_bin(bins, n1)
+        
+        err_rates = [eb[n1bin][0] for eb in err_berns]
+        x = random.random()
+
+        actual_err = None
+        n2 = None
+        for i, (err, rate) in enumerate(zip(err_berns, err_rates)):
+            if x <= rate:
+                actual_err = i
+                n2 = get_error_node2(err, n1bin, bins, lost_nodes)
+                break
+            x -= rate
+            
+        if actual_err == 0:
+            introduce_parent_child_error(new_forest, n1, n2)
+            last = "Parent"
+        elif actual_err == 1:
+            introduce_artificial_error(new_forest, n1, n2)
+            last = "artificial"
+        elif actual_err == 2:
+            lost_nodes.append(introduce_single_node_error(new_forest, new_idf, n1, n2))
+            last = 'single'
+
+    print("Total nodes merged:", len(lost_nodes))
+
+    return new_forest, new_idf
+
+
+def simulate_error_pair(instance_df, cluster_forest, bins, parent_child_bern_grid,
                          artificial_bern_grid, single_node_bern_grid):
     
     new_forest = cluster_forest.copy()
     new_idf = instance_df.copy()
     
     real_nodes = [n for n in cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
+    print("Number of nodes", len(real_nodes))
     node_pairings = list(all_pairings(real_nodes))
     
     lost_nodes = []
@@ -887,16 +993,18 @@ def simulate_error(instance_df, cluster_forest, bins, parent_child_bern_grid,
         n1bin = get_node_bin(bins, n1)
         n2bin = get_node_bin(bins, n2)
         
-        err_order = random.sample([parent_child_bern_grid,
-                        artificial_bern_grid, single_node_bern_grid], 3)
-        
+        err_order = [parent_child_bern_grid, artificial_bern_grid, single_node_bern_grid]
+        err_rates = [bern_grid_sym(err, n1bin, n2bin)[0] for err in err_order]
+
+        x = random.random()
+
         actual_err = None
-        for err in err_order:
-            err_rate = bern_grid_sym(err, n1bin, n2bin)[0]
-            if random.random() < err_rate:
+        for err, rate in zip(err_order, err_rates):
+            if x <= rate:
                 actual_err = err
                 break
-        
+            x -= rate
+            
         if actual_err == parent_child_bern_grid:
             introduce_parent_child_error(new_forest, n1, n2)
             last = "Parent"
@@ -906,6 +1014,8 @@ def simulate_error(instance_df, cluster_forest, bins, parent_child_bern_grid,
         elif actual_err == single_node_bern_grid:
             lost_nodes.append(introduce_single_node_error(new_forest, new_idf, n1, n2))
             last = 'single'
+
+    print("Total nodes merged:", len(lost_nodes))
 
     return new_forest, new_idf
 
@@ -920,57 +1030,33 @@ bins = [[n[0] for n in binn] for binn in bins]
 def test_all_chi14_hypotheses(df, cdf, suffix):
     successes = []
 
-    try:
-        dat, fits, success = hyp_test_rate_nocond_exclude_one(df, 'idea', 'idea rate nocond simulate error ' + suffix)
-        successes.append(success)
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        successes.append('exception')
+    dat, fits, success = hyp_test_rate_nocond_exclude_one(df, 'idea', 'idea rate nocond simulate error ' + suffix)
+    successes.append(success)
 
-    try:
-        dat, fits, success = hyp_test_rate_nocond_exclude_one(df, 'subtree_root', 'cat rate nocond simulate error ' + suffix)
-        successes.append(success)
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        successes.append('exception')
+    dat, fits, success = hyp_test_rate_nocond_exclude_one(df, 'subtree_root', 'cat rate nocond simulate error ' + suffix)
+    successes.append(success)
     
     urk = hyp_test_early_common(df, cdf)
     successes.append(urk[-1])
 
-    try:
-        dat, fits, success = hyp_test_split_20_beta_model(df, 'idea_oscore', 'idea oscore split 20simulate error ' + suffix)
-        successes.append(success)
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        successes.append('exception')
+    dat, fits, success = hyp_test_split_20_beta_model(df, 'idea_oscore', 'idea oscore split 20simulate error ' + suffix)
+    successes.append(success)
 
-    try:
-        dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
-        successes.append(success)
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        successes.append('exception')
+    dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
+    successes.append(success)
     
     post, success = hyp_test_prob_in_category(df)
     successes.append(success)
 
-    try:
-        dat, fits, success = hyp_test_lognormal_time_model(df, 'test_lognormal_time_model simulate error ' + suffix)
-        successes.append(success)
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        successes.append('exception')
+    dat, fits, success = hyp_test_lognormal_time_model(df, 'test_lognormal_time_model simulate error ' + suffix)
+    successes.append(success)
     
     return successes
     
 
 # <codecell>
 
+#def do():
 num_permuted_trees = 10
 
 with open('ipython_output/simulate_error.csv', 'w') as f:
@@ -978,11 +1064,11 @@ with open('ipython_output/simulate_error.csv', 'w') as f:
     writer.writerow(['simulation', 'idea_rate', 'cat_rate', 'early_common',
         'idea_split_20', 'cat_split_20', 'within_prob', 'time_changing'])
     for i in range(num_permuted_trees):
-        err_forest, err_idf = simulate_error(idf[idf['question_code'] == 'iPod'], cfs['iPod'],
+        err_forest, err_idf = simulate_error_node(idf[idf['question_code'] == 'iPod'], cfs['iPod'],
                 bins, pc_bern_grid, ap_bern_grid, sn_bern_grid)
         
         err_df, err_rmdf, err_clusters_df, err_cluster_forests = format_data.mk_redundant(err_idf, {'iPod': err_forest})
-        
+
         successes = test_all_chi14_hypotheses(err_df, err_clusters_df, str(i))
         writer.writerow([i] + successes)
 
