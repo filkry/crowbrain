@@ -338,7 +338,8 @@ def hyp_test(dats, model_string, testfunc, cache_key, df = None):
                 fit = pystan.stan(model_code=model_string,
                               data=dat,
                               iter=math.ceil(n_saved_steps/n_chain), chains=n_chain)
-                pystan_fit_cache[ck] = fit
+                # stop thrashing hard drive
+                #pystan_fit_cache[ck] = fit
                 fits.append(fit)
             except:
                 print("Exception")
@@ -1066,6 +1067,7 @@ with open('ipython_output/simulate_error.csv', 'w') as f:
     for i in range(num_permuted_trees):
         err_forest, err_idf = simulate_error_node(idf[idf['question_code'] == 'iPod'], cfs['iPod'],
                 bins, pc_bern_grid, ap_bern_grid, sn_bern_grid)
+        assert(nx.is_directed_acyclic_graph(err_forest))
         
         err_df, err_rmdf, err_clusters_df, err_cluster_forests = format_data.mk_redundant(err_idf, {'iPod': err_forest})
 

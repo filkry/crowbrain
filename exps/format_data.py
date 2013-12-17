@@ -91,8 +91,14 @@ def annotated_cluster_forest(f):
     for node in f.nodes():        
         # Subtree root
         cur = node
+        passed = []
         while(len(f.predecessors(cur)) > 0):
+            passed.append(cur)
             cur = f.predecessors(cur)[0]
+            if(cur in passed):
+                print("Cycle")
+                break
+
         f.node[node]['subtree_root'] = cur
         f.graph['subtree_roots'].add(cur)
         
