@@ -51,6 +51,12 @@ def all_pairings(s):
 
 # <codecell>
 
+def defaultdict_to_dict(dd):
+    out = dict()
+    for k in dd:
+        out[k] = dd[k]
+    return out
+
 def filter_match_data_size(df):
     nr_conds = set(df['num_requested'])
     
@@ -263,7 +269,7 @@ def gen_exp_model_data(df, field):
     dat['N'] = len(dat['x'])
     dat['num_cond'] = len(nr_conds)
     
-    return dat
+    return defaultdict_to_dict(dat)
 
 def add_hpd_bar(ax, left, right, label, index):
     h = 200 + 100 * index
@@ -352,7 +358,7 @@ def hyp_test(dats, model_string, testfunc, cache_key, df = None):
                         f.write(json.dumps([int(i) for i in df['idea']]))
                     with open('ipython_output/exception_cats.json', 'w') as f:
                         f.write(json.dumps([int(i) for i in df['subtree_root']]))
-                #raise
+                raise
         else:
             fits.append(pystan_fit_cache[ck])
         
@@ -413,7 +419,7 @@ def gen_exp_model_nocond_data(df, field):
                 
     dat['N'] = len(dat['x'])
     
-    return dat
+    return defaultdict_to_dict(dat)
 
 def gen_exp_model_nocond_k_fold_data(field, k = 10):
     runs = df.groupby(['worker_id', 'num_requested'])
@@ -936,6 +942,7 @@ def simulate_error_node(instance_df, cluster_forest, bins, parent_child_bern_gri
 
     lost_nodes = []
     
+    random.seed(43)
     for j, n1 in enumerate(real_nodes):
         print("Simulating error on forest %i/%i" % (j, len(real_nodes)), end='\r')
         
