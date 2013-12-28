@@ -263,6 +263,11 @@ def mk_redundant(idf, cluster_forests):
     clusters_df = mk_redundant_cluster_df_helper(idf, ann_cfs)
     full_df = pd.merge(idf, clusters_df, 'left', ['idea', 'question_code'])
 
+    for idx in clusters_df.index:
+        if clusters_df['num_instances'][idx] > 0:
+            assert(len(full_df[full_df['idea'] == clusters_df['idea'][idx]]) > 0)
+
+
     full_df['time_spent'] = full_df['end_time'] - full_df['start_time']
     #assert(min(full_df[!full_df['time_spent'].isnull()]['time_spent']) > 0)
 
@@ -302,7 +307,9 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
             continue
 
         f = ann_cluster_forests[qc]
-        for idea in f.nodes():
+        total = len(f.nodes())
+        for i, idea in enumerate(f.nodes()):
+            print("mk_redundant_cluster_df_helper: %i/%i for %i instances" % (i+1, total, len(idf)), end='\r')
             nd = f.node[idea]
             
             fields['idea'].append(idea)

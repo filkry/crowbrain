@@ -847,6 +847,7 @@ def get_root(forest, node):
     return cur
 
 def introduce_parent_child_error(new_forest, n1, n2):
+    # if there is already a parent-child relationship
     if n1 in nx.descendants(new_forest, n2) or n2 in nx.descendants(new_forest, n1):
         anc, desc = (n1, n2) if n2 in nx.descendants(new_forest, n1) else (n2, n1)
         chain = chain_between(new_forest, anc, desc)
@@ -854,9 +855,14 @@ def introduce_parent_child_error(new_forest, n1, n2):
         new_forest.remove_edge(new_forest.predecessors(bad_link)[0], bad_link)
     else:
         pa, chi = (n1, n2) if random.random() > 0.5 else (n2, n1)
-        if len(new_forest.predecessors(chi)) > 0:
-            new_forest.remove_edge(new_forest.predecessors(chi)[0], chi)
+        remove_parent_edge(new_forest, chi)
         new_forest.add_edge(pa, chi)
+    assert(nx.is_directed_acyclic_graph(new_forest))
+
+def remove_parent_edge(forest, node):
+    preds = forest.predecessors(node)
+    if len(preds) > 0:
+        forest.remove_edge(preds[0], node)
 
 def introduce_artificial_error(new_forest, n1, n2):
     n1root = get_root(new_forest, n1)
@@ -867,11 +873,13 @@ def introduce_artificial_error(new_forest, n1, n2):
         new_forest.remove_edge(new_forest.predecessors(bad_link)[0], bad_link)
     else: # if no artificial node, introduce one
         n2root = get_root(new_forest, n2)
+        assert(n1root != n2root)
         new_node = max(new_forest.nodes()) + 1
         new_forest.add_node(new_node)
         new_forest.node[new_node]['label'] = 'artificial node (simulated error)'
         new_forest.add_edge(new_node, n1root)
         new_forest.add_edge(new_node, n2root)
+    assert(nx.is_directed_acyclic_graph(new_forest))
         
 def introduce_single_node_error(new_forest, instance_df, n1, n2):
     keep, lose = (n1, n2) if random.random() > 0.5 else (n2, n1)
@@ -889,6 +897,7 @@ def introduce_single_node_error(new_forest, instance_df, n1, n2):
 
     instance_df['idea'] = new_idea
     
+    assert(nx.is_directed_acyclic_graph(new_forest))
     return lose
 
 def one_normalize(alist):
@@ -942,7 +951,7 @@ def simulate_error_node(instance_df, cluster_forest, bins, parent_child_bern_gri
 
     lost_nodes = []
     
-    random.seed(43)
+    random.seed(44)
     for j, n1 in enumerate(real_nodes):
         print("Simulating error on forest %i/%i" % (j, len(real_nodes)), end='\r')
         
@@ -959,7 +968,7 @@ def simulate_error_node(instance_df, cluster_forest, bins, parent_child_bern_gri
         for i, (err, rate) in enumerate(zip(err_berns, err_rates)):
             if x <= rate:
                 actual_err = i
-                n2 = get_error_node2(err, n1bin, bins, lost_nodes)
+                n2 = get_error_node2(err, n1bin, bins, lost_nodes + [n1])
                 break
             x -= rate
             
@@ -1076,8 +1085,10 @@ with open('ipython_output/simulate_error.csv', 'w') as f:
                 bins, pc_bern_grid, ap_bern_grid, sn_bern_grid)
         assert(nx.is_directed_acyclic_graph(err_forest))
         
+        print("Generating redundant data")
         err_df, err_rmdf, err_clusters_df, err_cluster_forests = format_data.mk_redundant(err_idf, {'iPod': err_forest})
 
+        print("Testing hypotheses")
         successes = test_all_chi14_hypotheses(err_df, err_clusters_df, str(i))
         writer.writerow([i] + successes)
 
