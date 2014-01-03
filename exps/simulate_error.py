@@ -347,12 +347,15 @@ def hyp_test(dats, model_string, testfunc, cache_key, df = None):
                 # stop thrashing hard drive
                 #pystan_fit_cache[ck] = fit
                 fits.append(fit)
+                break
             except:
                 print("Exception")
                 dat2 = {'N': dat['N'],
                         'y': [float(y) for y in dat['y']]}
                 with open('ipython_output/exception_dat.json', 'w') as f:
                     f.write(json.dumps(dat2))
+                with open('ipython_output/exception_model_string.json', 'w') as f:
+                    f.write(model_string)
                 if not df is None:
                     with open('ipython_output/exception_ideas.json', 'w') as f:
                         f.write(json.dumps([int(i) for i in df['idea']]))
@@ -1059,8 +1062,8 @@ def test_all_chi14_hypotheses(df, cdf, suffix):
     dat, fits, success = hyp_test_split_20_beta_model(df, 'idea_oscore', 'idea oscore split 20simulate error ' + suffix)
     successes.append(success)
 
-    dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
-    successes.append(success)
+    #dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
+    #successes.append(success)
     
     post, success = hyp_test_prob_in_category(df)
     successes.append(success)
@@ -1079,7 +1082,7 @@ num_permuted_trees = 10
 with open('ipython_output/simulate_error.csv', 'w') as f:
     writer = csv.writer(f)
     writer.writerow(['simulation', 'idea_rate', 'cat_rate', 'early_common',
-        'idea_split_20', 'cat_split_20', 'within_prob', 'time_changing'])
+        'idea_split_20', 'within_prob', 'time_changing'])
     for i in range(num_permuted_trees):
         err_forest, err_idf = simulate_error_node(idf[idf['question_code'] == 'iPod'], cfs['iPod'],
                 bins, pc_bern_grid, ap_bern_grid, sn_bern_grid)
