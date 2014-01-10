@@ -38,8 +38,17 @@ from collections import defaultdict, OrderedDict
 
 # <codecell>
 
+import argparse
+parser = argparse.ArgumentParser(description='simulate errors from survey rates on crowbrain idea forests, then test hypotheses')
+parser.add_argument('question_code', metavar='qc', help='which question to simulate error for')
+args = parser.parse_args()
+
+question_code = args.question_code
+
+
 pystan_test_mode = False # When this variable is on, we do single chains and few iterations, to go fast
 pystan_fit_cache = dict()
+pystan_model_cache = dict()
 
 error_df = None
 
@@ -86,51 +95,11 @@ def filter_repeats(df):
     return new_df
 
 # A stupid function to just combine some filters. Oh, for haskell operators...
-def filter_today(df):
-    df = df[df['question_code'] == 'iPod']
-    df = filter_repeats(df)
-    #df = filter_match_data_size(df)
-    return df
-    
+   
 
 # <codecell>
 
 # Import data
-
-import format_data
-reload(format_data)
-
-processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
-idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
-df, rmdf, clusters_df, cluster_forests = format_data.mk_redundant(idf, cfs)
-
-print(len(idf), len(rmdf))
-# # Analysis functions
-
-# <codecell>
-
-
-nr_conds = list(set(df['num_requested']))
-nr_conds = sorted(nr_conds)
-print(nr_conds)
-
-qc_conds = list(set(df['question_code']))
-print(qc_conds)
-
-matplotlib_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
-qc_colors = {None: matplotlib_colors[0]}
-for i, code in enumerate(qc_conds):
-        qc_colors[code] = matplotlib_colors[i+1]
-        print(qc_colors)
-
-        nr_colors = {None: matplotlib_colors[0]}
-        for i, nr in enumerate(nr_conds):
-                nr_colors[nr] = matplotlib_colors[i+1]
-                print(nr_colors)
-
-                cond_colors = {'question_code': qc_colors,
-                                        'num_requested': nr_colors }
 
 import subprocess
 
@@ -341,13 +310,15 @@ def hyp_test(dats, model_string, testfunc, cache_key, df = None):
         ck = cache_key + str(i)
         if ck not in pystan_fit_cache:
             try:
-                fit = pystan.stan(model_code=model_string,
-                              data=dat,
+                if model_string not in pystan_model_cache:
+                    pystan_model_cache[model_string] = pystan.StanModel(model_code=model_string)
+                
+                model = pystan_model_cache[model_string]
+                fit = model.sampling(data=dat,
                               iter=math.ceil(n_saved_steps/n_chain), chains=n_chain)
                 # stop thrashing hard drive
                 #pystan_fit_cache[ck] = fit
                 fits.append(fit)
-                break
             except:
                 print("Exception")
                 dat2 = {'N': dat['N'],
@@ -365,7 +336,7 @@ def hyp_test(dats, model_string, testfunc, cache_key, df = None):
         else:
             fits.append(pystan_fit_cache[ck])
         
-    success = testfunc(fits) if len(fits) == len(dats) else 'error' 
+    success = testfunc(fits) if len(fits) == len(dats) else '%i,%i' % (len(fits), len(dats)) 
     return fits, success
 
 
@@ -505,11 +476,20 @@ data {
 }
 
 parameters {
+    real<lower=0,upper=1> phi;
+    real<lower=0.1> lambda;
+}
+
+transformed parameters {
     real<lower=0> alpha;
     real<lower=0> beta;
+    alpha <- lambda * phi;
+    beta <- lambda * (1 - phi);
 }
 
 model {
+    phi ~ beta(1,1);
+    lambda ~ pareto(0.1,1.5);
     for (i in 1:N) {
         y[i] ~ beta(alpha, beta);
     }
@@ -704,7 +684,7 @@ from collections import defaultdict
 from mpl_toolkits.mplot3d import Axes3D
 
 def get_results():
-    survey_results = "%s/validity_survey/data.csv" % processed_data_folder
+    survey_results = "%s/validity_survey_%s/data.csv" % (processed_data_folder, question_code)
     with open(survey_results, 'r') as f:
         reader = csv.reader(f, delimiter=',')
         all_results = [row for row in reader if row[0] != 'judge' and row[5] != '?']
@@ -724,7 +704,7 @@ def ancestors(f, nid):
     return [ancestors(f, p) for p in preds] + preds
             
 def get_node_relationship(n1id, n2id):
-    f = cluster_forests['iPod']
+    f = cluster_forests[question_code]
 
     n1 = f.node[n1id]
     n2 = f.node[n2id]
@@ -772,10 +752,12 @@ def bern_grid_sym(bg, key1, key2):
 
 def plot_bern_grid(bern_grid, title):
     # mean is 0, empirical mean is 3
-    X, Y, Z = zip(*[(k[0], k[1], bern_grid[k][3]) for k in bern_grid])
+    which_mean = 0
+
+    X, Y, Z = zip(*[(k[0], k[1], bern_grid[k][which_mean]) for k in bern_grid])
     
     X2d, Y2d = np.meshgrid(np.arange(0, 5, 1), np.arange(0, 5, 1))
-    Z2d = np.array([bern_grid_sym(bern_grid, x, y)[3] for x, y in zip(np.ravel(X2d), np.ravel(Y2d))])
+    Z2d = np.array([bern_grid_sym(bern_grid, x, y)[which_mean] for x, y in zip(np.ravel(X2d), np.ravel(Y2d))])
     Z2d = Z2d.reshape(X2d.shape)
     
     plt.ion()
@@ -802,21 +784,6 @@ def plot_bern_grid(bern_grid, title):
     ax.set_xlabel("bin 1")
     ax.set_ylabel("bin 2")
     ax.set_title(title)
-    
-all_results = get_results()
-culled = list(cull_repeat_pairings(all_results))
-bern_grid = gen_grid_bernoullis(culled)
-#plot_bern_grid(bern_grid, 'all')
-
-pc_bern_grid = gen_grid_bernoullis(culled, 'parent_child')
-#plot_bern_grid(pc_bern_grid, 'parent_child')
-
-ap_bern_grid = gen_grid_bernoullis(culled, 'artificial_parent')
-#plot_bern_grid(ap_bern_grid, 'artificial_parent')
-
-sn_bern_grid = gen_grid_bernoullis(culled, 'single_node_per_idea')
-#plot_bern_grid(sn_bern_grid, 'single_node_per_idea')
-
 # <markdowncell>
 
 # ## Simulation of error impact
@@ -1039,16 +1006,12 @@ def simulate_error_pair(instance_df, cluster_forest, bins, parent_child_bern_gri
 
     return new_forest, new_idf
 
-qc_cdf = clusters_df[(clusters_df['question_code'] == 'iPod') & (clusters_df['num_instances'] > 0)]
-nodes = list(zip(list(qc_cdf['idea']), list(qc_cdf['num_instances'])))
-bins = bin_sequence(nodes, lambda x: x[1], 5)
-bins = [[n[0] for n in binn] for binn in bins]
-
 # <codecell>
 
 
 def test_all_chi14_hypotheses(df, cdf, suffix):
     successes = []
+    success = 'pass'
 
     dat, fits, success = hyp_test_rate_nocond_exclude_one(df, 'idea', 'idea rate nocond simulate error ' + suffix)
     successes.append(success)
@@ -1062,7 +1025,7 @@ def test_all_chi14_hypotheses(df, cdf, suffix):
     dat, fits, success = hyp_test_split_20_beta_model(df, 'idea_oscore', 'idea oscore split 20simulate error ' + suffix)
     successes.append(success)
 
-    #dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
+    dat, fits, success = hyp_test_split_20_beta_model(df, 'subtree_oscore', 'cat oscore split 20simulate error ' + suffix)
     #successes.append(success)
     
     post, success = hyp_test_prob_in_category(df)
@@ -1072,24 +1035,82 @@ def test_all_chi14_hypotheses(df, cdf, suffix):
     successes.append(success)
     
     return successes
-    
 
 # <codecell>
+import format_data
+reload(format_data)
+
+def filter_today(df):
+    df = df[df['question_code'] == question_code]
+    df = filter_repeats(df)
+    #df = filter_match_data_size(df)
+    return df
+ 
+processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
+idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
+df, rmdf, clusters_df, cluster_forests = format_data.mk_redundant(idf, cfs)
+
+print(len(idf), len(rmdf))
+# # Analysis functions
+
+# <codecell>
+
+nr_conds = list(set(df['num_requested']))
+nr_conds = sorted(nr_conds)
+print(nr_conds)
+
+qc_conds = list(set(df['question_code']))
+print(qc_conds)
+
+matplotlib_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+
+qc_colors = {None: matplotlib_colors[0]}
+for i, code in enumerate(qc_conds):
+        qc_colors[code] = matplotlib_colors[i+1]
+        print(qc_colors)
+
+        nr_colors = {None: matplotlib_colors[0]}
+        for i, nr in enumerate(nr_conds):
+                nr_colors[nr] = matplotlib_colors[i+1]
+                print(nr_colors)
+
+                cond_colors = {'question_code': qc_colors,
+                                        'num_requested': nr_colors }
+
+all_results = get_results()
+culled = list(cull_repeat_pairings(all_results))
+bern_grid = gen_grid_bernoullis(culled)
+#plot_bern_grid(bern_grid, 'all')
+
+pc_bern_grid = gen_grid_bernoullis(culled, 'parent_child')
+#plot_bern_grid(pc_bern_grid, 'parent_child')
+
+ap_bern_grid = gen_grid_bernoullis(culled, 'artificial_parent')
+#plot_bern_grid(ap_bern_grid, 'artificial_parent')
+
+sn_bern_grid = gen_grid_bernoullis(culled, 'single_node_per_idea')
+#plot_bern_grid(sn_bern_grid, 'single_node_per_idea')
+
+qc_cdf = clusters_df[(clusters_df['question_code'] == question_code) & (clusters_df['num_instances'] > 0)]
+nodes = list(zip(list(qc_cdf['idea']), list(qc_cdf['num_instances'])))
+bins = bin_sequence(nodes, lambda x: x[1], 5)
+bins = [[n[0] for n in binn] for binn in bins]
+
 
 #def do():
 num_permuted_trees = 10
 
-with open('ipython_output/simulate_error.csv', 'w') as f:
+with open('ipython_output/simulate_error_%s.csv' % question_code, 'w') as f:
     writer = csv.writer(f)
     writer.writerow(['simulation', 'idea_rate', 'cat_rate', 'early_common',
         'idea_split_20', 'within_prob', 'time_changing'])
     for i in range(num_permuted_trees):
-        err_forest, err_idf = simulate_error_node(idf[idf['question_code'] == 'iPod'], cfs['iPod'],
+        err_forest, err_idf = simulate_error_node(idf[idf['question_code'] == question_code], cfs[question_code],
                 bins, pc_bern_grid, ap_bern_grid, sn_bern_grid)
         assert(nx.is_directed_acyclic_graph(err_forest))
         
         print("Generating redundant data")
-        err_df, err_rmdf, err_clusters_df, err_cluster_forests = format_data.mk_redundant(err_idf, {'iPod': err_forest})
+        err_df, err_rmdf, err_clusters_df, err_cluster_forests = format_data.mk_redundant(err_idf, {question_code: err_forest})
 
         print("Testing hypotheses")
         successes = test_all_chi14_hypotheses(err_df, err_clusters_df, str(i))
