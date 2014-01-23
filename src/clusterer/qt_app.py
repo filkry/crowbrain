@@ -10,6 +10,7 @@ import sqlite3 as db
 import clustering_app
 import import_cluster_text
 import similarity_selector
+import change_parent
 import coverage
 import title
 import csv
@@ -77,6 +78,8 @@ class IdeaTreeNode(object):
     self.children = sorted(self.children, key=lambda x: x.label().lower())
 
   def append_child(self, child_node):
+    if not child_node.parent is None:
+        child_node.parent.remove_child(child_node)
     self.children.append(child_node)
     child_node.parent = self
     self.sort_children()
@@ -137,7 +140,6 @@ class IdeaTreeNode(object):
   def get_parent(self):
     return self.parent
 
-  def get_ids(self):
     ids = [i[1] for i in self.ideas]
 
     for c in self.children:
@@ -378,6 +380,20 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
     self.endResetModel()
 
+  def remove_node_reparent_children(self, index):
+      self.beginResetModel()
+      ids = []
+      if index.isValid():
+          node = index.internalPointer()
+          parent = node.parent
+          ids = [i for (text, i, time) in node.ideas]
+          for child in node.children.copy():
+              parent.append_child(child)
+          parent.remove_child(node)
+
+      self.endResetModel()
+      return ids
+
 
   def export_clusters_text(self, filename):
     with open("%s_%s_clusters.txt" % (filename, self.question_code), 'w') as cfout:
@@ -529,7 +545,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
       cursor.execute("INSERT INTO used_ideas(idea_id) VALUES(?)", (i,))
     cursor.close()
     self.conn.commit()
-    self.read_in_ideas()
+    self.cur_ideas = [(i, idea) for (i, idea) in self.cur_ideas if i not in ids]
     self.endResetModel()
 
   def make_ideas_unused(self, idea_id_list):
@@ -593,6 +609,8 @@ class AppWindow(QtGui.QMainWindow):
     # Connect up all the buttons
     self.ui.button_move_down.clicked.connect(self.handle_move_selection_down)
     self.ui.button_rename.clicked.connect(self.handle_button_rename)
+    self.ui.button_add_parent.clicked.connect(self.handle_add_parent)
+    self.ui.button_change_parent.clicked.connect(self.handle_change_parent)
     self.ui.button_move_up.clicked.connect(self.handle_move_selection_up)
     self.ui.button_sort_by_list.clicked.connect(self.handle_sort_by_list_selection)
     self.ui.button_next_regex.clicked.connect(self.handle_next_regex)
@@ -759,6 +777,30 @@ class AppWindow(QtGui.QMainWindow):
 
     return None
 
+  def change_parent_prompt(self, nodes):
+    dialog = QtGui.QDialog()
+    dialog.ui = change_parent.Ui_Dialog()
+    dialog.ui.setupUi(dialog)
+
+    qc = self.idea_model.cur_question_code
+    itm = self.idea_tree_models[qc]
+    dialog.ui.tree_options.setModel(itm)
+
+    dialog.ui.btn_change_parent.clicked.connect(lambda x=0: dialog.done(x))
+    dialog.ui.btn_cancel.clicked.connect(lambda x=1: dialog.done(x))
+
+    ret = dialog.exec()
+
+    if ret == 0:
+      sel = dialog.ui.tree_options.selectedIndexes()
+      if len(sel) > 0:
+        index = sel[0]
+        if index.isValid():
+          for node in nodes:
+            p = index.internalPointer()
+            p.append_child(node)
+            return
+
   def cluster_label_prompt(self, node):
     dialog = QtGui.QDialog()
     dialog.ui = title.Ui_Dialog()
@@ -871,6 +913,34 @@ class AppWindow(QtGui.QMainWindow):
         self.cluster_label_prompt(node)
         itm.bad_fake_reset()
 
+  def handle_add_parent(self):
+    sel = self.ui.tree_main.selectedIndexes()
+    indices = [index for index in self.ui.tree_main.selectedIndexes() if index.isValid()]
+    if len(indices) > 0:
+        qc = self.idea_model.cur_question_code
+        itm = self.idea_tree_models[qc]
+
+        nodes = [itm.get_node(index) for index in indices]
+
+        new_node = IdeaTreeNode([], None)
+        for node in nodes:
+            new_node.append_child(node)
+        itm.root.append_child(new_node)
+        self.cluster_label_prompt(new_node)
+
+        itm.bad_fake_reset()
+
+  def handle_change_parent(self):
+    sel = self.ui.tree_main.selectedIndexes()
+    indices = [index for index in self.ui.tree_main.selectedIndexes() if index.isValid()]
+    if len(indices) > 0:
+        qc = self.idea_model.cur_question_code
+        itm = self.idea_tree_models[qc]
+
+        nodes = [itm.get_node(index) for index in indices]
+        self.change_parent_prompt(nodes)
+        itm.bad_fake_reset()
+
   def handle_move_selection_up(self):
     btn = QtGui.QMessageBox.question(self, 'Confirmation', 
             'Really remove this node?',
@@ -882,8 +952,8 @@ class AppWindow(QtGui.QMainWindow):
           if index.isValid():
             qc = self.idea_model.cur_question_code
             itm = self.idea_tree_models[qc]
-            ids = itm.get_ids(index)
-            itm.remove_node(index)
+
+            ids = itm.remove_node_reparent_children(index)
             self.idea_model.make_ideas_unused(ids)
 
   def handle_sort_by_list_selection(self):
