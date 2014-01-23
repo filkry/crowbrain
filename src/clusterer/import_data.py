@@ -42,7 +42,7 @@ def create_tables(cursor):
                              parent INTEGER NOT NULL REFERENCES clusters(id))''',
     '''CREATE TABLE IF NOT EXISTS
           idea_clusters (idea_id INTEGER NOT NULL REFERENCES ideas(id),
-                         cluster_id INTEGER NOT NULL REFERENCES clusters(id),
+                         cluster_id INTEGER NOT NULL REFERENCES clusters(id), time_set DATETIME,
                          UNIQUE(idea_id) ON CONFLICT REPLACE)''',
     '''CREATE INDEX IF NOT EXISTS
           ideas_idea_index ON ideas(idea)''',

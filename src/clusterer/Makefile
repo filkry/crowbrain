@@ -8,6 +8,7 @@ all:
 	pyside-uic import_cluster_text.ui > import_cluster_text.py
 	pyside-uic similarity_selector.ui > similarity_selector.py
 	pyside-uic title.ui > title.py
+	pyside-uic parent_chooser.ui > change_parent.py
 backup:
 	cbackup.py *py *ui
 tar:
