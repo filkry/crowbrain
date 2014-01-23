@@ -13,9 +13,14 @@ import similarity_selector
 import coverage
 import title
 import csv
+import datetime
 from collections import deque, defaultdict
 
-db_file_name = '/home/fil/Dropbox/clusters.db'
+db_file_name = '/home/crowdbrainstorm/Desktop/clusters.db'
+
+
+def get_current_time():
+  return datetime.datetime.now()
 
 def get_line_indent(l):
   depth_count = 0
@@ -39,7 +44,7 @@ class IdeaTreeNode(object):
       self._label = label
     else:
       self._label = None
-    self.ideas = ideas # list of (text, id) tuples
+    self.ideas = ideas # list of (text, id, time) tuples
     self.parent = parent
     self.children = []
 
@@ -48,7 +53,7 @@ class IdeaTreeNode(object):
 
     if self._label and len(self._label) > 0:
       outlines.append(self._label)
-    for text, i in self.ideas:
+    for text, i, time in self.ideas:
       outlines.append(text + '  (_id:' + str(i) + ')')
 
     for i, c in enumerate(self.children):
@@ -61,8 +66,8 @@ class IdeaTreeNode(object):
     return outlines
 
   def add_ideas(self, ideas):
-    present_ids = [iid for idea, iid in self.ideas]
-    ideas = [(idea, iid) for (idea, iid) in ideas if not iid in present_ids]
+    present_ids = [iid for idea, iid, time in self.ideas]
+    ideas = [(idea, iid, time) for (idea, iid, time) in ideas if not iid in present_ids]
     self.ideas.extend(ideas)
 
   def merge(self, other_node):
@@ -214,7 +219,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
         return None
     new_id = new_ids[0]
     used_ids.append(new_id)
-    return IdeaTreeNode([(idea, new_id)], current_node, idea)
+    current_time = get_current_time()
+    return IdeaTreeNode([(idea, new_id, current_time)], current_node, idea)
 
   def import_from_text(self, text, idea_model):
     if len(text) == 0:
@@ -273,9 +279,9 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     clus_id = cursor.lastrowid
 
     # Map ideas
-    for text, i in node.ideas:
-      cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id)
-                        VALUES (?, ?)""", (i, clus_id))
+    for text, i, time in node.ideas:
+      cursor.execute("""INSERT INTO idea_clusters(idea_id, cluster_id, time_set)
+                        VALUES (?, ?, ?)""", (i, clus_id, time))
 
     # Create children
     child_ids = [self._save_node(c, cursor) for c in node.children]
@@ -330,14 +336,14 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
       parent.append_child(child)
 
     # Load ideas into clusters
-    cursor.execute("""SELECT cluster_id, id, idea
+    cursor.execute("""SELECT cluster_id, id, idea, time_set
                       FROM ideas INNER JOIN idea_clusters
                       ON ideas.id = idea_clusters.idea_id
                       WHERE ideas.question_code = ?""",
                    (self.question_code,))
-    for cid, iid, idea in cursor.fetchall():
+    for cid, iid, idea, time in cursor.fetchall():
       if cid in cluster_dict:
-        cluster_dict[cid].add_ideas([(idea, iid)])
+        cluster_dict[cid].add_ideas([(idea, iid, time)])
 
     for key in cluster_dict:
       # Don't load useless clusters (artifacts from import)
@@ -628,7 +634,7 @@ class AppWindow(QtGui.QMainWindow):
       test = re.compile(self.ui.line_regex.text(), re.IGNORECASE)
 
       self.regex_matches = [node for node in nodes
-                                 for (idea, i) in node.ideas
+                                 for (idea, i, time) in node.ideas
                                  if test.match(idea) is not None]
 
       # convenience hack; if no results, add .* and .* to end and beginning
@@ -636,7 +642,7 @@ class AppWindow(QtGui.QMainWindow):
       if len(self.regex_matches) == 0:
         test = re.compile(".*" + self.ui.line_regex.text() + ".*", re.IGNORECASE)
         self.regex_matches = [node for node in nodes
-                                   for (idea, i) in node.ideas
+                                   for (idea, i, time) in node.ideas
                                    if test.match(idea) is not None]
 
       print("number of matches: %i" % len(self.regex_matches))
@@ -773,7 +779,8 @@ class AppWindow(QtGui.QMainWindow):
     ideas = self.idea_model.get_ideas_for_indices(indexes)
 
     # I stored it backwards from Mike
-    ideas_flipped = [(i[1], i[0]) for i in ideas]
+    current_time = get_current_time()
+    ideas_flipped = [(i[1], i[0], current_time) for i in ideas]
 
     new_node = IdeaTreeNode(ideas_flipped, None)
     current_node = itm.root
