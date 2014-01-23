@@ -16,7 +16,7 @@ import csv
 import datetime
 from collections import deque, defaultdict
 
-db_file_name = '/home/crowdbrainstorm/Desktop/clusters.db'
+db_file_name = '/home/fil/Desktop/clusters.db'
 
 
 def get_current_time():
@@ -364,6 +364,11 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
     else:
       return []
 
+  def get_node(self, index):
+      if index.isValid():
+          node = index.internalPointer()
+          return node
+
   def remove_node(self, index):
     self.beginResetModel()
     # This is probably a memory leak, I might be keeping a reference around
@@ -587,6 +592,7 @@ class AppWindow(QtGui.QMainWindow):
   def _finish_ui(self):
     # Connect up all the buttons
     self.ui.button_move_down.clicked.connect(self.handle_move_selection_down)
+    self.ui.button_rename.clicked.connect(self.handle_button_rename)
     self.ui.button_move_up.clicked.connect(self.handle_move_selection_up)
     self.ui.button_sort_by_list.clicked.connect(self.handle_sort_by_list_selection)
     self.ui.button_next_regex.clicked.connect(self.handle_next_regex)
@@ -854,19 +860,31 @@ class AppWindow(QtGui.QMainWindow):
     self.ui.tree_main.selectionModel().setCurrentIndex(index,
       QtGui.QItemSelectionModel.Select)
     
+  def handle_button_rename(self):
+    sel = self.ui.tree_main.selectedIndexes()
+    if len(sel) > 0:
+      index = sel[0]
+      if index.isValid():
+        qc = self.idea_model.cur_question_code
+        itm = self.idea_tree_models[qc]
+        node = itm.get_node(index)
+        self.cluster_label_prompt(node)
+        itm.bad_fake_reset()
+
   def handle_move_selection_up(self):
     btn = QtGui.QMessageBox.question(self, 'Confirmation', 
             'Really remove this node?',
             buttons = QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
 
-    sel = self.ui.tree_main.selectedIndexes()
-    for index in sel:
-      if index.isValid():
-        qc = self.idea_model.cur_question_code
-        itm = self.idea_tree_models[qc]
-        ids = itm.get_ids(index)
-        itm.remove_node(index)
-        self.idea_model.make_ideas_unused(ids)
+    if btn == QtGui.QMessageBox.Yes:
+        sel = self.ui.tree_main.selectedIndexes()
+        for index in sel:
+          if index.isValid():
+            qc = self.idea_model.cur_question_code
+            itm = self.idea_tree_models[qc]
+            ids = itm.get_ids(index)
+            itm.remove_node(index)
+            self.idea_model.make_ideas_unused(ids)
 
   def handle_sort_by_list_selection(self):
     selected_indexes = sorted([i.row() for i in self.ui.list_ideas.selectedIndexes()])
