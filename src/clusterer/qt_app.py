@@ -17,7 +17,7 @@ import csv
 import datetime
 from collections import deque, defaultdict
 
-db_file_name = '/home/fil/Desktop/clusters.db'
+db_file_name = '/home/crowdbrainstorm/Desktop/clusters.db'
 
 
 def get_current_time():
