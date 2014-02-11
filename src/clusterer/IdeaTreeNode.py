@@ -1,7 +1,3 @@
-import pickle
-import sys
-import random
-
 class IdeaTreeNode(object):
   def __init__(self, ideas, parent, label = None):
     assert not isinstance(ideas, str)
@@ -9,7 +5,7 @@ class IdeaTreeNode(object):
       self._label = label
     else:
       self._label = None
-    self.ideas = ideas # list of (text, id) tuples
+    self.ideas = ideas # list of (text, id, time) tuples
     self.parent = parent
     self.children = []
 
@@ -18,7 +14,7 @@ class IdeaTreeNode(object):
 
     if self._label and len(self._label) > 0:
       outlines.append(self._label)
-    for text, i in self.ideas:
+    for text, i, time in self.ideas:
       outlines.append(text + '  (_id:' + str(i) + ')')
 
     for i, c in enumerate(self.children):
@@ -31,8 +27,8 @@ class IdeaTreeNode(object):
     return outlines
 
   def add_ideas(self, ideas):
-    present_ids = [iid for idea, iid in self.ideas]
-    ideas = [(idea, iid) for (idea, iid) in ideas if not iid in present_ids]
+    present_ids = [iid for idea, iid, time in self.ideas]
+    ideas = [(idea, iid, time) for (idea, iid, time) in ideas if not iid in present_ids]
     self.ideas.extend(ideas)
 
   def merge(self, other_node):
@@ -42,6 +38,8 @@ class IdeaTreeNode(object):
     self.children = sorted(self.children, key=lambda x: x.label().lower())
 
   def append_child(self, child_node):
+    if not child_node.parent is None:
+        child_node.parent.remove_child(child_node)
     self.children.append(child_node)
     child_node.parent = self
     self.sort_children()
@@ -102,7 +100,6 @@ class IdeaTreeNode(object):
   def get_parent(self):
     return self.parent
 
-  def get_ids(self):
     ids = [i[1] for i in self.ideas]
 
     for c in self.children:
@@ -118,18 +115,4 @@ class IdeaTreeNode(object):
 
     return ret
 
-root = None
-with open("out/_iPod_IdeaTreeNode.pickle", 'rb') as f:
-    root = pickle.load(f)
 
-if root is None:
-    print("error")
-    sys.exit(1)
-
-all_trees = root.children
-
-sampled_trees = random.sample(all_trees, 40)
-
-for i in sampled_trees:
-    print('\n'.join(i.as_text()))
-    print("\n\n\n\n\n\n\n\n\n\n")
