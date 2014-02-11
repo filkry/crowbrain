@@ -1,0 +1,25 @@
+We thank the reviewers for their thoughtful comments. We first respond to the AC's numbered points, then to other comments.
+
+1,2: Currently, if a practitioner wishes to solicit brainstorming ideas from a microtask marketplace, there are no models to provide guidance wrt the number of ideas to request, the number of workers to ask, or expected output; yet brainstorming is a critical component of crowd creativity work [16,29]. Similarly, if a researcher wishes to produce a tool to improve crowd brainstorming, there is no baseline for comparison. One cannot assume past work in brainstorming is applicable in this environment (pp 1-2 explicitly make these points). Our work addresses these gaps, and is the first to examine brainstorming at this scale (>100 participants, >3000 ideas).
+
+While any model can be improved by testing under more conditions, we note that in creativity research, it is not uncommon to provide a single task (e.g., [3,4,17,22] in the psych literature and [28,29] in the crowdsourcing literature). Nonetheless, our results replicate findings from past brainstorming research (e.g., SIAM), suggesting they are not idiosyncratic, while usefully extending the literature on this subject. We agree with the AC's suggestion for qualifying the language on p7 (and in related areas).
+
+We posted the HIT at several different times (separated by days or weeks), so it was not a single run.
+
+3: We do not believe our models suffer the confounds the AC suggests. The Bayesian methods used do not require equivalent sample sizes across conditions to compare posterior parameter distributions, and it is unclear how manipulating the number of workers employed while keeping the number of ideas requested would be useful. It was necessary to request varying numbers of ideas to examine how workers would respond to the various conditions. In doing so, we found useful results that challenge expectations (see 4 below). Finally, while not reported, we also tested ordinal originality scores between conditions, and found no significant differences.
+
+4: Off-topic answers were flagged in the coding process. There were only 12 off-topic instances in total, showing that the task was taken seriously. While the AC and R3 felt asking for 100 ideas would result in numerous off-topic responses, we have no evidence supporting this. The examples on p8 from a 75 condition indicate that workers could produce original, on-topic responses later in a run (those examples were ideas 1,27,32; their last 10 ideas included a vegetable peeler, tool for darning socks, and tool for building sand castles).
+
+5: To compute o-scores, we count all instances in the idea node (for idea o-score) or category tree (for category o-score), divide by the total number of instances, and subtract from one. The squashing of scores into the .994-.999 range is an artifact of the diversity of ideas received and size of the data set.
+
+6: The volume of data (>3000 ideas) necessitates that we sample the validity of the clustering, rather than fully replicate it. However, we note that clustering this data is more concrete than other types of qualitative coding as it relies on only two judgements: all equivalent ideas should be placed in the same node, and a more general version of an idea should be a parent to the more specific idea. While there is still room for subjectivity and error, these criteria are easier to follow and test. Our custom tool also assisted in this process: For every unclustered idea, it produced a list of idea clusters ordered by similarity to that idea, with final cluster assignment done manually. The extremely low incidence of misclassified ideas (0.7%) suggests the validity of cluster membership in our data, which was used to derive measures such as o-scores and rates of unique idea generation. Errors in parent-child relationships would not affect the statistical tests, only riffing statistics. We'd be happy to add these points to the paper.
+
+7: We agree and would be happy to frame the hypotheses as research questions.
+
+R1: Because we used uninformative priors, the posterior distributions for model parameters should capture all of our uncertainty in the model. However, in line with R1's suggestion, we performed a 10-fold validation of the exponential model, predicting the number of unique ideas as a function of total number of responses. We found a mean squared error of 18.48 unique ideas.
+
+R3: We performed a Mann-Whitney U test and found a statistical difference (p < 0.00001) for both ideas and categories, confirming our earlier tests.
+
+R3: In the test for popular ideas (p7), we tested the difference between the first 5 instances and all remaining instances (not the last 5 instances) in a run. This test was performed only for runs with >=10 instances, so runs in all conditions contributed samples to both distributions.
+
+We're happy to make these changes, add references suggested by R1+R2. and correct the formatting errors identified.
