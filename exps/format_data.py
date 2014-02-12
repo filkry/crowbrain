@@ -6,6 +6,11 @@ import numpy as np
 from numpy import uint8, uint16, uint32, uint64, datetime64, int64, int32, float64
 from collections import defaultdict, OrderedDict
 
+def filter_repeats(df):
+    new_df = df[df['is_repeat_worker'] == 0]
+    return new_df
+
+
 def metrics_folder(pd_folder, x):
         return '/%s/pilot18_metrics/%s' % (pd_folder, x)
 
@@ -233,7 +238,6 @@ def mk_repeat_workers_series(adf):
     is_repeat = pd.Series([0 for i in adf.index], index=adf.index)
     adf = adf.sort(['submit_datetime'])
     runs = adf.groupby(['worker_id', 'question_code', 'num_requested', 'submit_datetime'])
-    print("repeat worker check count", len(list(runs)))
 
     seen_keys = set()
     for rid, ((wid, qc, nr, sdt), run) in enumerate(runs):
