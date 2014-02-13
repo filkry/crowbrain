@@ -18,21 +18,20 @@ data {
 
 parameters {
     real<lower=1, upper=100> split;
-    real s1_m;
-    real s1_b;
-    real s2_b;
-    real sigma;
+    real<lower=0, upper=1> s1_b;
+    real<lower=0, upper=1> s2_b;
+    real<lower=0, upper=1> s1_m;
+    real<lower=0, upper=1> sigma1;
+    real<lower=0, upper=1> sigma2;
 }
 
 model {
-    real s1_score[N];
-    real s2_score[N];
-    real mu[N];
     for (i in 1:N) {
-        s1_score[i] <- s1_m * order[N] + s1_b;
-        s2_score[i] <- s2_b;
-        mu[i] <- (order[N] <= split) * s1_score[i] + (order[N] > split) * s2_score[i];
-        oscore[i] ~ normal(mu[i], sigma);
+        if ( order[i] <= split ) {
+            oscore[i] ~ normal(s1_m * order[i] + s1_b, sigma1);
+        } else {
+            oscore[i] ~ normal(s2_b, sigma2);
+        }
     }
 }
 """
@@ -48,9 +47,9 @@ def view_fit(dat, fit):
     s1_b = mystats.mean_and_hpd(la['s1_b'], 0.95)
     s2_b = mystats.mean_and_hpd(la['s2_b'], 0.95)
     switch = mystats.mean_and_hpd(la['split'], 0.95)
-    sigma = mystats.mean_and_hpd(la['sigma'], 0.95)
+    #sigma = mystats.mean_and_hpd(la['sigma'], 0.95)
 
-    print("Estimated normal variance:", sigma[0])
+    #print("Estimated normal variance:", sigma[0])
 
     plot_fit(dat, s1_m, s1_b, s2_b, switch)
  
@@ -67,6 +66,7 @@ def plot_fit(dat, s1_m, s1_b, s2_b, switch):
 
     ax.set_xlim(0, 100)
     split_point = int(switch[0])
+    #split_point = 20
     m1_xs = range(0, split_point + 1)
     m2_xs = range(split_point + 1, 100)
 
@@ -81,7 +81,7 @@ def plot_fit(dat, s1_m, s1_b, s2_b, switch):
     # plot the model
     m1_ys = [s1_m[0] * x + s1_b[0] for x in m1_xs]
     m2_ys = [s2_b[0] for x in m2_xs]
-    print(s2_b[0])
+    print("intercept for right model:", s2_b[0])
     ax.plot(m1_xs, m1_ys, '--', color='k')
     ax.plot(m2_xs, m2_ys, '--', color='k')
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     dat = gen_dat(df, 'idea_oscore')
 
     model_file = 'cache/split_originality_blend_model_stan'
-    if os.path.isfile(model_file): 
+    if False and os.path.isfile(model_file): 
         model = pickle.load(open(model_file, 'rb'))
     else:
         model = pystan.StanModel(model_code=model_string)
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         print("Warning: loading fit from file")
         fit = pickle.load(open(fit_file, 'rb'))
     else:
-        fit = model.sampling(data=dat, iter=5000, chains=3)
+        fit = model.sampling(data=dat, iter=500, chains=1)
         pickle.dump(fit, open(fit_file, 'wb'))
 
     view_fit(dat, fit)
