@@ -56,12 +56,14 @@ def gen_data(df, field):
         for qc in set(df['question_code']):
             qcdf = nrdf[nrdf['question_code'] == qc]
             uniques_counts = gen_uniques_counts(qcdf, field)
-            uniques_diffs = np.diff(uniques_counts)
+            temp = [0] + uniques_counts
+            uniques_diffs = np.diff(temp)
             
             dat['novel'].extend(uniques_diffs)
             dat['x'].extend(range(len(uniques_diffs)))
                             
-    return {'x': dat['x'],
+    return {'M': len(set(dat['t'])),
+            'x': dat['x'],
             'novel': dat['novel'],
             'N': len(dat['x'])}
 

@@ -12,10 +12,10 @@ from collections import defaultdict, OrderedDict
 model_string = """
 data {
     int<lower=0> N; // number of instances
-    int<lower=0,upper=1> novel[N]; // whether there was a novel idea at this point
+    int<lower=0,upper=1> success[N]; // whether there was a novel idea at this point
     int<lower=0,upper=N> x[N]; // ordinal position of the instance in its condition
     int<lower=0,upper=N> M; // number of turkers
-    int<lower=0,upper=M> t[N]; // which turker this is
+    int<lower=1,upper=M> t[N]; // which turker this is
 }
 
 parameters {
@@ -24,7 +24,7 @@ parameters {
 
 model {
     for (i in 1:N) {
-        novel[i] ~ bernoulli( exp(rate[t[i]] *  x[i]) );
+        success[i] ~ bernoulli( exp(rate[t[i]] *  x[i]) );
     }
 }
 """
@@ -60,15 +60,20 @@ def gen_data(df, field):
             temp = [0] + uniques_counts
             uniques_diffs = np.diff(temp)
             
-            dat['novel'].extend(uniques_diffs)
+            dat['success'].extend(uniques_diffs)
             dat['x'].extend(range(len(uniques_diffs)))
             dat['t'].extend(turkers)
+
+    # Assertion based on potential error identified by Bob Carpenter on the
+    # Stan mailing list (success should be 1 at t=0 with P = 1)
+    for x, s in zip(dat['x'], dat['success']):
+        assert(not (x == 0 and s == 0))
                             
     return {'M': len(set(dat['t'])),
-            'x': dat['x'],
-            'novel': dat['novel'],
+            'x': [int(x) for x in dat['x']],
+            'success': [int(s) for s in dat['success']],
             'N': len(dat['x']),
-            't': dat['t']}
+            't': [int(t) for t in dat['t']]}
 
 def view_fit(df, field, fit):
     la = fit.extract(permuted=True)
@@ -122,6 +127,7 @@ if __name__ == '__main__':
     idf['worker_int'] += 1
 
     dat = gen_data(idf, 'idea')
+    json.dump(dat, open('cache/rate_counting_types_model_stan_dat.json', 'w'))
 
     model_file = 'cache/rate_counting_types_model_stan'
     if os.path.isfile(model_file): 
