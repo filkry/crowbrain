@@ -371,10 +371,10 @@ def do_format_data(processed_data_folder, filter_instances = None):
             [11, 12, 13, 14, 16, 17, 18])
 
     idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
+                         ['iPod', 'turk', 'charity']}
                          #['charity', 'iPod', 'forgot_name', 'turk']}
     cluster_tree_csvs = {qc: metrics_folder(processed_data_folder, "_%s_clusters.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
+                         ['iPod', 'turk', 'charity']}
                          #['charity', 'iPod', 'forgot_name', 'turk']}
         
     
@@ -425,5 +425,6 @@ def do_format_data(processed_data_folder, filter_instances = None):
 
 if __name__ == "__main__":
     idf, cfs = do_format_data("/home/fil/enc_projects/crowbrain/processed_data")
+    df, rmdf, clusters_df, ann_cfs = mk_redundant(idf, cfs)
     
-    print(idf)
+    print(df)
