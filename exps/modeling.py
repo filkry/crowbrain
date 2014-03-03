@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import hashlib, pystan, os, pickle
 import simulate_error_tree as se
 import networkx as nx
+import format_data
 
 def plot_convergence(la, param_num):
     dat = la[:,:,param_num]
@@ -65,8 +66,15 @@ def compile_and_fit(model_string, dat, n_iter, n_chains):
 
     return param_walks
 
+def get_redundant_data(idea_forests, instance_df):
+    fn = "%s_%s.redundant_data" %\
+            (hash_idea_forests(idea_forests), hash_instance_df(instance_df))
+
+    return read_or_gen_cache(fn,
+        lambda: format_data.mk_redundant(instance_df, idea_forests))
+
 def get_simulated_error_forests(idea_forests, instance_df, index):
-    fn = "%s_%s_%i.simulated_error_forests" %\
+    fn = "%s_%s_%i.simulated_error_redundant" %\
             (hash_idea_forests(idea_forests), hash_instance_df(instance_df), index)
 
     return read_or_gen_cache(fn,

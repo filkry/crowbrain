@@ -107,7 +107,7 @@ def hyp_test_exclude_one(params):
     return 1 > right
 
 def filter_today(df):
-    #df = df[df['question_code'] == 'iPod']
+    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -115,15 +115,16 @@ def filter_today(df):
 if __name__ == '__main__':
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
+    df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
     n_iter = 1500
     n_chains = 3
 
-    dat = gen_model_data(idf, None, None, None) 
+    dat = gen_model_data(df, None, None, None) 
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
     #view_model_fit(idf, 'idea', param_walks[0])
 
     sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
-            gen_model_data, hyp_test_exclude_one, cfs, idf)
+            gen_model_data, hyp_test_exclude_one, cfs, df)
     print("Exclude one hypothesis held in %i/10 cases" % sim_passes)

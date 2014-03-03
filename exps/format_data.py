@@ -370,10 +370,10 @@ def do_format_data(processed_data_folder, filter_instances = None):
             [11, 12, 13, 14, 16, 17, 18])
 
     idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
-                         ['iPod', 'turk', 'charity']}
+                         ['iPod', 'turk']}
                          #['charity', 'iPod', 'forgot_name', 'turk']}
     cluster_tree_csvs = {qc: metrics_folder(processed_data_folder, "_%s_clusters.csv" % qc) for qc in \
-                         ['iPod', 'turk', 'charity']}
+                         ['iPod', 'turk']}
                          #['charity', 'iPod', 'forgot_name', 'turk']}
         
     
