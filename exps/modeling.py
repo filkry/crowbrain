@@ -3,7 +3,10 @@ import hashlib, pystan, os, pickle
 
 def plot_convergence(la, param_num):
     dat = la[:,:,param_num]
-    plt.hist(dat)
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.hist(dat)
+    ax.set_title(param_num)
     plt.show()
 
 def read_or_gen_cache(file_name, gen_fn):
@@ -18,6 +21,10 @@ def read_or_gen_cache(file_name, gen_fn):
 def fit_and_extract(model, dat, iter, chains):
     fit = model.sampling(data=dat, iter=iter, chains=chains)
     las = (fit.extract(permuted=True), fit.extract(permuted=False))
+
+    for i in range(las[1].shape[2]):
+        plot_convergence(las[1], i)
+
     return las
 
 def hash_string(s):
@@ -25,7 +32,14 @@ def hash_string(s):
 
 def hash_dict(d):
     # This is a hack to avoid fixing an arcane error
-    dict_str = ''.join(str(d[key]) for key in sorted(d))
+    dict_str = ''
+    for key in sorted(d):
+        val = d[key]
+        if isinstance(val, int):
+            dict_str += str(val)
+        else:
+            dict_str += str(frozenset(val))
+
     return hash_string(dict_str)
 
 def compile_and_fit(model_string, dat, n_iter, n_chains):

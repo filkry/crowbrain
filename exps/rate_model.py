@@ -59,7 +59,6 @@ def gen_model_data(df, field):
             'N': len(dat['x'])}
 
 def view_model_fit(df, field, la):
-    print(la.shape)
     rates = la['rate']
     y_scale = np.mean( la['y_scale'])
     
@@ -72,7 +71,7 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
     ax.set_xlabel("number of instances received")
-    ax.set_ylabel("number of unique instances")
+    ax.set_ylabel("number of unique ideas")
 
     max_x = max(len(adf) for n, adf in df.groupby(['num_requested']))
     xs = range(max_x)
@@ -94,6 +93,10 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     ys = [model_predict(x, y_scale, rate_mean) for x in xs]
     ax.plot(xs[:len(ys)], ys, '--', color='k')
 
+    # plot the 1:1 line
+    ys = [x for x in xs]
+    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+
     plt.show()
     
 def hyp_test_rate_exclude_one(df, field, cache_key):
@@ -109,7 +112,7 @@ def hyp_test_rate_exclude_one(df, field, cache_key):
     return dat, fits, success
 
 def filter_today(df):
-    df = df[df['question_code'] == 'iPod']
+    #df = df[df['question_code'] == 'iPod']
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -124,8 +127,6 @@ if __name__ == '__main__':
 
     dat = gen_model_data(idf, 'idea')
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
-
-    modeling.plot_convergence(param_walks[1], 3)
 
     view_model_fit(idf, 'idea', param_walks[0])
 
