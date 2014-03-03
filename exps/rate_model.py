@@ -40,7 +40,8 @@ def gen_uniques_counts(adf, field):
         counts.append(len(uniques))
     return counts
 
-def gen_model_data(df, field):
+def gen_model_data(df, rmdf, clusters_df, idea_forest):
+    field = 'idea' # TODO?
     dat = defaultdict(list)
 
     for nr in set(df['num_requested']):
@@ -99,17 +100,11 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
 
     plt.show()
     
-def hyp_test_rate_exclude_one(df, field, cache_key):
-    dat = gen_exp_model_nocond_data(df, field)
-    
-    def testfunc(fits):
-        la = fits[0].extract(permuted=True)
-        print(la)
-        left, right = mystats.hpd(rates, 0.95)
-        return 1 > right
-    
-    fits, success = mystats.stan_hyp_test([dat], exp_model_nocond_string, testfunc, cache_key)
-    return dat, fits, success
+def hyp_test_exclude_one(params):
+    la = params.extract(permuted=True)
+    rates = la['rate']
+    left, right = mystats.hpd(rates, 0.95)
+    return 1 > right
 
 def filter_today(df):
     #df = df[df['question_code'] == 'iPod']
@@ -120,13 +115,15 @@ def filter_today(df):
 if __name__ == '__main__':
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
-    #df, rmdf, clusters_df, cluster_forests = format_data.mk_redundant(idf, cfs)
 
     n_iter = 1500
     n_chains = 3
 
-    dat = gen_model_data(idf, 'idea')
+    dat = gen_model_data(idf, None, None, None) 
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    view_model_fit(idf, 'idea', param_walks[0])
+    #view_model_fit(idf, 'idea', param_walks[0])
 
+    sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
+            gen_model_data, hyp_test_exclude_one, cfs, idf)
+    print("Exclude one hypothesis held in %i/10 cases" % sim_passes)

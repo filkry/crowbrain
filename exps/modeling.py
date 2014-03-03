@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import hashlib, pystan, os, pickle
+import simulate_error_tree as se
+import networkx as nx
 
 def plot_convergence(la, param_num):
     dat = la[:,:,param_num]
@@ -30,8 +32,8 @@ def fit_and_extract(model, dat, iter, chains):
 def hash_string(s):
     return hashlib.sha224(s.encode('utf-8')).hexdigest()
 
+# These functions are hacks to avoid fixing an arcane error
 def hash_dict(d):
-    # This is a hack to avoid fixing an arcane error
     dict_str = ''
     for key in sorted(d):
         val = d[key]
@@ -41,6 +43,16 @@ def hash_dict(d):
             dict_str += str(frozenset(val))
 
     return hash_string(dict_str)
+
+def hash_idea_forests(fs):
+    # TODO: assure this is deterministic
+    fs_nodes = [str(n) for key in sorted(fs)
+                       for n in nx.topological_sort(fs[key])]
+    return hash_string(''.join(fs_nodes))
+
+def hash_instance_df(df):
+    # TODO: assure this is deterministic
+    return hash_string(''.join(a for a in df['answer']))
 
 def compile_and_fit(model_string, dat, n_iter, n_chains):
     model = read_or_gen_cache("%s.stanmodel" % hash_string(model_string),
@@ -52,3 +64,23 @@ def compile_and_fit(model_string, dat, n_iter, n_chains):
         lambda: fit_and_extract(model, dat, n_iter, n_chains))
 
     return param_walks
+
+def get_simulated_error_forests(idea_forests, instance_df, index):
+    fn = "%s_%s_%i.simulated_error_forests" %\
+            (hash_idea_forests(idea_forests), hash_instance_df(instance_df), index)
+
+    return read_or_gen_cache(fn,
+        lambda: se.gen_sym_tree_data(instance_df, idea_forests))
+
+def simulate_error_hypothesis(n_tests, model_string, n_iter, n_chains, dat_fn, hyp_fn,
+        idea_forests, instance_df):
+
+    successes = 0
+    for i in range(n_tests):
+        edf, ermdf, eclusters_df, eidea_forests = get_simulated_error_forests(idea_forests, instance_df, i)
+        dat = dat_fn(edf, ermdf, eclusters_df, eidea_forests)
+        param_walks = compile_and_fit(model_string, dat, n_iter, n_chains)
+        successes += hyp_test(param_walks[0])
+
+    return successes
+

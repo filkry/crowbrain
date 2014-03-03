@@ -10,7 +10,6 @@ def filter_repeats(df):
     new_df = df[df['is_repeat_worker'] == 0]
     return new_df
 
-
 def metrics_folder(pd_folder, x):
         return '/%s/pilot18_metrics/%s' % (pd_folder, x)
 
