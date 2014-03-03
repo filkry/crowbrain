@@ -101,8 +101,7 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     plt.show()
     
 def hyp_test_exclude_one(params):
-    la = params.extract(permuted=True)
-    rates = la['rate']
+    rates = params['rate']
     left, right = mystats.hpd(rates, 0.95)
     return 1 > right
 

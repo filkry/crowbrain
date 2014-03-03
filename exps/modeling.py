@@ -88,7 +88,7 @@ def simulate_error_hypothesis(n_tests, model_string, n_iter, n_chains, dat_fn, h
         edf, ermdf, eclusters_df, eidea_forests = get_simulated_error_forests(idea_forests, instance_df, i)
         dat = dat_fn(edf, ermdf, eclusters_df, eidea_forests)
         param_walks = compile_and_fit(model_string, dat, n_iter, n_chains)
-        successes += hyp_test(param_walks[0])
+        successes += hyp_fn(param_walks[0])
 
     return successes
 
