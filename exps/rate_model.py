@@ -1,16 +1,11 @@
 import pandas as pd
-import scipy as sp
 import numpy as np
-import csv, os, re, itertools, random, math, json, pystan, format_data, pickle
-import scipy.stats as stats
-import networkx as nx
-from imp import reload
+import re, pystan, format_data, modeling
 import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
-
-rate_model_string = """
+model_string = """
 data {
     int N; // number of instances
     real y[N]; // the number of ideas or categories receieved up to and including instance n
@@ -32,7 +27,7 @@ model {
 }
 """
 
-def compute_rate_model(x, y_scale, rate):
+def model_predict(x, y_scale, rate):
     return y_scale * (x ** rate)
 
 def gen_uniques_counts(adf, field):
@@ -45,7 +40,7 @@ def gen_uniques_counts(adf, field):
         counts.append(len(uniques))
     return counts
 
-def gen_rate_model_data(df, field):
+def gen_model_data(df, field):
     dat = defaultdict(list)
 
     for nr in set(df['num_requested']):
@@ -58,21 +53,22 @@ def gen_rate_model_data(df, field):
                             
     assert(len(dat['x']) == len(dat['y']))
 
-    return {'x': dat['x'],
-            'y': dat['y'],
+    # Converting to tuple for immutability so the structure is hashable
+    return {'x': tuple(dat['x']),
+            'y': tuple(dat['y']),
             'N': len(dat['x'])}
 
-def view_rate_model_fit(df, field, fit):
-    la = fit.extract(permuted=True)
+def view_model_fit(df, field, la):
+    print(la.shape)
     rates = la['rate']
     y_scale = np.mean( la['y_scale'])
     
     left, right = mystats.hpd(rates, 0.95)
     rate_mean = np.mean(rates)
 
-    plot_rate_model(y_scale, (left, right), rate_mean, df, field)
+    plot_model(y_scale, (left, right), rate_mean, df, field)
 
-def plot_rate_model(y_scale, rate_hpd, rate_mean, df, field):
+def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
     ax.set_xlabel("number of instances received")
@@ -85,8 +81,8 @@ def plot_rate_model(y_scale, rate_hpd, rate_mean, df, field):
     ax.set_ylim(0, max_x)
 
     # plot the hpd area
-    bottom_ys = [compute_rate_model(x, y_scale, rate_hpd[0]) for x in xs]
-    top_ys = [compute_rate_model(x, y_scale, rate_hpd[1]) for x in xs]
+    bottom_ys = [model_predict(x, y_scale, rate_hpd[0]) for x in xs]
+    top_ys = [model_predict(x, y_scale, rate_hpd[1]) for x in xs]
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
     # plot the line for each condition
@@ -95,7 +91,7 @@ def plot_rate_model(y_scale, rate_hpd, rate_mean, df, field):
         ax.plot(xs[:len(ys)], ys, '-', color='k')
 
     # plot the model line
-    ys = [compute_rate_model(x, y_scale, rate_mean) for x in xs]
+    ys = [model_predict(x, y_scale, rate_mean) for x in xs]
     ax.plot(xs[:len(ys)], ys, '--', color='k')
 
     plt.show()
@@ -105,14 +101,13 @@ def hyp_test_rate_exclude_one(df, field, cache_key):
     
     def testfunc(fits):
         la = fits[0].extract(permuted=True)
-        rates = la['rate']
+        print(la)
         left, right = mystats.hpd(rates, 0.95)
         return 1 > right
     
     fits, success = mystats.stan_hyp_test([dat], exp_model_nocond_string, testfunc, cache_key)
     return dat, fits, success
 
-# TODO: this could be done with passed parameters
 def filter_today(df):
     df = df[df['question_code'] == 'iPod']
     df = format_data.filter_repeats(df)
@@ -124,16 +119,13 @@ if __name__ == '__main__':
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     #df, rmdf, clusters_df, cluster_forests = format_data.mk_redundant(idf, cfs)
 
-    dat = gen_rate_model_data(idf, 'idea')
+    n_iter = 1500
+    n_chains = 3
 
-    model_file = 'cache/rate_model_stan'
-    if os.path.isfile(model_file): 
-        model = pickle.load(open(model_file, 'rb'))
-    else:
-        model = pystan.StanModel(model_code=rate_model_string)
-        pickle.dump(model, open(model_file, 'wb'))
+    dat = gen_model_data(idf, 'idea')
+    param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    fit = model.sampling(data=dat, iter=500, chains=1)
+    modeling.plot_convergence(param_walks[1], 3)
 
-    view_rate_model_fit(idf, 'idea', fit)
+    view_model_fit(idf, 'idea', param_walks[0])
 
