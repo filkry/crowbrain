@@ -122,7 +122,7 @@ if __name__ == '__main__':
     dat = gen_model_data(df, None, None, None) 
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    #view_model_fit(idf, 'idea', param_walks[0])
+    view_model_fit(idf, 'idea', param_walks[0])
 
     sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
             gen_model_data, hyp_test_exclude_one, cfs, df)
