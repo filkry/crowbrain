@@ -8,9 +8,9 @@ from collections import defaultdict, OrderedDict
 
 model_string = """
 data {
-    int N; // number of instances
-    int novel[N]; // whether there was a novel idea at this point
-    int x[N]; // ordinal position of the instance in its condition
+    int <lower=0> N; // number of instances
+    int <lower=0, upper=1> novel[N]; // whether there was a novel idea at this point
+    int <lower=0> x[N]; // ordinal position of the instance in its condition
 }
 
 parameters {
@@ -19,12 +19,11 @@ parameters {
 }
 
 model {
-    real mu[N];
     real theta;
-    int t;
     for (i in 1:N) {
         theta <- min_rate + exp(rate * x[i]) * (1-min_rate);
         novel[i] ~ bernoulli(theta);
+        //increment_log_prob(bernoulli_log(novel[i], theta));
     }
 }
 """
@@ -60,7 +59,7 @@ def gen_model_data(df, rmdf, cdf, ifs):
             dat['novel'].extend(uniques_diffs)
             dat['x'].extend(range(len(uniques_diffs)))
                             
-    return {'M': len(set(dat['t'])),
+    return {
             'x': dat['x'],
             'novel': dat['novel'],
             'N': len(dat['x'])}

@@ -2,12 +2,14 @@ import matplotlib.pyplot as plt
 import hashlib, pystan, os, pickle
 import simulate_error_tree as se
 import networkx as nx
+import numpy as np
 import format_data
 
 def plot_convergence(la, param_num):
     dat = la[:,:,param_num]
     fig = plt.figure()
     ax = fig.add_subplot(111)
+    assert(not np.isnan(np.sum(dat)))
     ax.hist(dat)
     ax.set_title(param_num)
     plt.show()
@@ -22,7 +24,7 @@ def read_or_gen_cache(file_name, gen_fn):
         return dat
 
 def fit_and_extract(model, dat, iter, chains):
-    fit = model.sampling(data=dat, iter=iter, chains=chains)
+    fit = model.sampling(data=dat, iter=iter, chains=chains, seed=2)
     las = (fit.extract(permuted=True), fit.extract(permuted=False))
 
     for i in range(las[1].shape[2]):
