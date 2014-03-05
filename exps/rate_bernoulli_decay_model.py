@@ -31,7 +31,7 @@ model {
 def model_integral_predict(max_x, rate, min_rate):
     ys = [0]
     for x in range(1, max_x):
-        ys.append(ys[-1] + math.exp(rate * x) + min_rate)
+        ys.append(ys[-1] + min_rate + math.exp(rate * x) * (1- min_rate))
     return ys
 
 def gen_uniques_counts(adf, field):
@@ -79,7 +79,7 @@ def plot_model(rate, min_rate, df, field):
     ax.set_xlabel("number of instances received")
     ax.set_ylabel("number of unique ideas")
 
-    max_x = max(len(adf) for n, adf in df.groupby(['num_requested']))
+    max_x = max(len(adf) for n, adf in df.groupby(['question_code', 'num_requested']))
     xs = range(max_x)
 
     ax.set_xlim(0, max_x)
@@ -98,6 +98,11 @@ def plot_model(rate, min_rate, df, field):
     # plot the model line
     ys = model_integral_predict(max_x, rate[0], min_rate[0])
     ax.plot(xs[:len(ys)], ys, '--', color='k')
+
+    # plot the 1:1 line
+    ys = [x for x in xs]
+    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+
 
     plt.show()
 

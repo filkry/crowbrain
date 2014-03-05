@@ -61,32 +61,31 @@ def gen_model_data(df, rmdf, clusters_df, idea_forest):
 
 def view_model_fit(df, field, la):
     rates = la['rate']
-    y_scale = np.mean( la['y_scale'])
     
+    y_scale = mystats.mean_and_hpd( la['y_scale'], 0.95)
     rate = mystats.mean_and_hpd(rates, 0.95)
 
     print("Mean rate:", rate[0])
-    print("Mean y_scale:", y_scale)
+    print("Mean y_scale:", y_scale[0])
     print("Mean sigma:", np.mean(la['sigma']))
 
     plot_model(y_scale, (rate[1], rate[2]), rate[0], df, field)
 
-def plot_model(y_scale, rate_hpd, rate_mean, df, field):
+def plot_model(y_scale_hpd, rate_hpd, rate_mean, df, field):
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
     ax.set_xlabel("number of instances received")
     ax.set_ylabel("number of unique ideas")
 
-    max_x = max(len(adf) for n, adf in df.groupby(['num_requested']))
+    max_x = max(len(adf) for n, adf in df.groupby(['question_code', 'num_requested']))
     xs = range(max_x)
 
     ax.set_xlim(0, max_x)
     ax.set_ylim(0, max_x)
 
     # plot the hpd area
-    # TODO: these should use hpd bounded y_scale params
-    bottom_ys = [model_predict(x, y_scale, rate_hpd[0]) for x in xs]
-    top_ys = [model_predict(x, y_scale, rate_hpd[1]) for x in xs]
+    bottom_ys = [model_predict(x, y_scale_hpd[1], rate_hpd[0]) for x in xs]
+    top_ys = [model_predict(x, y_scale_hpd[2], rate_hpd[1]) for x in xs]
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
     # plot the line for each condition
@@ -95,7 +94,7 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
         ax.plot(xs[:len(ys)], ys, '-', color='k')
 
     # plot the model line
-    ys = [model_predict(x, y_scale, rate_mean) for x in xs]
+    ys = [model_predict(x, y_scale_hpd[0], rate_mean) for x in xs]
     ax.plot(xs[:len(ys)], ys, '--', color='k')
 
     # plot the 1:1 line
