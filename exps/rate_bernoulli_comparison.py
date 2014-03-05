@@ -15,39 +15,39 @@ data {
     int novel[N]; // whether there was a novel idea at this point
     
     // exponential outcome variable
-    //real y[N]; // the number of ideas or categories receieved up to and including instance n
+    real y[N]; // the number of ideas or categories receieved up to and including instance n
 }
 
 parameters {
     // bernoulli parameters
-    real <upper=0> b_rate;
+    real <lower=-10, upper=0> b_rate;
     real <lower=0, upper=1> b_min_rate;
 
     // exponential parameters
-    //real<lower=0, upper=1> e_rate;
-    //real<lower=0, upper=1> e_y_scale;
-    //real<lower=0> e_sigma;
+    real<lower=0, upper=1> e_rate;
+    real<lower=0, upper=1> e_y_scale;
+    real<lower=0, upper=10> e_sigma;
 
     // mixture parameter
-    //real<lower=0, upper=1> lambda;
+    real<lower=0, upper=1> lambda;
 }
 
 model {
     for (i in 1:N) {
         real b_theta;
-        //real e_mu;
+        real e_mu;
         
         real b_lp;
-        //real e_lp;
+        real e_lp;
 
         b_theta <- b_min_rate + exp(b_rate * x[i]) * (1 - b_min_rate);
         b_lp <- bernoulli_log(novel[i], b_theta);
 
-        //e_mu  <- e_y_scale * pow(x[i], e_rate);
-        //e_lp <- normal_log(y[i], e_mu, e_sigma);
+        e_mu  <- e_y_scale * pow(x[i], e_rate);
+        e_lp <- normal_log(y[i], e_mu, e_sigma);
 
-        //increment_log_prob(log_sum_exp(log(lambda) + b_lp, log1m(lambda) + e_lp));
-        increment_log_prob(b_lp);
+        increment_log_prob(log_sum_exp(log(lambda) + b_lp, log1m(lambda) + e_lp));
+        //increment_log_prob(b_lp);
     }
 }
 """
@@ -85,7 +85,7 @@ def gen_model_data(df, rmdf, cdf, ifs):
             'N': len(dat['x'])}
 
 def view_fit(df, field, la):
-    lmbda = mystats.mean_and_hpd(la['lambda'], 0,95)
+    lmbda = mystats.mean_and_hpd(la['lambda'], 0.95)
     print(lmbda)
 
 # TODO: this could be done with passed parameters
@@ -100,8 +100,16 @@ if __name__ == '__main__':
     idf, ifs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
 
-    n_iter = 1500
+    n_iter = 10000
     n_chains = 3
+
+    initial_values = {
+            'e_rate': 0.878,
+            'e_y_scale': 1.460,
+            'e_sigma': 15.3698,
+            'b_rate': -0.01,
+            'b_min_rate': 0.57,
+            }
 
     dat = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)

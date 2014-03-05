@@ -14,7 +14,7 @@ data {
 }
 
 parameters {
-    real <upper=0> rate;
+    real <lower=-100, upper=0> rate;
     real <lower=0, upper=1> min_rate;
 }
 
@@ -67,6 +67,9 @@ def gen_model_data(df, rmdf, cdf, ifs):
 def view_fit(df, field, la):
     rate = mystats.mean_and_hpd(la['rate'], 0.95)
     min_rate = mystats.mean_and_hpd(la['min_rate'], 0.95)
+
+    print("Mean rate:", rate[0])
+    print("Mean min_rate:", min_rate[0])
 
     plot_model(rate, min_rate, df, field)
 

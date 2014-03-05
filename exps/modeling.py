@@ -5,13 +5,14 @@ import networkx as nx
 import numpy as np
 import format_data
 
-def plot_convergence(la, param_num):
-    dat = la[:,:,param_num]
+def plot_convergence(la, name, param_index):
+    print("Examine convergence for parameter %s" % name)
+    dat = la[:,:,param_index]
     fig = plt.figure()
     ax = fig.add_subplot(111)
     assert(not np.isnan(np.sum(dat)))
     ax.hist(dat)
-    ax.set_title(param_num)
+    ax.set_title(name)
     plt.show()
 
 def read_or_gen_cache(file_name, gen_fn):
@@ -23,12 +24,17 @@ def read_or_gen_cache(file_name, gen_fn):
         pickle.dump(dat, open(full_file_name, 'wb'))
         return dat
 
-def fit_and_extract(model, dat, iter, chains):
-    fit = model.sampling(data=dat, iter=iter, chains=chains, seed=2)
+def fit_and_extract(model, dat, iter, chains, init_params):
+    if init_params is None:
+        fit = model.sampling(data=dat, iter=iter, chains=chains)
+    else:
+        fit = model.sampling(data=dat, iter=iter, chains=chains,
+                init=(lambda: init_params))
+
     las = (fit.extract(permuted=True), fit.extract(permuted=False))
 
-    for i in range(las[1].shape[2]):
-        plot_convergence(las[1], i)
+    for name, index in zip(fit.model_pars, range(las[1].shape[2])):
+        plot_convergence(las[1], name, index)
 
     return las
 
@@ -41,6 +47,8 @@ def hash_dict(d):
     for key in sorted(d):
         val = d[key]
         if isinstance(val, int):
+            dict_str += str(val)
+        elif isinstance(val, float):
             dict_str += str(val)
         else:
             dict_str += str(frozenset(val))
@@ -57,14 +65,19 @@ def hash_instance_df(df):
     # TODO: assure this is deterministic
     return hash_string(''.join(a for a in df['answer']))
 
-def compile_and_fit(model_string, dat, n_iter, n_chains):
+def compile_and_fit(model_string, dat, n_iter, n_chains, init_params = None):
     model = read_or_gen_cache("%s.stanmodel" % hash_string(model_string),
         lambda: pystan.StanModel(model_code=model_string))
 
-    pw_cache = "%s_%s_%i_%i.stanfit" %\
-        (hash_string(model_string), hash_dict(dat), n_iter, n_chains)
+    if init_params is not None:
+        pw_cache = "%s_%s_%s_%i_%i.stanfit" %\
+            (hash_string(model_string), hash_dict(dat), hash_dict(init_params), n_iter, n_chains)
+    else: 
+        pw_cache = "%s_%s_%i_%i.stanfit" %\
+            (hash_string(model_string), hash_dict(dat), n_iter, n_chains)
+
     param_walks = read_or_gen_cache(pw_cache,
-        lambda: fit_and_extract(model, dat, n_iter, n_chains))
+        lambda: fit_and_extract(model, dat, n_iter, n_chains, init_params))
 
     return param_walks
 

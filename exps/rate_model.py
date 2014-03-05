@@ -63,10 +63,13 @@ def view_model_fit(df, field, la):
     rates = la['rate']
     y_scale = np.mean( la['y_scale'])
     
-    left, right = mystats.hpd(rates, 0.95)
-    rate_mean = np.mean(rates)
+    rate = mystats.mean_and_hpd(rates, 0.95)
 
-    plot_model(y_scale, (left, right), rate_mean, df, field)
+    print("Mean rate:", rate[0])
+    print("Mean y_scale:", y_scale)
+    print("Mean sigma:", np.mean(la['sigma']))
+
+    plot_model(y_scale, (rate[1], rate[2]), rate[0], df, field)
 
 def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     fig = plt.figure(figsize=(10, 10))
