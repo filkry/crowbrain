@@ -33,7 +33,8 @@ def fit_and_extract(model, dat, iter, chains, init_params):
 
     las = (fit.extract(permuted=True), fit.extract(permuted=False))
 
-    for name, index in zip(fit.model_pars, range(las[1].shape[2])):
+    print(len(fit.flatnames),  las[1].shape[2])
+    for name, index in zip(fit.flatnames, range(las[1].shape[2])):
         plot_convergence(las[1], name, index)
 
     return las
