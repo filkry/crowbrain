@@ -84,12 +84,13 @@ def plot_model(y_scale, rate_hpd, rate_mean, df, field):
     ax.set_ylim(0, max_x)
 
     # plot the hpd area
+    # TODO: these should use hpd bounded y_scale params
     bottom_ys = [model_predict(x, y_scale, rate_hpd[0]) for x in xs]
     top_ys = [model_predict(x, y_scale, rate_hpd[1]) for x in xs]
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
     # plot the line for each condition
-    for name, adf in df.groupby(['num_requested']):
+    for name, adf in df.groupby(['question_code', 'num_requested']):
         ys = gen_uniques_counts(adf, field)
         ax.plot(xs[:len(ys)], ys, '-', color='k')
 

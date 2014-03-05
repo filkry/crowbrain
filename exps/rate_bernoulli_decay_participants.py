@@ -38,6 +38,12 @@ model {
 }
 """
 
+def model_integral_predict_p_decay(which_worker, worker_decay, min_rate):
+    ys = [0]
+    for x, worker in enumerate(which_worker):
+        ys.append(ys[-1] + (1-min_rate) * math.exp(worker_decay[worker - 1] * x) + min_rate)
+    return ys
+
 def model_integral_predict_fixed_decay(max_x, decay_rate, min_rate):
     ys = [0]
     for x in range(1, max_x):
@@ -97,22 +103,61 @@ def gen_model_data(df, rmdf, cdf, ifs):
             'M': cur_worker_int - 1,
             'N': len(dat['x'])}
 
-def view_fit(df, field, la):
+def view_fit(df, field, la, dat):
     rate_array = la['rate']
     p_rates = [rate_array[:, i] for i in range(rate_array.shape[1])]
     sorted_rates = sorted(p_rates, key=np.mean)
 
     min_rate = np.mean(la['min_rate'])
 
-    prediction_low_decay = model_integral_predict(100, np.mean(sorted_rates[-1]), min_rate)
-    prediction_high_decay = model_integral_predict(100, np.mean(sorted_rates[0]), min_rate)
+    prediction_low_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[-1]), min_rate)
+    prediction_high_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[0]), min_rate)
     print("Number of ideas generated with low decay rate:", prediction_low_decay[-1])
     print("Number of ideas generated with high decay rate:", prediction_high_decay[-1])
 
     plot_rate_posteriors(p_rates)
 
-def plot_cumulative_model():
-    print("TODO plot model") 
+    #plot_cumulative_model(df, dat, p_rates, mystats.mean_and_hpd(la['min_rate'], 0.95), field)
+
+def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
+    # TODO: Keeping this around because it may be fixed later, but the
+    # plot here has no meaning for now. The cumulative prediction
+    # doesn't account for which condition we are in (it just appends all
+    # participants)
+    # TODO: assure p_rates comes in order
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_xlabel("number of instances received")
+    ax.set_ylabel("number of unique ideas")
+
+    p_rate_hpds = [mystats.mean_and_hpd(p_rate, 0.95) for p_rate in p_rates]
+    p_rate_mean = [hpd[0] for hpd in p_rate_hpds]
+    p_rate_low = [hpd[1] for hpd in p_rate_hpds]
+    p_rate_high = [hpd[2] for hpd in p_rate_hpds]
+
+    xs = range(len(dat['participant']) + 1)
+
+    # plot the hpd area
+    bottom_ys = model_integral_predict_p_decay(dat['participant'],
+            p_rate_low, min_rate_hpd[1])
+    top_ys = model_integral_predict_p_decay(dat['participant'],
+            p_rate_high, min_rate_hpd[2])
+    ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
+
+    # plot the line for each condition
+    for name, adf in df.groupby(['question_code', 'num_requested']):
+        ys = gen_uniques_counts(adf, field)
+        ax.plot(range(len(ys)), ys, '-', color='k')
+
+    # plot the fit line
+    fit_ys = model_integral_predict_p_decay(dat['participant'],
+            p_rate_mean, min_rate_hpd[0])
+
+    # plot the 1:1 line
+    ys = [x for x in xs]
+    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+
+    plt.show()
 
 def n_tiles(l, n):
     """ Returns l split into n chunks
@@ -120,6 +165,12 @@ def n_tiles(l, n):
     size = len(l) / n;
     for i in range(n):
         yield l[n * i : n * i+1]
+        
+def add_hpd_bar(ax, left, right, y, linewidth=2, edge_height = 200):
+    heh = edge_height / 2
+    ax.plot([left, right], [y, y], color='k', linewidth=linewidth)
+    ax.plot([left, left], [y + heh, y - heh], color='k', linewidth=linewidth)
+    ax.plot([right, right], [y + heh, y - heh], color='k', linewidth=linewidth)
 
 def plot_rate_posteriors(p_rates):
     sorted_rates = sorted(p_rates, key=np.mean)
@@ -133,8 +184,13 @@ def plot_rate_posteriors(p_rates):
     #    ax.hist(quartiles_flat, bins=20, alpha=0.5, label="%ith quartile" % (i+1))
 
     # Plot highest and lowest rates
-    ax.hist(sorted_rates[0], bins=20, alpha=0.5, label="lowest rate")
-    ax.hist(sorted_rates[-1], bins=20, alpha=0.5, label="highest rate")
+    ax.hist(sorted_rates[0], bins=20, alpha=0.75, label="fastest decay")
+    ax.hist(sorted_rates[-1], bins=20, alpha=0.75, label="slowest decay")
+
+    fast_hpd = mystats.mean_and_hpd(sorted_rates[0], 0.95)
+    slow_hpd = mystats.mean_and_hpd(sorted_rates[-1], 0.95)
+    add_hpd_bar(ax, fast_hpd[1], fast_hpd[2], 500)
+    add_hpd_bar(ax, slow_hpd[1], slow_hpd[2], 500)
 
     ax.set_xlabel("rate parameter value")
     ax.set_ylabel("number of samples")
@@ -161,5 +217,5 @@ if __name__ == '__main__':
     dat = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    view_fit(df, 'idea', param_walks[0])
+    view_fit(df, 'idea', param_walks[0], dat)
 

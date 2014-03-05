@@ -91,7 +91,7 @@ def plot_model(rate, min_rate, df, field):
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
     # plot the line for each condition
-    for name, adf in df.groupby(['num_requested']):
+    for name, adf in df.groupby(['question_code', 'num_requested']):
         ys = gen_uniques_counts(adf, field)
         ax.plot(xs[:len(ys)], ys, '-', color='k')
 
