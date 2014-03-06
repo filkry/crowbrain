@@ -39,15 +39,21 @@ model {
 """
 
 def model_integral_predict_p_decay(which_worker, worker_decay, min_rate):
-    ys = [0]
+    ys = []
     for x, worker in enumerate(which_worker):
-        ys.append(ys[-1] + (1-min_rate) * math.exp(worker_decay[worker - 1] * x) + min_rate)
+        if(len(ys) == 0):
+            ys.append((1-min_rate) * math.exp(worker_decay[worker - 1] * x) + min_rate)
+        else:
+            ys.append(ys[-1] + (1-min_rate) * math.exp(worker_decay[worker - 1] * x) + min_rate)
     return ys
 
-def model_integral_predict_fixed_decay(max_x, decay_rate, min_rate):
-    ys = [0]
-    for x in range(1, max_x):
-        ys.append(ys[-1] + (1-min_rate) * math.exp(decay_rate * x) + min_rate)
+def model_integral_predict_fixed_decay(num, decay_rate, min_rate, start_x = 1):
+    ys = []
+    for x in range(start_x, num + start_x):
+        if(len(ys) == 0):
+            ys.append((1-min_rate) * math.exp(decay_rate * x) + min_rate)
+        else:
+            ys.append(ys[-1] + (1-min_rate) * math.exp(decay_rate * x) + min_rate)
     return ys
 
 def gen_uniques_counts(adf, field):
@@ -115,9 +121,25 @@ def view_fit(df, field, la, dat):
     print("Number of ideas generated with low decay rate:", prediction_low_decay[-1])
     print("Number of ideas generated with high decay rate:", prediction_high_decay[-1])
 
+    prediction_low_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[-1]), min_rate, 500)
+    prediction_high_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[0]), min_rate, 500)
+    print("Number of ideas generated with low decay rate (from 500):", prediction_low_decay[-1])
+    print("Number of ideas generated with high decay rate (from 500):", prediction_high_decay[-1])
+
     plot_rate_posteriors(p_rates)
 
-    #plot_cumulative_model(df, dat, p_rates, mystats.mean_and_hpd(la['min_rate'], 0.95), field)
+    plot_cumulative_model(df, dat, p_rates, mystats.mean_and_hpd(la['min_rate'], 0.95), field)
+
+def cumulative_list(l):
+    total = 0
+    for x in l:
+        total += x
+        yield total
+
+def index_starting_at(l, target, start):
+    if target not in l[start:]:
+        return None
+    return l[start:].index(target) + start
 
 def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
     # TODO: Keeping this around because it may be fixed later, but the
@@ -125,37 +147,50 @@ def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
     # doesn't account for which condition we are in (it just appends all
     # participants)
     # TODO: assure p_rates comes in order
+    
     fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.set_xlabel("number of instances received")
-    ax.set_ylabel("number of unique ideas")
 
-    p_rate_hpds = [mystats.mean_and_hpd(p_rate, 0.95) for p_rate in p_rates]
-    p_rate_mean = [hpd[0] for hpd in p_rate_hpds]
-    p_rate_low = [hpd[1] for hpd in p_rate_hpds]
-    p_rate_high = [hpd[2] for hpd in p_rate_hpds]
+    condition_index = 0 
+    # for each of the first 6 combinations
+    for i in range(1, 7):
+        ax = fig.add_subplot(3, 2, i)
 
-    xs = range(len(dat['participant']) + 1)
+        end_of_condition = index_starting_at(dat['x'], 0, condition_index + 1)
+        if end_of_condition is None:
+            end_of_condition = len(dat['x'])
+        xs = dat['x'][condition_index:end_of_condition]
+        novels = dat['novel'][condition_index:end_of_condition]
+        ys = list(cumulative_list(novels))
+        parts = dat['participant'][condition_index:end_of_condition]
+            
+        ax.set_xlabel("number of instances received")
+        ax.set_ylabel("number of unique ideas")
 
-    # plot the hpd area
-    bottom_ys = model_integral_predict_p_decay(dat['participant'],
-            p_rate_low, min_rate_hpd[1])
-    top_ys = model_integral_predict_p_decay(dat['participant'],
-            p_rate_high, min_rate_hpd[2])
-    ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
+        p_rate_hpds = [mystats.mean_and_hpd(p_rate, 0.95) for p_rate in p_rates]
+        p_rate_mean = [hpd[0] for hpd in p_rate_hpds]
+        p_rate_low = [hpd[1] for hpd in p_rate_hpds]
+        p_rate_high = [hpd[2] for hpd in p_rate_hpds]
 
-    # plot the line for each condition
-    for name, adf in df.groupby(['question_code', 'num_requested']):
-        ys = gen_uniques_counts(adf, field)
-        ax.plot(range(len(ys)), ys, '-', color='k')
+        # plot the hpd area
+        bottom_ys = model_integral_predict_p_decay(parts,
+                p_rate_low, min_rate_hpd[1])
+        top_ys = model_integral_predict_p_decay(parts,
+                p_rate_high, min_rate_hpd[2])
+        ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
-    # plot the fit line
-    fit_ys = model_integral_predict_p_decay(dat['participant'],
-            p_rate_mean, min_rate_hpd[0])
+        # plot the line for each condition
+        ax.plot(xs, ys, '-', color='k')
 
-    # plot the 1:1 line
-    ys = [x for x in xs]
-    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+        # plot the fit line
+        fit_ys = model_integral_predict_p_decay(parts,
+                p_rate_mean, min_rate_hpd[0])
+        ax.plot(xs[:len(ys)], fit_ys, '--', color='k')
+
+        # plot the 1:1 line
+        ys = [x for x in xs]
+        ax.plot(xs, ys, '--', color='k', alpha=0.5)
+
+        condition_index = end_of_condition
 
     plt.show()
 
