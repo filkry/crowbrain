@@ -1,10 +1,6 @@
 import pandas as pd
-import scipy as sp
 import numpy as np
-import csv, os, re, itertools, random, math, json, pystan, format_data, pickle
-import scipy.stats as stats
-import networkx as nx
-from imp import reload
+import re, pystan, format_data, modeling
 import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
@@ -39,14 +35,13 @@ model {
 
 }
 """
-def gen_dat(df, field):
+def gen_dat(df, rmdf, cdf, ifs):
+    field = 'idea_oscore'
     return {'order': df['answer_num'] + 1,
             'oscore': df[field],
             'N': len(df) }
 
-def view_fit(dat, fit):
-    la = fit.extract(permuted=True)
-
+def view_fit(dat, la):
     alpha1 = mystats.mean_and_hpd(la['alpha1'], 0.95)
     alpha2 = mystats.mean_and_hpd(la['alpha2'], 0.95)
     beta1 = mystats.mean_and_hpd(la['beta1'], 0.95)
@@ -55,7 +50,7 @@ def view_fit(dat, fit):
     #sigma = mystats.mean_and_hpd(la['sigma'], 0.95)
 
     #print("Estimated normal variance:", sigma[0])
-    print("estimated split:", int(switch[0]))
+    print("estimated split:", switch)
 
     plot_fit(dat, alpha1, alpha2, beta1, beta2, switch)
  
@@ -75,23 +70,26 @@ def plot_linear_hpd(ax, m, b, xs):
 def plot_fit(dat, alpha1, alpha2, beta1, beta2, switch):
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
-    ax.set_xlabel("answer number")
-    ax.set_ylabel("oscore")
+    ax.set_xlabel("instance number in run")
+    ax.set_ylabel("mean oscore for all participants")
 
     ax.set_xlim(0, 100)
     split_point = int(switch[0])
     #split_point = 20
-    m1_xs = range(0, split_point + 1)
+    m1_xs = range(0, split_point + 2)
     m2_xs = range(split_point + 1, 100)
 
     m1_b, m1_m, m2_b = line_from_betas(alpha1, alpha2, beta1, beta2, switch)
 
-    # plot the hpd areas
+    # plot the split hpd area
+    xs = (switch[1], switch[2])
+    bys = (0, 0)
+    tys = (1, 1)
+    ax.fill_between(xs, bys, tys, color='g', alpha=0.10)
+
+    # plot the lines hpd
     #plot_linear_hpd(ax, s1_m, s1_b, m1_xs)
     #plot_linear_hpd(ax, (0, 0, ), s2_b, m2_xs)
-
-    # plot data points
-    #ax.plot(dat['order'], dat['oscore'], 'r.', alpha=0.5)
 
     # plot means
     means = []
@@ -109,11 +107,13 @@ def plot_fit(dat, alpha1, alpha2, beta1, beta2, switch):
     ax.plot(m1_xs, m1_ys, '--', color='k')
     ax.plot(m2_xs, m2_ys, '--', color='k')
 
+    ax.set_ylim(0.99, 1)
+
     plt.show()
 
 # TODO: this could be done with passed parameters
 def filter_today(df):
-    df = df[df['question_code'] == 'iPod']
+    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -121,24 +121,14 @@ def filter_today(df):
 if __name__ == '__main__':
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
-    df, rmdf, clusters_df, cluster_forests = format_data.mk_redundant(idf, cfs)
+    df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
-    dat = gen_dat(df, 'idea_oscore')
+    n_iter = 1500
+    n_chains = 3
 
-    model_file = 'cache/split_originality_blend_model_stan'
-    if False and os.path.isfile(model_file): 
-        model = pickle.load(open(model_file, 'rb'))
-    else:
-        model = pystan.StanModel(model_code=model_string)
-        pickle.dump(model, open(model_file, 'wb'))
+    dat = gen_dat(df, rmdf, cdf, cfs)
 
-    fit_file = 'cache/split_originality_blend_model_stand_fit'
-    if False and os.path.isfile(fit_file):
-        print("Warning: loading fit from file")
-        fit = pickle.load(open(fit_file, 'rb'))
-    else:
-        fit = model.sampling(data=dat, iter=1500, chains=3)
-        pickle.dump(fit, open(fit_file, 'wb'))
+    param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    view_fit(dat, fit)
+    view_fit(dat, param_walks[0])
 
