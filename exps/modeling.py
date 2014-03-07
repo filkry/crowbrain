@@ -96,15 +96,29 @@ def get_simulated_error_forests(idea_forests, instance_df, index):
     return read_or_gen_cache(fn,
         lambda: se.gen_sym_tree_data(instance_df, idea_forests))
 
-def simulate_error_hypothesis(n_tests, model_string, n_iter, n_chains, dat_fn, hyp_fn,
-        idea_forests, instance_df):
-
+# Poorly named to preserve the name of simulate_error_hypothesis
+def simulate_error_hypothesis_general(n_tests, posterior_fn, hyp_fn,
+        instance_df, idea_forests):
     successes = 0
     for i in range(n_tests):
         edf, ermdf, eclusters_df, eidea_forests = get_simulated_error_forests(idea_forests, instance_df, i)
-        dat = dat_fn(edf, ermdf, eclusters_df, eidea_forests)
-        param_walks = compile_and_fit(model_string, dat, n_iter, n_chains)
-        successes += hyp_fn(param_walks[0])
+        posterior = posterior_fn(edf, ermdf, eclusters_df, eidea_forests)
+        successes += hyp_fn(posterior, edf, ermdf, eclusters_df, eidea_forests)
 
     return successes
+
+# Basically a compatibility function for older models
+def simulate_error_hypothesis(n_tests, model_string, n_iter, n_chains, dat_fn, hyp_fn,
+        idea_forests, instance_df):
+
+    def posterior_fn(edf, ermdf, ecdf, eifs):
+        dat = dat_fn(edf, ermdf, ecdf, eifs)
+        param_walks = compile_and_fit(model_string, dat, n_iter, n_chains)
+        return param_walks[0]
+
+    def hyp_fn_p(posterior, edf, ermdf, ecdf, eifs):
+        return hyp_fn(posterior)
+
+    return simulate_error_hypothesis_general(n_tests, posterior_fn, hyp_fn_p,
+            instance_df, idea_forests)
 

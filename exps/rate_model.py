@@ -128,5 +128,5 @@ if __name__ == '__main__':
     view_model_fit(idf, 'idea', param_walks[0])
 
     sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
-            gen_model_data, hyp_test_exclude_one, cfs, df)
+            gen_model_data, hyp_test_exclude_one, cfs, idf)
     print("Exclude one hypothesis held in %i/10 cases" % sim_passes)

@@ -294,18 +294,26 @@ def gen_err_berns(question_code, cluster_forest):
         gen_grid_bernoullis(culled, cluster_forest, 'artificial_parent'),
         gen_grid_bernoullis(culled, cluster_forest, 'single_node_per_idea')]
 
-def simulate_error_node(qc, instance_df, cluster_forest):
-    qc_cdf = instance_df[instance_df['question_code'] == qc]
-    nodes = list(zip(list(qc_cdf['idea']), list(qc_cdf['num_instances'])))
+def redundant_subset(qc, instance_df, cluster_forest):
+    qcdf = instance_df[instance_df['question_code'] == qc]
+    nodes = [(idea, len(qcdf[qcdf['idea'] == idea]))
+            for idea in set(qcdf['idea'])]
+
+    return nodes
+
+def simulate_error_node(qc, instance_df, ann_cluster_forest):
+    # Generate a subset of necesary redundant data
+    nodes = redundant_subset(qc, instance_df, ann_cluster_forest)
+
     bins = bin_sequence(nodes, lambda x: x[1], 5)
     bins = [[n[0] for n in binn] for binn in bins]
-    err_berns = gen_err_berns(qc, cluster_forest)
+    err_berns = gen_err_berns(qc, ann_cluster_forest)
     err_berns = [bern_grid_marginalize_bin2(eb, bins) for eb in err_berns]
 
-    new_forest = cluster_forest.copy()
+    new_forest = ann_cluster_forest.copy()
     new_idf = instance_df.copy()
     
-    real_nodes = [n for n in cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
+    real_nodes = [n for n in ann_cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
 
     lost_nodes = []
     for j, n1 in enumerate(real_nodes):
