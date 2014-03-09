@@ -71,10 +71,30 @@ def idea_rate_plot(df):
 
     plt.show()
 
+def gen_counts_table(df):
+    res = ['\\begin{table}', '\\centering', '\\begin{tabular}{| r | l l l |}',
+            '\\hline \\textbf{question} & number of instances & number of nodes & number of trees \\\\ \\hline',]
+    for qc in set(df['question_code']):
+        qcdf = df[df['question_code'] == qc]
+        n_instances = len(qcdf)
+        n_nodes = len(set(qcdf['idea']))
+        n_trees = len(set(qcdf['subtree_root']))
+        res.append('%s & %i & %i (%0.2f) & %i (%0.2f) \\\\' % (qc, n_instances,
+            n_nodes, n_nodes / n_instances, n_trees, n_trees/n_instances))
+    res.extend(['\\hline', '\\end{tabular}',
+        '\\caption{Descriptive statistics for size of idea forests}',
+        '\\label{tab:forest_descriptive_statistics}', '\\end{table}'])
+
+    with open('tex/forests_counts_table.tex', 'w') as f:
+        print('\n'.join(res), file=f)
+
+
 if __name__ == '__main__':
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
+
+    gen_counts_table(df)
 
     idea_rate_plot(df)
     tree_question_boxplots(cdf, extract_tree_depths, 'tree depth')

@@ -1,4 +1,5 @@
 build
+*.tex
 .ipynb_checkpoints
 *.html
 cache
