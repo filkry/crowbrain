@@ -44,8 +44,16 @@ def gen_data(df, rmdf, cdf, ifs):
     
     dat = defaultdict(list)
 
+def add_hpd_bar(ax, left, right, y, linewidth=2, edge_height = 50):
+    heh = edge_height / 2
+    ax.plot([left, right], [y, y], color='k', linewidth=linewidth)
+    ax.plot([left, left], [y + heh, y - heh], color='k', linewidth=linewidth)
+    ax.plot([right, right], [y + heh, y - heh], color='k', linewidth=linewidth)
 
 def plot_fit(posterior, btwn_dat, wthn_dat):
+    plt.rc('font', **{'sans-serif' : 'Arial',
+                                   'family' : 'sans-serif'})
+
     fig = plt.figure()
 
     # plot time distributions
@@ -56,12 +64,27 @@ def plot_fit(posterior, btwn_dat, wthn_dat):
     ax.set_xlim(0, 200000)
 
     ax.set_title('time spent')
-    bins = max(btwn_times + wthn_times) / 10000
-    ax.hist(btwn_times, label='between categories', bins = bins)
-    ax.hist(wthn_times, label='within categories', bins=bins)
+    btwn_bins = max(btwn_times) / 10000
+    wthn_bins = max(wthn_times) / 10000
+    ax.hist(btwn_times, label='between categories', bins = btwn_bins)
+    ax.hist(wthn_times, label='within categories', bins= wthn_bins)
     ax.set_xlabel('time spent on response (ms)')
     ax.set_ylabel('number of responses')
     ax.legend()
+
+    # Plot the posteriors with HDIs
+    between_la, within_la = posterior
+    ax = fig.add_subplot(2, 1, 2)
+    ax.hist(between_la['mu'], label='between categories')
+    ax.hist(within_la['mu'], label='within categories')
+    ax.set_xlabel(u'μ')
+    ax.set_ylabel('samples')
+    ax.set_title(u'posterior μs')
+
+    between_mu_hpd = mystats.mean_and_hpd(between_la['mu'], 0.95)
+    within_mu_hpd = mystats.mean_and_hpd(within_la['mu'], 0.95)
+    add_hpd_bar(ax, between_mu_hpd[1], between_mu_hpd[2], 100)
+    add_hpd_bar(ax, within_mu_hpd[1], within_mu_hpd[2], 100)
     
     plt.show()
 

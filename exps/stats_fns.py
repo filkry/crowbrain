@@ -45,7 +45,7 @@ def beta_bernoulli_posterior(num_successes, total_num):
   lower_bound, upper_bound = get_hdi(a_post, b_post, 0.95)
   return posterior_mean, lower_bound, upper_bound#, old_lower_bound, old_upper_bound
 
-def mean_and_hpd(data, level):
+def mean_and_hpd(data, level=0.95):
     return (np.mean(data),) + hpd(data, level)
 
 # HPD calculation from biopy, copied under GPL. Using this purely

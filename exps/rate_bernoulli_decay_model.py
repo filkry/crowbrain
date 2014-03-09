@@ -73,6 +73,52 @@ def view_fit(df, field, la):
 
     plot_model(rate, min_rate, df, field)
 
+def plot_model_per_question(df, n_iter, n_chains):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    max_x = len(df)
+
+    styles = ['-', '--', '-.', ':']
+    real_max_x = 0
+    for i, qc in enumerate(set(df['question_code'])):
+        qcdf = df[df['question_code'] == qc]
+        dat = gen_model_data(qcdf, None, None, None)
+        real_max_x = max(real_max_x, max(dat['x']))
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+
+        rate = mystats.mean_and_hpd(param_walks[0]['rate'])
+        min_rate = mystats.mean_and_hpd(param_walks[0]['min_rate'])
+
+        plot_line_and_hpd(ax, rate, min_rate, max_x, styles[i], label=qc)
+
+    # plot the 1:1 line
+    xs = range(max_x)
+    ys = [x for x in xs]
+    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+
+    ax.set_xlim(0, real_max_x)
+    ax.set_ylim(0, real_max_x)
+    ax.set_xlabel('number of instances received')
+    ax.set_ylabel('number of unique ideas')
+
+    ax.legend()
+    
+    plt.show()
+
+
+def plot_line_and_hpd(ax, rate, min_rate, max_x, line_style, **kwargs):
+    xs = range(max_x)
+
+    # plot the hpd area
+    bottom_ys = model_integral_predict(max_x, rate[1], min_rate[1])
+    top_ys = model_integral_predict(max_x, rate[2], min_rate[2])
+    ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
+
+    # plot the model line
+    ys = model_integral_predict(max_x, rate[0], min_rate[0])
+    ax.plot(xs[:len(ys)], ys, line_style, color='k', **kwargs)
+
 def plot_model(rate, min_rate, df, field):
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
@@ -85,19 +131,12 @@ def plot_model(rate, min_rate, df, field):
     ax.set_xlim(0, max_x)
     ax.set_ylim(0, max_x)
 
-    # plot the hpd area
-    bottom_ys = model_integral_predict(max_x, rate[1], min_rate[1])
-    top_ys = model_integral_predict(max_x, rate[2], min_rate[2])
-    ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
-
     # plot the line for each condition
     for name, adf in df.groupby(['question_code', 'num_requested']):
         ys = gen_uniques_counts(adf, field)
         ax.plot(xs[:len(ys)], ys, '-', color='k')
 
-    # plot the model line
-    ys = model_integral_predict(max_x, rate[0], min_rate[0])
-    ax.plot(xs[:len(ys)], ys, '--', color='k')
+    plot_line_and_hpd(ax, rate, min_rate, max_x, '--')
 
     # plot the 1:1 line
     ys = [x for x in xs]
@@ -125,4 +164,6 @@ if __name__ == '__main__':
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
     view_fit(df, 'idea', param_walks[0])
+
+    plot_model_per_question(df, n_iter, n_chains)
 
