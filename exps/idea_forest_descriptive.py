@@ -88,12 +88,31 @@ def gen_counts_table(df):
     with open('tex/forests_counts_table.tex', 'w') as f:
         print('\n'.join(res), file=f)
 
+def gen_riffs_table(df):
+    res = ['\\begin{table}', '\\centering', '\\begin{tabular}{| r | l l l |}',
+            '\\hline \\textbf{question} & riffs & source & chain \\\\ \\hline',]
+    for qc in set(df['question_code']):
+        qcdf = df[df['question_code'] == qc]
+        n_riffs = len(qcdf[(qcdf['is_midmix'] == 1) | (qcdf['is_outmix'] == 1)])
+        n_source = len(qcdf[qcdf['is_inmix'] == 1])
+        n_chain = len(qcdf[qcdf['is_midmix'] == 1])
+
+        res.append('%s & %i & %i & %i \\\\' % (qc, n_riffs, n_source, n_chain))
+    res.extend(['\\hline', '\\end{tabular}',
+        '\\caption[Descriptive statistics of brainstorming runs]{Run descriptive stats. Each value is the median number of instances with the given characteristic, where counts are normalized by the number of instances given in the run}',
+        '\\label{tab:run_descriptive_stats}', '\\end{table}'])
+
+    with open('tex/forests_riffs_table.tex', 'w') as f:
+        print('\n'.join(res), file=f)
+
+
 
 if __name__ == '__main__':
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
+    gen_riffs_table(df)
     gen_counts_table(df)
 
     idea_rate_plot(df)

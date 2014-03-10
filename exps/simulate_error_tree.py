@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import json
 import format_data
 import stats_fns as mystats
+import modeling
 
 from collections import defaultdict, OrderedDict
 
@@ -362,4 +363,81 @@ def gen_sym_tree_data(instance_df, idea_forests):
         new_forests[key] = ef
 
     return format_data.mk_redundant(new_idf, new_forests)
+
+
+def table_error_rates(idea_forests):
+    res = ['\\begin{table}', '\\centering', '\\begin{tabular}{| r l l | l l |}']
+            
+    qc_vios = dict()
+    qc_judges = dict()
+    qc_pairs = dict()
+
+    for qc in idea_forests:
+        ifo = idea_forests[qc]
+
+        all_results = validity_test_results(qc)
+        culled = list(cull_repeat_pairings(all_results))
+
+        equivalence_violations = 0
+        generalization_violations = 0
+        common_parent_violations = 0
+        non_equivalence_violations = 0
+        total = 0
+        judge_0_count = 0
+        judges = set()
+
+        for judge, n1id, n2id, bin1, bin2, rel in culled:
+            judges.add(judge)
+            judge_0_count += int(judge == 0)
+            total += 1
+            guess = get_node_relationship(n1id, n2id, ifo)
+            #equivalence_violations += int(test_violation(guess, rel, 'TODO'))
+            generalization_violations  += int(test_violation(guess, rel, 'parent_child'))
+            common_parent_violations += int(test_violation(guess, rel, 'artificial_parent'))
+            non_equivalence_violations += int(test_violation(guess, rel, 'single_node_per_idea'))
+
+        eq_hpd = mystats.beta_bernoulli_posterior(equivalence_violations, total)
+        gen_hpd = mystats.beta_bernoulli_posterior(generalization_violations, total)
+        cp_hpd = mystats.beta_bernoulli_posterior(common_parent_violations, total)
+        ne_hpd = mystats.beta_bernoulli_posterior(non_equivalence_violations, total)
+
+        qc_vios[qc] = (eq_hpd, gen_hpd, cp_hpd, ne_hpd)
+        qc_judges[qc] = len(judges)
+        qc_pairs[qc] = judge_0_count
+
+    res.extend(['\\hline \\textbf{constraint} & \\textbf{judges} & \\textbf{pairs} & equivalence & generalization \\\\ \\hline',])
+
+    for qc in idea_forests.keys():
+        eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
+        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (qc,
+            qc_judges[qc], qc_pairs[qc], eq_hpd[0], eq_hpd[1], eq_hpd[2], 
+            gen_hpd[0], gen_hpd[1], gen_hpd[2])])
+
+    res.extend(['\\hline \\textbf{constraint} & \\textbf{judges} & \\textbf{pairs} & common parent & non-equivalence \\\\ \\hline',])
+
+    for qc in idea_forests.keys():
+        eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
+        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (qc,
+            qc_judges[qc], qc_pairs[qc], cp_hpd[0], cp_hpd[1], cp_hpd[2], 
+            ne_hpd[0], ne_hpd[1], ne_hpd[2])])
+
+    # CONTINUE FROM HERE: need end of table in res
+    res.extend(['\\hline', '\\end{tabular}', '\\caption{Idea forest error rates}',
+        '\\label{tab:judge_results}', '\\end{table}'])
+
+    with open('tex/error_rates_table.tex', 'w') as f:
+        print('\n'.join(res), file=f)
+
+def filter_today(df):
+    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    df = format_data.filter_repeats(df)
+    #df = filter_match_data_size(df)
+    return df
+ 
+if __name__ == '__main__':
+    processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
+    idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
+    df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
+
+    table_error_rates(cfs)
 
