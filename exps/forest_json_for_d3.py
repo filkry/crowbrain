@@ -4,18 +4,20 @@ import networkx as nx
 import json
 
 def dict_from_node(ifo, n, df):
+
+    children = []
+    n_instances = len(df[df['idea'] == n])
+    for i in range(n_instances):
+        children.append({'name': 'instance', 'size': 1})
+
     succs = ifo.successors(n)
-    if len(succs) == 0:
-        size = len(df[df['idea'] == n])
-        return size > 0, {'name': ifo.node[n]['label'], 'size': size}
-    else:
-        children = []
+    if len(succs) > 0:
         for n in succs:
             good, child = dict_from_node(ifo, n, df)
             if good:
                 children.append(child)
 
-        return len(children) > 0, {'name': ifo.node[n]['label'], 'children': children}
+    return len(children) > 0, {'name': ifo.node[n]['label'], 'children': children}
 
 
 def dict_from_forest(qc, ifo, df):
@@ -35,7 +37,7 @@ def test_forest_dict(d):
         for c in d['children']:
             test_forest_dict(c)
     else:
-        assert(d['size'] > 0)
+        assert(d['size'] == 1)
 
 def filter_today(df):
     df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
