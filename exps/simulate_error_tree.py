@@ -57,10 +57,11 @@ def cull_repeat_pairings(results):
     """
     seen = set()
     for res in results:
-        judge, n1id, n2id, bin1, bin2, rel, _, _, _, _ = res
+        judge, n1id, n2id, bin1, bin2, rel, n1, n2, ex1, ex2 = res
         if (n1id, n2id) not in seen:
             seen.add((n1id, n2id))
-            yield int(judge), int(n1id), int(n2id), int(bin1), int(bin2), int(rel)
+            yield (int(judge), int(n1id), int(n2id), int(bin1), int(bin2),
+                int(rel), int(n1), int(n2), int(ex1), int(ex2))
 
 def get_node_relationship(n1id, n2id, cluster_forest):
     f = cluster_forest
@@ -92,6 +93,28 @@ def test_violation(guess, judge_rel, violation_type = "all"):
     elif violation_type == 'single_node_per_idea':
         return fail and (judge_rel == 5)
     
+def gen_equivalence_bernoullis(results):
+    trials = dict()
+
+    for _, _, _, bin1, bin2, _, n1, n2, ex1, ex2 in results:
+        if bin1 not in trials:
+            trials[bin1] = []
+        if bin2 not in trials:
+            trials[bin2] = []
+
+        trials[bin1].extend([0 for i in range(n1 - ex1)])
+        trials[bin1].extend([1 for i in range(ex1)])
+
+        trials[bin2].extend([0 for i in range(n2 - ex2)])
+        trials[bin2].extend([1 for i in range(ex2)])
+
+    berns = dict()
+    for k in trials:
+        ts = trials[k]
+        berns[k] = mystats.beta_bernoulli_posterior(sum(ts), len(ts))
+
+    return berns
+
 def gen_grid_bernoullis(results, cluster_forest, violation_type = "all"):
     """
     Generate a grid of bernoulli variables for constraint violation probability
@@ -102,7 +125,7 @@ def gen_grid_bernoullis(results, cluster_forest, violation_type = "all"):
     grid = defaultdict(list)
     bern_grid = dict()
     
-    for judge, n1id, n2id, bin1, bin2, rel in results:
+    for judge, n1id, n2id, bin1, bin2, rel, _, _, _, _ in results:
         guess = get_node_relationship(n1id, n2id, cluster_forest)
         grid[(bin1, bin2)].append(int(test_violation(guess, rel, violation_type)))
     
@@ -231,6 +254,17 @@ def introduce_artificial_error(new_forest, n1, n2):
             
     assert(nx.is_directed_acyclic_graph(new_forest))
         
+def introduce_equivalence_error(forest, idf, ix):
+    old_idea_count = len(set(idf['idea']))
+
+    new_idea = max(idf['idea']) + 1
+    forest.add_node(new_idea)
+    forest.node[new_idea]['label'] = 'equivalence error node'
+    idf['idea'][ix] = new_idea
+
+    new_idea_count = len(set(idf['idea']))
+    assert(new_idea_count == old_idea_count + 1)
+
 def introduce_single_node_error(new_forest, instance_df, n1, n2):
     keep, lose = (n1, n2) if random.random() > 0.5 else (n2, n1)
     keep, lose = (lose, keep) if lose in nx.ancestors(new_forest, keep) else (keep, lose)
@@ -298,6 +332,8 @@ def get_error_node2(err_bern, n1bin, bins, exclude_nodes):
 
     return None
 
+
+
 def gen_err_berns(question_code, cluster_forest):
     all_results = validity_test_results(question_code)
     culled = list(cull_repeat_pairings(all_results))
@@ -314,19 +350,42 @@ def redundant_subset(qc, instance_df, cluster_forest):
     return nodes
 
 def simulate_error_node(qc, instance_df, ann_cluster_forest):
-    # Generate a subset of necesary redundant data
-    nodes = redundant_subset(qc, instance_df, ann_cluster_forest)
+    new_forest = ann_cluster_forest.copy()
+    new_idf = instance_df.copy()
+    
+    # Simulate equivalence errors
+    # generate error rates for equivalence violations
+    all_results = validity_test_results(qc)
+    culled = list(cull_repeat_pairings(all_results))
+    eq_berns = gen_equivalence_bernoullis(culled)
 
+    nodes = redundant_subset(qc, new_idf, new_forest)
+    bins = bin_sequence(nodes, lambda x: x[1], 5)
+    bins = [[n[0] for n in binn] for binn in bins]
+
+    added_nodes = 0 
+
+    splittable_nodes = [n for n in new_forest.nodes() if len(new_idf[new_idf['idea'] == n]) > 1]
+    for node in splittable_nodes:
+        nbin = get_node_bin(bins, node)
+        err_rate = eq_berns[nbin][0]
+        idf = new_idf[new_idf['idea'] == node]
+        for ix in idf.index: 
+            if(random.random() < err_rate):
+                introduce_equivalence_error(new_forest, new_idf, ix)
+                added_nodes += 1
+
+    # Simulate other violations
+    # Generate a subset of necesary redundant data
+
+    nodes = redundant_subset(qc, new_idf, new_forest)
     bins = bin_sequence(nodes, lambda x: x[1], 5)
     bins = [[n[0] for n in binn] for binn in bins]
     err_berns = gen_err_berns(qc, ann_cluster_forest)
     err_berns = [bern_grid_marginalize_bin2(eb, bins) for eb in err_berns]
 
-    new_forest = ann_cluster_forest.copy()
-    new_idf = instance_df.copy()
-    
-    real_nodes = [n for n in ann_cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
 
+    real_nodes = [n for n in ann_cluster_forest.nodes() if len(instance_df[instance_df['idea'] == n]) > 0]
     lost_nodes = []
     for j, n1 in enumerate(real_nodes):
         print("Simulating error on forest %i/%i" % (j, len(real_nodes)), end='\r')
@@ -357,7 +416,7 @@ def simulate_error_node(qc, instance_df, ann_cluster_forest):
             lost_nodes.append(introduce_single_node_error(new_forest, new_idf, n1, n2))
 
     print("Finished simulating error. %i nodes removed." % len(lost_nodes))
-    assert(len(set(new_idf['idea'])) == len(set(instance_df['idea'])) - len(lost_nodes))
+    assert(len(set(new_idf['idea'])) == len(set(instance_df['idea'])) - len(lost_nodes) + added_nodes)
     assert(nx.is_directed_acyclic_graph(new_forest))
     return new_idf, new_forest
 
