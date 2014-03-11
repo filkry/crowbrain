@@ -186,3 +186,16 @@ if __name__ == '__main__':
 
     plot_model_per_question(df, n_iter, n_chains)
 
+    post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])[0]
+
+    def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
+        return post_split_param > posterior[1] and post_split_param < posterior[2]
+
+    def posterior_fn(edf, ermdf, ecdf, eifs):
+        dat = gen_dat(edf, ermdf, ecdf, eifs)
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+        return mystats.mean_and_hpd(param_walks[0]['split'])
+
+    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+            hyp_fn, idf, cfs)
+    print("split posterior in HDI in %i/10 simulations" % sim_passes)

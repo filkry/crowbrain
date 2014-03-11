@@ -68,8 +68,8 @@ def view_fit(df, field, la):
     rate = mystats.mean_and_hpd(la['rate'], 0.95)
     min_rate = mystats.mean_and_hpd(la['min_rate'], 0.95)
 
-    print("Mean rate:", rate[0])
-    print("Mean min_rate:", min_rate[0])
+    print("rate HDI:", rate)
+    print("min_rate HDI:", min_rate)
 
     plot_model(rate, min_rate, df, field)
 
@@ -164,6 +164,18 @@ if __name__ == '__main__':
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
     view_fit(df, 'idea', param_walks[0])
-
     plot_model_per_question(df, n_iter, n_chains)
 
+    post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])[0]
+    
+    def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
+        return post_rate_param > posterior[1] and post_rate_param < posterior[2]
+
+    def posterior_fn(edf, ermdf, ecdf, eifs):
+        dat = gen_model_data(edf, ermdf, ecdf, eifs)
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+        return mystats.mean_and_hpd(param_walks[0]['rate'])
+
+    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+            hyp_fn, idf, cfs)
+    print("rate posterior in HDI in %i/10 simulations" % sim_passes)
