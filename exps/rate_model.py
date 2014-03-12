@@ -65,9 +65,9 @@ def view_model_fit(df, field, la):
     y_scale = mystats.mean_and_hpd( la['y_scale'], 0.95)
     rate = mystats.mean_and_hpd(rates, 0.95)
 
-    print("Mean rate:", rate[0])
-    print("Mean y_scale:", y_scale[0])
-    print("Mean sigma:", np.mean(la['sigma']))
+    print("rate:", rate)
+    print("y_scale:", y_scale)
+    print("mean sigma:", np.mean(la['sigma']))
 
     plot_model(y_scale, (rate[1], rate[2]), rate[0], df, field)
 
@@ -109,7 +109,7 @@ def hyp_test_exclude_one(params):
     return 1 > right
 
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df

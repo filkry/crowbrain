@@ -275,7 +275,7 @@ def mk_redundant(idf, cluster_forests):
     #assert(min(full_df[!full_df['time_spent'].isnull()]['time_spent']) > 0)
 
     # Not using in current analysis, and can't be trusted anyway
-    full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
+    #full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
 
     rmdf = mk_redundant_run_helper(full_df) # TODO: needs a lot more metrics
 
@@ -304,6 +304,9 @@ def mk_redundant_riffing_helper(full_df, ann_cluster_forests):
 
 
 def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
+    #print(len(set(idf['idea'])),  sum(len(ann_cluster_forests[qc].nodes()) for qc in ann_cluster_forests))
+    #assert(len(set(idf['idea'])) == sum(len(ann_cluster_forests[qc].nodes()) for qc in ann_cluster_forests))
+
     fields = defaultdict(list)
     for qc in ann_cluster_forests.keys():
         sub_df = idf[idf['question_code'] == qc]
@@ -311,8 +314,11 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
             continue
 
         f = ann_cluster_forests[qc]
-        total = len(f.nodes())
-        for i, idea in enumerate(f.nodes()):
+        total = len(set(sub_df['idea']));
+        #for i, idea in enumerate(f.nodes()):
+        for i, idea in enumerate(set(sub_df['idea'])):
+            assert(idea in f.nodes())
+
             print("mk_redundant_cluster_df_helper: %i/%i for %i instances" % (i+1, total, len(idf)), end='\r')
             nd = f.node[idea]
             
@@ -336,17 +342,22 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
 
             nii = num_instances_in(sub_df,[idea])
             fields['idea_probability'].append(float(nii) / len(sub_df))
+            if not (float(nii) >= 0 and float(nii) < len(sub_df)):
+                print('\n', nii, len(sub_df))
+                assert(False)
             fields['num_ideas_under'].append(nii)
 
             instance_df = sub_df[sub_df['idea'] == idea]
             fields['num_instances'].append(len(instance_df))
             fields['num_workers'].append(len(set(instance_df['worker_id'])))
-
+        print("")
     clusters_df = pd.DataFrame(
         {key: pd.Series(fields[key]) for key in fields})
 
     clusters_df['subtree_oscore'] = 1 - clusters_df['subtree_probability']
     clusters_df['idea_oscore'] = 1 - clusters_df['idea_probability']
+    for ios in clusters_df['idea_oscore']:
+        assert(ios >= 0 and ios <= 1)
 
     return clusters_df
             
@@ -371,11 +382,11 @@ def do_format_data(processed_data_folder, filter_instances = None):
             [11, 12, 13, 14, 16, 17, 18])
 
     idea_cluster_csvs = {qc: metrics_folder(processed_data_folder, "_%s.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
-                         #['charity', 'iPod', 'forgot_name', 'turk']}
+                         ['charity', 'iPod', 'forgot_name', 'turk']}
+                         #['iPod', 'turk']}
     cluster_tree_csvs = {qc: metrics_folder(processed_data_folder, "_%s_clusters.csv" % qc) for qc in \
-                         ['iPod', 'turk']}
-                         #['charity', 'iPod', 'forgot_name', 'turk']}
+                         ['charity', 'iPod', 'forgot_name', 'turk']}
+                         #['iPod', 'turk']}
         
     
     merge_column_names = ['worker_id', 'question_code', 'answer_num', 'num_requested']
