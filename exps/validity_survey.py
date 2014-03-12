@@ -5,6 +5,34 @@ import math
 
 survey_group_text_cache = dict()
 
+question_texts = {
+        'turk': """Mechanical Turk currently lacks a dedicated mobile app for performing HITs on
+smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).
+                    
+Brainstorm N features for a mobile app to Mechanical Turk that would improve
+the worker's experience when performing HITs on mobile devices. Be as specific
+as possible in your responses.""",
+        'charity': """The Electronic Frontier Foundation (EFF) is a nonprofit whose goal is to protect
+individual rights with respect to digital and online technologies. For example, the EFF has initiated a
+lawsuit against the US government to limit the degree to which the US surveils its citizens via secret
+NSA programs. If you are unfamiliar with the EFF and its goals, read about it on its website
+(https://www.eff.org) or via other online sources (such as Wikipedia).
+
+Brainstorm N new ways the EFF can raise funds and simultaneously increase awareness. Your ideas must be
+different from their current methods, which include donation pages, merchandise, web badges and banners,
+affiliate programs with Amazon and eBay, and donating things such as airmiles, cars, or stocks. See the
+full list of their current methods here: https://www.eff.org/helpout. Be as specific as possible in your
+responses. """,
+        'iPod': """Many people have old iPods or MP3 players that they no longer use. Please brainstorm
+N uses for old iPods/MP3 players. Assume that the devices' batteries no longer work, though they can be
+powered via external power sources. Also be aware that devices may not have displays. Be as specific as
+possible in your descriptions.""",
+        'forgot_name': """Imagine you are in a social setting and you have forgotten the name of
+somebody you know. Brainstorm N ways you could learn their name without directly asking them. Be
+as specific as possible in your descriptions.""",
+}
+
+
 def choose(n, k):
     return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
     
@@ -70,19 +98,16 @@ def gen_survey_group_text(bin1, bin2, n1id, n2id):
         
     return text
 
-def gen_survey_questions(pairings):
+def gen_survey_questions(pairings, qc):
     text = []
     text.append("""For each of the following questions, you will be presented two groups
                    of three ideas each. Each idea was given in response to this brainstorming
                    task:
-                   
-                   'Mechanical Turk currently lacks a dedicated mobile app for performing HITs on
-                    smartphones (iPhone, Androids, etc.) or tablets (e.g., the iPad).
-                    
-                    Brainstorm N features for a mobile app to Mechanical Turk that would improve
-                    the worker's experience when performing HITs on mobile devices. Be as specific
-                    as possible in your responses.'
-                   
+                   """)
+
+    text.append(question_texts[qc])
+                                      
+    text.append("""
                    First, for each group, put a small X beside any idea that is not the same idea
                    as the others (with allowances for rephrasing). If none of the ideas are the same,
                    mark them all with Xs.
@@ -131,4 +156,4 @@ if __name__ == '__main__':
             with open('ipython_output/validity_survey_judge_%s_%i.txt' % (qc, j), 'w') as f:
                 rest_pairings = [p for i, p in enumerate(pairings[num_fixed_pairings:]) if i % num_judges == j]
                 judge_pairings = fixed_pairings + rest_pairings
-                f.write(gen_survey_questions(judge_pairings))
+                f.write(gen_survey_questions(judge_pairings, qc))
