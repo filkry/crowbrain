@@ -129,8 +129,7 @@ def plot_model_per_question(df, n_iter, n_chains):
 
     ax.legend()
     
-    fig.savefig('figure/idea_oscore_blend_fit', dpi=600)
-    #plt.show()
+    plt.show()
 
 
 def plot_fit_and_hpd(ax, alpha1, alpha2, beta1, beta2, switch, **kwargs):
@@ -179,7 +178,8 @@ def plot_fit(dat, alpha1, alpha2, beta1, beta2, switch):
 
     ax.set_ylim(0.99, 1)
 
-    plt.show()
+    fig.savefig('figures/idea_oscore_blend_fit', dpi=600)
+    #plt.show()
 
 # TODO: this could be done with passed parameters
 def filter_today(df):
