@@ -82,7 +82,7 @@ def view_fit(df, field, la):
     plot_model(rate, min_rate, df, field)
 
 def plot_model_per_question(df, n_iter, n_chains):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
 
     max_x = len(df)

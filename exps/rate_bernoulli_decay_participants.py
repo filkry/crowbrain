@@ -164,7 +164,7 @@ def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
     # participants)
     # TODO: assure p_rates comes in order
     
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8,12))
 
     condition_index = 0 
     # for each of the first 6 combinations
@@ -230,7 +230,7 @@ def plot_rate_posteriors(p_rates):
     #quartiles_flat = [reduce(lambda x, y: x.extend(y), quartile)
     #        for quartile in quartiles]
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8,4))
     ax = fig.add_subplot(111)
     #for i, quartile in enumerate(quartiles_flat):
     #    ax.hist(quartiles_flat, bins=20, alpha=0.5, label="%ith quartile" % (i+1))

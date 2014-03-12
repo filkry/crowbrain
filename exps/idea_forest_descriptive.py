@@ -82,7 +82,8 @@ def gen_counts_table(df):
         n_instances = len(qcdf)
         n_nodes = len(set(qcdf['idea']))
         n_trees = len(set(qcdf['subtree_root']))
-        res.append('%s & %i & %i (%0.2f) & %i (%0.2f) \\\\' % (qc, n_instances,
+        qc_label = qc if '_' not in qc else qc.replace('_', '\\_')
+        res.append('%s & %i & %i (%0.2f) & %i (%0.2f) \\\\' % (qc_label, n_instances,
             n_nodes, n_nodes / n_instances, n_trees, n_trees/n_instances))
     res.extend(['\\hline', '\\end{tabular}',
         '\\caption{Descriptive statistics for size of idea forests}',
@@ -100,7 +101,8 @@ def gen_riffs_table(df):
         n_source = len(qcdf[qcdf['is_inmix'] == 1])
         n_chain = len(qcdf[qcdf['is_midmix'] == 1])
 
-        res.append('%s & %i & %i & %i \\\\' % (qc, n_riffs, n_source, n_chain))
+        qc_label = qc if '_' not in qc else qc.replace('_', '\\_')
+        res.append('%s & %i & %i & %i \\\\' % (qc_label, n_riffs, n_source, n_chain))
     res.extend(['\\hline', '\\end{tabular}',
         '\\caption[Descriptive statistics of brainstorming runs]{Run descriptive stats. Each value is the median number of instances with the given characteristic, where counts are normalized by the number of instances given in the run}',
         '\\label{tab:run_descriptive_stats}', '\\end{table}'])

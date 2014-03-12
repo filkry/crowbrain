@@ -104,7 +104,7 @@ def plot_linear_hpd(ax, m, b, xs):
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.10)
 
 def plot_model_per_question(df, n_iter, n_chains):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8,4))
     ax = fig.add_subplot(111)
 
     styles = ['-', '--', '-.', ':']
@@ -129,7 +129,8 @@ def plot_model_per_question(df, n_iter, n_chains):
 
     ax.legend()
     
-    plt.show()
+    fig.savefig('figure/idea_oscore_blend_fit', dpi=600)
+    #plt.show()
 
 
 def plot_fit_and_hpd(ax, alpha1, alpha2, beta1, beta2, switch, **kwargs):
