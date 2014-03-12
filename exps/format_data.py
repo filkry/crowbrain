@@ -275,7 +275,7 @@ def mk_redundant(idf, cluster_forests):
     #assert(min(full_df[!full_df['time_spent'].isnull()]['time_spent']) > 0)
 
     # Not using in current analysis, and can't be trusted anyway
-    #full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
+    full_df = mk_redundant_riffing_helper(full_df, ann_cfs)
 
     rmdf = mk_redundant_run_helper(full_df) # TODO: needs a lot more metrics
 

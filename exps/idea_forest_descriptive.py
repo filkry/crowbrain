@@ -6,13 +6,13 @@ import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
  
-def tree_question_boxplots(cdf, values_fn, ylabel): 
-    fig = plt.figure()
+def tree_question_boxplots(cdf, values_fn, ylabel, fname): 
+    fig = plt.figure(figsize=(8,3))
     ax = fig.add_subplot(111)
 
     data = []
@@ -28,7 +28,9 @@ def tree_question_boxplots(cdf, values_fn, ylabel):
     ax.set_ylabel(ylabel)
     ax.set_xlabel('question')
 
-    plt.show()
+    fig.savefig(fname, dpi=600)
+
+    #plt.show()
 
 def extract_tree_depths(cdf):
     trees = cdf.groupby(['subtree_root'])
@@ -48,8 +50,8 @@ def gen_uniques_counts(adf, field):
         counts.append(len(uniques))
     return counts
 
-def idea_rate_plot(df):
-    fig = plt.figure()
+def idea_rate_plot(df, fname):
+    fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
 
     styles = ['-', '--', '-.', ':']
@@ -69,7 +71,8 @@ def idea_rate_plot(df):
     ax.set_xlabel('number of instances received')
     ax.set_ylabel('number of unique ideas')
 
-    plt.show()
+    fig.savefig(fname, dpi=600)
+    #plt.show()
 
 def gen_counts_table(df):
     res = ['\\begin{table}', '\\centering', '\\begin{tabular}{| r | l l l |}',
@@ -115,7 +118,9 @@ if __name__ == '__main__':
     gen_riffs_table(df)
     gen_counts_table(df)
 
-    idea_rate_plot(df)
-    tree_question_boxplots(cdf, extract_tree_depths, 'tree depth')
-    tree_question_boxplots(cdf, extract_tree_breadths, 'non-leaf node degree') 
+    idea_rate_plot(df, 'figures/idea_quantity')
+    tree_question_boxplots(cdf, extract_tree_depths, 'tree depth',
+            'figures/forest_tree_depth_box')
+    tree_question_boxplots(cdf, extract_tree_breadths, 'non-leaf node degree',
+            'figures/forest_tree_breadth_box') 
 

@@ -45,7 +45,7 @@ def gen_uniques_counts(adf, field):
     return counts
 
 def gen_model_data(df, rmdf, cdf, ifs):
-    field = 'idea'
+    field = 'subtree_root'
     dat = defaultdict(list)
 
     for nr in set(df['num_requested']):
@@ -147,7 +147,7 @@ def plot_model(rate, min_rate, df, field):
 
 # TODO: this could be done with passed parameters
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     dat = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    view_fit(df, 'idea', param_walks[0])
+    view_fit(df, 'subtree_root', param_walks[0])
     plot_model_per_question(df, n_iter, n_chains)
 
     post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])[0]
@@ -176,6 +176,6 @@ if __name__ == '__main__':
         param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
         return mystats.mean_and_hpd(param_walks[0]['rate'])
 
-    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
-            hyp_fn, idf, cfs)
-    print("rate posterior in HDI in %i/10 simulations" % sim_passes)
+    #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+    #        hyp_fn, idf, cfs)
+    #print("rate posterior in HDI in %i/10 simulations" % sim_passes)
