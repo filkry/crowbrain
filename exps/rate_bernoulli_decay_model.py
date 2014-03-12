@@ -76,8 +76,8 @@ def view_fit(df, field, la):
     rate = mystats.mean_and_hpd(la['rate'], 0.95)
     min_rate = mystats.mean_and_hpd(la['min_rate'], 0.95)
 
-    print("rate HDI:", rate)
-    print("min_rate HDI:", min_rate)
+    #print("rate HDI:", rate)
+    #print("min_rate HDI:", min_rate)
 
     plot_model(rate, min_rate, df, field)
 
@@ -128,7 +128,7 @@ def plot_line_and_hpd(ax, rate, min_rate, max_x, line_style, **kwargs):
     ax.plot(xs[:len(ys)], ys, line_style, color='k', **kwargs)
 
 def plot_model(rate, min_rate, df, field):
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111)
     ax.set_xlabel("number of instances received")
     ax.set_ylabel("number of unique ideas")
@@ -151,7 +151,8 @@ def plot_model(rate, min_rate, df, field):
     ax.plot(xs, ys, '--', color='k', alpha=0.5)
 
 
-    plt.show()
+    fig.savefig('figures/bernoulli_decay_model_parameter', dpi=600)
+    #plt.show()
 
 # TODO: this could be done with passed parameters
 def filter_today(df):

@@ -4,6 +4,8 @@ thesis:
 	python gen_appendices.py
 	python simulate_error_tree.py
 	python rate_model.py
+	python rate_bernoulli_decay_model.py
+	python rate_bernoulli_decay_participants.py
 	python split_originality_blend_model.py
 	python siam_change_prob.py
 	python siam_time.py
