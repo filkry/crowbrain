@@ -126,7 +126,7 @@ if __name__ == '__main__':
         
         num_fixed_pairings = 10
         fixed_pairings = pairings[:num_fixed_pairings]
-        num_judges = 5
+        num_judges = 3
         for j in range(num_judges):
             with open('ipython_output/validity_survey_judge_%s_%i.txt' % (qc, j), 'w') as f:
                 rest_pairings = [p for i, p in enumerate(pairings[num_fixed_pairings:]) if i % num_judges == j]
