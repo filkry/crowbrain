@@ -110,7 +110,7 @@ def hyp_test_between_greater(las, df, rmdf, cdf, ifs):
 
 
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
