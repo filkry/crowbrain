@@ -14,7 +14,7 @@ As visible in Figure~\\ref{fig:idea_generation_time_fit}, these HDIs are non-ove
     longer = btwn_mu_sec - wthn_mu_sec 
     return anal_string % (n_chains, n_iter, mu_wthn_post[0], wthn_mu_sec,
             mu_wthn_post[1], mu_wthn_post[2], mu_btwn_post[1], btwn_mu_sec,
-            mu_btwn_post[1], mu_btwn_post[2], sim_passes)
+            mu_btwn_post[1], mu_btwn_post[2], sim_passes, longer)
 
 model_string = """
 data {

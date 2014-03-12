@@ -450,15 +450,17 @@ def table_error_rates(idea_forests):
         common_parent_violations = 0
         non_equivalence_violations = 0
         total = 0
+        instance_totals = 0
         judge_0_count = 0
         judges = set()
 
-        for judge, n1id, n2id, bin1, bin2, rel in culled:
+        for judge, n1id, n2id, bin1, bin2, rel, n1, n2, ex1, ex2 in culled:
             judges.add(judge)
             judge_0_count += int(judge == 0)
             total += 1
+            instance_totals += (n1 + n2)
             guess = get_node_relationship(n1id, n2id, ifo)
-            #equivalence_violations += int(test_violation(guess, rel, 'TODO'))
+            equivalence_violations += (ex1 + ex2)
             generalization_violations  += int(test_violation(guess, rel, 'parent_child'))
             common_parent_violations += int(test_violation(guess, rel, 'artificial_parent'))
             non_equivalence_violations += int(test_violation(guess, rel, 'single_node_per_idea'))
