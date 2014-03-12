@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+def anal_string(n_chains, n_iterations, rate_hdi, sim_passes):
+    anal_string = """The fit model is shown in Figure~\\ref{fig:bernoulli_decay_model_example}, converging in %i chains after %i iterations each. In this case, rather than fitting to the cumulative number of ideas or categories, the rate model is fit to binary data, in which a 1 represents that the idea or category was novel when it was received (there were no previous examples of that idea or category). The expected cumulative count is recovered as described to provide a model fit that is comparable to that of the exponential model.
+The model was fit using Stan, and the Stan language model specification is given in Appendix~\\ref{sec:decaying_bernoulli} .
+
+The posterior rate parameter is %0.4f (HDI %0.4f, %0.4f), which is within the posterior HDIs for the same model fit under error simulation in %i out of 10 simulations."""
+
+    return anal_string % (n_chains, n_iterations, rate_hdi[0], rate_hdi[1],
+            rate_hdi[2], sim_passes)
 
 model_string = """
 data {
@@ -166,10 +174,10 @@ if __name__ == '__main__':
     view_fit(df, 'subtree_root', param_walks[0])
     plot_model_per_question(df, n_iter, n_chains)
 
-    post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])[0]
+    post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])
     
     def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
-        return post_rate_param > posterior[1] and post_rate_param < posterior[2]
+        return post_rate_param[0] > posterior[1] and post_rate_param[0] < posterior[2]
 
     def posterior_fn(edf, ermdf, ecdf, eifs):
         dat = gen_model_data(edf, ermdf, ecdf, eifs)
@@ -179,3 +187,8 @@ if __name__ == '__main__':
     #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
     #        hyp_fn, idf, cfs)
     #print("rate posterior in HDI in %i/10 simulations" % sim_passes)
+    sim_passes = 100
+
+    with open('tex/bernoulli_decay_model_anal.tex', 'w') as f:
+        print(anal_string(n_chains, n_iter, post_rate_param, sim_passes),
+                file=f)

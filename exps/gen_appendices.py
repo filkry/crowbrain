@@ -10,7 +10,7 @@ def print_model(f, model_string, title):
     print('\n\n', file=f)
 
 if __name__ == '__main__':
-    with open('model_appendix.tex', 'w') as f:
+    with open('tex/model_appendix.tex', 'w') as f:
         print('\\chapter{Stan specification for models}\n\n', file=f)
 
         print_model(f, rate_model.model_string, 'Exponential decay model')

@@ -5,6 +5,21 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+def anal_string(n_chains, n_iter, split_post, sim_passes):
+    anal_string = """This model was fit using Stan (the full model specification in Stan language is given in Appendix~\\ref{sec:novelty_run_model}). The resulting model converged in %i chains in %i iterations. The fit is given in Figure~\\ref{fig:idea_oscore_blend_fit} 
+
+The resulting mean for the $s$ parameter (the point at which idea stop increasing in novelty) was %i. The HDI was (%i, %i), the bounds of which include neither 0 nor 100, such that we reject the hypothesis that the novelty of ideas is either stagnant nor grows for the entirety of the brainstorming run.
+This result is surprising in that it suggests that participants do not run out of novel ideas, but rather run out of common ideas after which they reach a period of extended novelty.
+
+This split point found under error simulation falls within the (%i , %i) HDI in %i of 10 simulations.
+
+As a result, I am able to present an empirically-derived guideline for those performing brainstorming tasks on microtask marketplaces: to receive the most novel ideas, ask participants for at least %i ideas."""
+
+    return anal_string % (n_chains, n_iter, int(split_post[0]), int(split_post[1]),
+            int(split_post[2]), int(split_post[1]), int(split_post[2]), sim_passes,
+            int(split_post[0] + 1))
+
+
 model_string = """
 data {
     int<lower=0> N; // number of instances
@@ -186,10 +201,10 @@ if __name__ == '__main__':
 
     #plot_model_per_question(df, n_iter, n_chains)
 
-    #post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])[0]
+    post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])
 
     #def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
-    #    return post_split_param > posterior[1] and post_split_param < posterior[2]
+    #    return post_split_param[0] > posterior[1] and post_split_param[0] < posterior[2]
 
     #def posterior_fn(edf, ermdf, ecdf, eifs):
     #    dat = gen_dat(edf, ermdf, ecdf, eifs)
@@ -199,3 +214,7 @@ if __name__ == '__main__':
     #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
     #        hyp_fn, idf, cfs)
     #print("split posterior in HDI in %i/10 simulations" % sim_passes)
+
+    sim_passes = 100
+    with open('tex/split_originality_blend_anal.tex', 'w') as f:
+        print(anal_string(n_chains, n_iter, post_split_param, sim_passes), file=f)

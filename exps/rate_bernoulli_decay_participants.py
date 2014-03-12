@@ -6,6 +6,19 @@ import stats_fns as mystats
 from functools import reduce
 from collections import defaultdict, OrderedDict
 
+def anal_string(min_received, n_chains, n_iter, predictions):
+    anal_string="""The model was fit only to participants who generated %i or greater ideas, as fewer responses were insufficient for the model to achieve convergence. The fit model is shown in Figure~\\ref{fig:bernoulli_decay_participant_model_example}, for a subset of question and number of responses requested conditions, as a single fit for all real data lines has no meaning in this context. The model converned in %i chains of %i iterations.
+The model was fit using Stan, and the Stan language model specification is given in Appendix~\\ref{sec:decaying_bernoulli_part}.
+
+In this model, the fit line is non-continuous (but still contiguous) - different participants ``bump'' or ``flatten'' the rate of idea generation as they contribute. While this model is less general - we do not expect to always receive participants with a similar distribution of decay parameters - by examining the posterior distributions of rate parameters, judgments can be made as to the distribution of ``quality'' brainstormers. Figure~\\ref{fig:bernoulli_decay_participant_posteriors} plots the posterior distributions over the decay parameters for the most and least productive participants.
+
+As can be seen by the non-overlapping HPDs, the most productive participant has their rate of idea generation decay significantly less than the least productive participant. This means that variations in individual ability account for a significant portion of the variation in the number of ideas produced. In this case, the most productive participant would produce an expected %i more novel ideas in a solo run of 100 instances than the least productive participant.
+This gap widens further to %i additional novel ideas out of 100 when the same participants are contributing to a cumulative brainstorming pool that has already received 500 instances.
+These large differences in quantity of ideas generated provide motivation for the future exploration of interventions in the brainstorming space."""
+
+    return anal_string % (min_received, n_chains, n_iter,
+            predictions[0] - predictions[1], predictions[2] - predictions[3])
+
 
 model_string = """
 data {
@@ -121,14 +134,17 @@ def view_fit(df, field, la, dat):
     print("Number of ideas generated with low decay rate:", prediction_low_decay[-1])
     print("Number of ideas generated with high decay rate:", prediction_high_decay[-1])
 
-    prediction_low_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[-1]), min_rate, 500)
-    prediction_high_decay = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[0]), min_rate, 500)
+    prediction_low_decay_500 = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[-1]), min_rate, 500)
+    prediction_high_decay_500 = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[0]), min_rate, 500)
     print("Number of ideas generated with low decay rate (from 500):", prediction_low_decay[-1])
     print("Number of ideas generated with high decay rate (from 500):", prediction_high_decay[-1])
 
     plot_rate_posteriors(p_rates)
 
     plot_cumulative_model(df, dat, p_rates, mystats.mean_and_hpd(la['min_rate'], 0.95), field)
+
+    return (prediction_low_decay[-1], prediction_high_decay[-1],
+            prediction_low_decay_500[-1], prediction_high_decay_500[-1])
 
 def cumulative_list(l):
     total = 0
@@ -192,7 +208,8 @@ def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
 
         condition_index = end_of_condition
 
-    plt.show()
+    #plt.show()
+    fig.savefig('figures/bernoulli_decay_participant_model_example', dpi=600)
 
 def n_tiles(l, n):
     """ Returns l split into n chunks
@@ -231,7 +248,9 @@ def plot_rate_posteriors(p_rates):
     ax.set_ylabel("number of samples")
     ax.set_xlim((-0.015, 0))
     ax.legend()
-    plt.show()
+
+    #plt.show()
+    fig.savefig('figures/bernoulli_decay_participant_posteriors', dpi=600)
 
 # TODO: this could be done with passed parameters
 def filter_today(df):
@@ -241,16 +260,19 @@ def filter_today(df):
     return df
  
 if __name__ == '__main__':
+    n_iter = 5000
+    n_chains = 3
+    min_received = 50
+
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, ifs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
-    df = df[df['num_received'] >= 50]
-
-    n_iter = 10000
-    n_chains = 3
+    df = df[df['num_received'] >= min_received]
 
     dat = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    view_fit(df, 'idea', param_walks[0], dat)
+    predictions = view_fit(df, 'idea', param_walks[0], dat)
 
+    with open('tex/bernoulli_decay_participant_anal.tex', 'w') as f:
+        print(anal_string(min_received, n_chains, n_iter, predictions), file=f)

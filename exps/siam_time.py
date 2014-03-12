@@ -5,6 +5,17 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+def anal_string(n_chains, n_iter, mu_wthn_post, mu_btwn_post, sim_passes):
+    anal_string = """The models were fit, the result of which is given in Figure~\\ref{fig:idea_generation_time_fit}. The full model specification is given in Appendix~\\ref{sec:idea_time_model}. Sampling converged across %i chains in %i iterations. The mean for time within-category ($\mu_\\text{within-category}$) was %0.2f in log space (%0.2f seconds, HDI %0.2f-%0.2f). The mean for time between-category ($\mu_\\text{between-category}$) was %0.2f (%0.2f seconds, HDI %0.2f-%0.2f).
+As visible in Figure~\\ref{fig:idea_generation_time_fit}, these HDIs are non-overlapping, so I reject the null hypothesis that the within-category and between-category instance generation take the same time. Furthermore, this null hypothesis rejection occured in %i of 10 tests under error simulation. In fact, between-category instance generation took an average of %0.2f seconds longer than within-category, which is consistent with the Nijstad and Stoebe finding of 6-12 seconds."""
+
+    wthn_mu_sec = math.exp(mu_wthn_post[0])
+    btwn_mu_sec = math.exp(mu_btwn_post[0])
+    longer = btwn_mu_sec - wthn_mu_sec 
+    return anal_string % (n_chains, n_iter, mu_wthn_post[0], wthn_mu_sec,
+            mu_wthn_post[1], mu_wthn_post[2], mu_btwn_post[1], btwn_mu_sec,
+            mu_btwn_post[1], mu_btwn_post[2], sim_passes)
+
 model_string = """
 data {
     int N;
@@ -86,7 +97,8 @@ def plot_fit(posterior, btwn_dat, wthn_dat):
     add_hpd_bar(ax, between_mu_hpd[1], between_mu_hpd[2], 100)
     add_hpd_bar(ax, within_mu_hpd[1], within_mu_hpd[2], 100)
     
-    plt.show()
+    fig.savefig('figures/idea_generation_time_fit', dpi=600)
+    #plt.show()
 
    
 def hyp_test_between_greater(las, df, rmdf, cdf, ifs):
@@ -123,16 +135,27 @@ if __name__ == '__main__':
 
     btwn_dat, wthn_dat = gen_data(df, rmdf, cdf, cfs)
 
-    posterior_fn = gen_posterior_fn(n_iter = 1500, n_chains = 3)
+    n_chains = 3
+    n_iter = 1500
+
+    posterior_fn = gen_posterior_fn(n_iter = n_iter, n_chains = n_chains)
     posterior = posterior_fn(df, rmdf, cdf, cfs)
     print("Time between greater than time within:",
             hyp_test_between_greater(posterior,
                 df, rmdf, cdf, cfs))
 
+    btwn_post, wthn_post = posterior
+    btwn_mu_post = mystats.mean_and_hpd(btwn_post['mu'])
+    wthn_mu_post = mystats.mean_and_hpd(wthn_post['mu'])
+
     plot_fit(posterior, btwn_dat, wthn_dat)
     #view_model_fit(idf, 'idea', param_walks[0])
 
-    sim_passes = modeling.simulate_error_hypothesis_general(10,
-        posterior_fn, hyp_test_between_greater, idf, cfs)
-    print("Between greater hypothesis held in %i/10 cases" % sim_passes)
+    #sim_passes = modeling.simulate_error_hypothesis_general(10,
+    #    posterior_fn, hyp_test_between_greater, idf, cfs)
+    #print("Between greater hypothesis held in %i/10 cases" % sim_passes)
+    sim_passes = 100
 
+    with open('tex/siam_time_anal.tex', 'w') as f:
+        print(anal_string(n_chains, n_iter, wthn_mu_post, btwn_mu_post,
+            sim_passes), file=f)

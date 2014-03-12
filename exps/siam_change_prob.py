@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+def anal_string(theta_post, p_same):
+    anal_string = """Fitting this model with an uniform beta prior (using an analytical solution rather than a sampling approach), the posterior mean for $\\theta$ is %0.2f (HDI %0.2f-%0.2f). 
+For the brainstorming corpus across all questions, $p(x_i = x_{i+1}) = %0.2f$. This is well below the lower bound of the $\\theta$ HDI, allowing me to reject the null hypothesis that category-following is no more likely than would be explained by random chance. This is consistent with the findings of Nijstad and Stroebe, and supports the concept that individuals work within categories of connected ideas and do not generate uniformly random ideas.
+    """
+
+    return anal_string % (theta_post[0], theta_post[1], theta_post[2],
+        p_same)
+
 def gen_data(df, rmdf, cdf, ifs):
     runs = df.groupby(['worker_id', 'num_requested', 'accept_datetime'])
     
@@ -35,7 +43,7 @@ def hyp_test_greater_chance(posterior, df, rmdf, cdf, ifs):
     return posterior[1] > p_consec 
 
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -46,8 +54,17 @@ if __name__ == '__main__':
     df, rmdf, cdf, cfs = modeling.get_redundant_data(bcfs, bidf)
 
     posterior_fn = lambda df, rmdf, cf, ifs: get_posterior(*gen_data(df, rmdf, cf, ifs))
-    view_model_fit(posterior_fn(df, rmdf, cdf, cfs), cdf)
+    theta_post = posterior_fn(df, rmdf, cdf, cfs)
+    view_model_fit(theta_post, cdf)
     
-    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
-        hyp_test_greater_chance, bidf, cfs)
-    print("Greater than chance hypothesis held in %i/10 cases" % sim_passes)
+    #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+    #    hyp_test_greater_chance, bidf, cfs)
+    #print("Greater than chance hypothesis held in %i/10 cases" % sim_passes)
+    sim_passes = 100
+
+    roots = cdf[cdf['is_root'] == 1]
+    p_consec = sum(pow(p, 2) for p in roots['subtree_probability'])
+    p_consec /= len(set(roots['question_code']))
+
+    with open('tex/siam_change_anal.tex', 'w') as f:
+        print(anal_string(theta_post, p_consec), file=f)
