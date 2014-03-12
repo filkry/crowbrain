@@ -102,6 +102,9 @@ def gen_equivalence_bernoullis(results):
         if bin2 not in trials:
             trials[bin2] = []
 
+        ex1 = 2 if ex1 == 3 else ex1
+        ex2 = 2 if ex2 == 3 else ex2
+
         trials[bin1].extend([0 for i in range(n1 - ex1)])
         trials[bin1].extend([1 for i in range(ex1)])
 
