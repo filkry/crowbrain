@@ -65,7 +65,7 @@ def plot_fit(posterior, btwn_dat, wthn_dat):
     plt.rc('font', **{'sans-serif' : 'Arial',
                                    'family' : 'sans-serif'})
 
-    fig = plt.figure(figsize=(8,15))
+    fig = plt.figure(figsize=(8,12))
 
     # plot time distributions
     btwn_times = [y for y in btwn_dat['y']]

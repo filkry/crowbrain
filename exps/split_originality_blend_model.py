@@ -88,7 +88,16 @@ def view_fit(dat, la):
     #print("Estimated normal variance:", sigma[0])
     print("estimated split:", switch)
 
+    init_vals = dict()
+
     plot_fit(dat, alpha1, alpha2, beta1, beta2, switch)
+    init_vals['phi1'] = mystats.mean_and_hpd(la['phi1'])[0]
+    init_vals['phi2'] = mystats.mean_and_hpd(la['phi2'])[0]
+    init_vals['lambda1'] = mystats.mean_and_hpd(la['lambda1'])[0]
+    init_vals['lambda2'] = mystats.mean_and_hpd(la['lambda2'])[0]
+    init_vals['split'] = switch[0]
+
+    return init_vals
  
 def line_from_betas(alpha1, alpha2, beta1, beta2, switch):
     m1_b = alpha1[0] / (alpha1[0] + beta1[0])
@@ -103,7 +112,7 @@ def plot_linear_hpd(ax, m, b, xs):
     top_ys = [max(m) * x + max(b) for x in xs]
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.10)
 
-def plot_model_per_question(df, n_iter, n_chains):
+def plot_model_per_question(df, n_iter, n_chains, init_vals):
     fig = plt.figure(figsize=(8,4))
     ax = fig.add_subplot(111)
 
@@ -111,7 +120,8 @@ def plot_model_per_question(df, n_iter, n_chains):
     for i, qc in enumerate(set(df['question_code'])):
         qcdf = df[df['question_code'] == qc]
         dat = gen_dat(qcdf, None, None, None)
-        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter,
+                n_chains, init_vals)
 
         alpha1 = mystats.mean_and_hpd(param_walks[0]['alpha1'])
         alpha2 = mystats.mean_and_hpd(param_walks[0]['alpha2'])
@@ -129,7 +139,8 @@ def plot_model_per_question(df, n_iter, n_chains):
 
     ax.legend()
     
-    plt.show()
+    fig.savefig('figures/novelty_model_questions', dpi=600)
+    #plt.show()
 
 
 def plot_fit_and_hpd(ax, alpha1, alpha2, beta1, beta2, switch, **kwargs):
@@ -189,20 +200,20 @@ def filter_today(df):
     return df
  
 if __name__ == '__main__':
-    print(os.path.basename(__file__))
+    print('\033[1m' + os.path.basename(__file__) + '\033[0m')
 
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
-    n_iter = 3000
+    n_iter = 6000
     n_chains = 3
 
     dat = gen_dat(df, rmdf, cdf, cfs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
-    view_fit(dat, param_walks[0])
+    init_vals = view_fit(dat, param_walks[0])
 
-    #plot_model_per_question(df, n_iter, n_chains)
+    plot_model_per_question(df, n_iter, n_chains, init_vals)
 
     post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])
 

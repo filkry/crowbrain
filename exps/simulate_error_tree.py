@@ -266,7 +266,9 @@ def introduce_equivalence_error(forest, idf, ix):
     idf['idea'][ix] = new_idea
 
     new_idea_count = len(set(idf['idea']))
-    assert(new_idea_count == old_idea_count + 1)
+    if new_idea_count != old_idea_count + 1:
+        print("equivalence error problem:", new_idea_count, old_idea_count)
+        assert(False)
 
 def introduce_single_node_error(new_forest, instance_df, n1, n2):
     keep, lose = (n1, n2) if random.random() > 0.5 else (n2, n1)
@@ -373,8 +375,10 @@ def simulate_error_node(qc, instance_df, ann_cluster_forest):
         nbin = get_node_bin(bins, node)
         err_rate = eq_berns[nbin][0]
         idf = new_idf[new_idf['idea'] == node]
+        nodes_to_remove = len(idf) - 1
         for ix in idf.index: 
-            if(random.random() < err_rate):
+            if random.random() < err_rate and nodes_to_remove > 0:
+                nodes_to_remove -= 1
                 introduce_equivalence_error(new_forest, new_idf, ix)
                 added_nodes += 1
 

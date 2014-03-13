@@ -11,14 +11,14 @@ def filter_today(df):
     #df = filter_match_data_size(df)
     return df
  
-def tree_question_boxplots(cdf, values_fn, ylabel, fname): 
+def tree_question_boxplots(adf, values_fn, ylabel, fname): 
     fig = plt.figure(figsize=(8,3))
     ax = fig.add_subplot(111)
 
     data = []
-    qcs = set(cdf['question_code'])
+    qcs = set(adf['question_code'])
     for qc in qcs:
-        qcdf = cdf[cdf['question_code'] == qc]
+        qcdf = adf[adf['question_code'] == qc]
         data.append(values_fn(qcdf))
 
     ax.boxplot(data)
@@ -39,6 +39,25 @@ def extract_tree_depths(cdf):
 def extract_tree_breadths(cdf):
     not_leaf_df = cdf[cdf['is_leaf'] == 0]
     return not_leaf_df['num_children']
+
+def extract_riff_lengths(idf):
+    runs = idf.groupby(['num_requested', 'worker_id', 'question_code'])
+    cur_chain_length = 0
+    chain_lengths = []
+    for name, run in runs:
+        sdf = run.sort(['answer_num'], ascending=True)
+        for dist in sdf['distance_from_similar']:
+            if dist == 1:
+                if cur_chain_length == 0:
+                    cur_chain_length += 2
+                else:
+                    cur_chain_length += 1
+            else:
+                if cur_chain_length > 0:
+                    chain_lengths.append(cur_chain_length)
+                cur_chain_length = 0
+
+    return chain_lengths
 
 def gen_uniques_counts(adf, field):
     adf = adf.sort(columns=['submit_datetime', 'answer_num'], ascending=[1, 1])
@@ -126,4 +145,5 @@ if __name__ == '__main__':
             'figures/forest_tree_depth_box')
     tree_question_boxplots(cdf, extract_tree_breadths, 'non-leaf node degree',
             'figures/forest_tree_breadth_box') 
-
+    tree_question_boxplots(df, extract_riff_lengths, 'length of riff chains',
+            'figures/forest_tree_riffchain_box') 
