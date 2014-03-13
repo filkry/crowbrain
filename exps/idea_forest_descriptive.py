@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+
 def filter_today(df):
     #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)

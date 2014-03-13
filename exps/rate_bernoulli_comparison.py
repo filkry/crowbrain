@@ -5,6 +5,14 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
+def anal_string():
+    anal_string = """This model was compared to the exponential decay model by combining the two in a mixture model with a mixing component $\lambda$ over their liklihood.
+A full specification of the Stan-language mixture model is given in Appendix~\ref{sec:exp_bern_comp}.
+The posterior of the mixture component was TODO (HDI ) in favour of the bernoulli decay model. This HDI excludes 0.5. This implies... TODO"""
+
+    return anal_string
+
+
 model_string = """
 data {
     // shared data
@@ -25,14 +33,17 @@ parameters {
 
     // exponential parameters
     real<lower=0, upper=1> e_rate;
-    real<lower=0, upper=1> e_y_scale;
-    real<lower=0, upper=10> e_sigma;
+    real<lower=0, upper=2> e_y_scale;
+    real<lower=0, upper=N> e_sigma;
 
     // mixture parameter
     real<lower=0, upper=1> lambda;
 }
 
 model {
+    // prior on lambda emphasizing even mix
+    lambda ~ beta(10, 1);
+    
     for (i in 1:N) {
         real b_theta;
         real e_mu;
@@ -47,7 +58,6 @@ model {
         e_lp <- normal_log(y[i], e_mu, e_sigma);
 
         increment_log_prob(log_sum_exp(log(lambda) + b_lp, log1m(lambda) + e_lp));
-        //increment_log_prob(b_lp);
     }
 }
 """
@@ -90,7 +100,6 @@ def view_fit(df, field, la):
 
 # TODO: this could be done with passed parameters
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
@@ -100,19 +109,22 @@ if __name__ == '__main__':
     idf, ifs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
 
-    n_iter = 10000
-    n_chains = 3
+    n_iter = 2000
+    n_chains = 1
 
     initial_values = {
             'e_rate': 0.878,
-            'e_y_scale': 1.460,
+            'e_y_scale': 1,
             'e_sigma': 15.3698,
             'b_rate': -0.01,
             'b_min_rate': 0.57,
+            'lambda': 0.5,
             }
 
     dat = gen_model_data(df, rmdf, cdf, ifs)
-    param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+    param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains,
+            )
+            #initial_values)
 
     view_fit(df, 'idea', param_walks[0])
 
