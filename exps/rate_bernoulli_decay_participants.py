@@ -30,11 +30,11 @@ data {
 }
 
 parameters {
-    real <lower=-100, upper=0> rate[M];
+    real <lower=-10, upper=0> rate[M];
     real <lower=0, upper=1> min_rate;
 
-    real <lower=-100, upper=0> hyper_rate_mu;
-    real <lower=0, upper=10> hyper_rate_sigma;
+    real <lower=-10, upper=0> hyper_rate_mu;
+    real <lower=0, upper=5> hyper_rate_sigma;
 }
 
 model {
@@ -255,12 +255,14 @@ def plot_rate_posteriors(p_rates):
 # TODO: this could be done with passed parameters
 def filter_today(df):
     #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'forgot_name')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
  
 if __name__ == '__main__':
-    print(os.path.basename(__file__))
+    print('\033[1m' +  os.path.basename(__file__) + '\033[0m')
+
     n_iter = 3000
     n_chains = 3
     min_received = 50
