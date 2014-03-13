@@ -158,13 +158,7 @@ def index_starting_at(l, target, start):
     return l[start:].index(target) + start
 
 def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
-    # TODO: Keeping this around because it may be fixed later, but the
-    # plot here has no meaning for now. The cumulative prediction
-    # doesn't account for which condition we are in (it just appends all
-    # participants)
-    # TODO: assure p_rates comes in order
-    
-    fig = plt.figure(figsize=(8,12))
+    fig = plt.figure(figsize=(8,10))
 
     condition_index = 0 
     # for each of the first 6 combinations
@@ -230,7 +224,7 @@ def plot_rate_posteriors(p_rates):
     #quartiles_flat = [reduce(lambda x, y: x.extend(y), quartile)
     #        for quartile in quartiles]
 
-    fig = plt.figure(figsize=(8,4))
+    fig = plt.figure(figsize=(8,3))
     ax = fig.add_subplot(111)
     #for i, quartile in enumerate(quartiles_flat):
     #    ax.hist(quartiles_flat, bins=20, alpha=0.5, label="%ith quartile" % (i+1))
@@ -246,7 +240,7 @@ def plot_rate_posteriors(p_rates):
 
     ax.set_xlabel("rate parameter value")
     ax.set_ylabel("number of samples")
-    ax.set_xlim((-0.015, 0))
+    #ax.set_xlim((-0.015, 0))
     ax.legend()
 
     #plt.show()

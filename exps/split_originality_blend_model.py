@@ -164,7 +164,7 @@ def plot_fit_and_hpd(ax, alpha1, alpha2, beta1, beta2, switch, **kwargs):
 
 
 def plot_fit(dat, alpha1, alpha2, beta1, beta2, switch):
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(8, 4))
     ax = fig.add_subplot(111)
     ax.set_xlabel("instance number in run")
     ax.set_ylabel("mean oscore for all participants")

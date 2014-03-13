@@ -152,7 +152,7 @@ def plot_model(rate, min_rate, df, field):
     ax.plot(xs, ys, '--', color='k', alpha=0.5)
 
 
-    fig.savefig('figures/bernoulli_decay_model_parameter', dpi=600)
+    fig.savefig('figures/bernoulli_decay_model_example', dpi=600)
     #plt.show()
 
 # TODO: this could be done with passed parameters
