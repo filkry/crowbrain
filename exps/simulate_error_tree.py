@@ -232,7 +232,7 @@ def remove_parent_edge(forest, node):
 def introduce_artificial_error(new_forest, n1, n2):
     n1root = get_root(new_forest, n1)
     n2root = get_root(new_forest, n2)
-    if n2 in nx.descendants(new_forest, n1root): # if already share common parent, destroy link
+    if n1root == n2root: # if already share common parent, destroy link
         err_node = n1 if n2 == n1root else (n2 if n1 == n1root or random.random() > 0.5 else n1)
         chain = chain_between(new_forest, n1root, err_node)
         bad_link = random.sample(chain, 1)[0]
@@ -501,15 +501,16 @@ def table_error_rates(idea_forests):
         print('\n'.join(res), file=f)
 
 def filter_today(df):
-    df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
  
 if __name__ == '__main__':
+    print(os.path.basename(__file__))
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
-    table_error_rates(cfs)
+    #table_error_rates(cfs)
 

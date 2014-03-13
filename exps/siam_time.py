@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import re, pystan, format_data, modeling, math
+import re, pystan, format_data, modeling, math, os
 import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
@@ -129,6 +129,8 @@ def gen_posterior_fn(n_iter, n_chains):
     
  
 if __name__ == '__main__':
+    print(os.path.basename(__file__))
+
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)

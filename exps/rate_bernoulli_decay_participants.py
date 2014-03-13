@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import re, pystan, format_data, modeling, math
+import re, pystan, format_data, modeling, math, os
 import matplotlib.pyplot as plt
 import stats_fns as mystats
 from functools import reduce
@@ -260,7 +260,8 @@ def filter_today(df):
     return df
  
 if __name__ == '__main__':
-    n_iter = 5000
+    print(os.path.basename(__file__))
+    n_iter = 3000
     n_chains = 3
     min_received = 50
 

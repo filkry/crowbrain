@@ -423,12 +423,14 @@ def do_format_data(processed_data_folder, filter_instances = None):
     # hack: filter known bad values
     # junk data, etc
     num_lost = 0
-    bad_ideas = [1128295, 1128296, 1179173, 1178933, 1128294]
+    bad_ideas = [1128295, 1128296, 1179173, 1178933, 1128294, 894122, 174901]
     for i in bad_ideas:
         old_len = len(idf)
         idf = idf[idf['idea'] != i]
         new_len = len(idf)
         num_lost += old_len - new_len
+
+    assert(num_lost > 0)
 
     print("Dropped", num_lost, "bad ideas")
     

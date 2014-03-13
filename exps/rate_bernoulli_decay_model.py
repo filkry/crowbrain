@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import re, pystan, format_data, modeling, math
+import re, pystan, format_data, modeling, math, os
 import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
@@ -53,7 +53,7 @@ def gen_uniques_counts(adf, field):
     return counts
 
 def gen_model_data(df, rmdf, cdf, ifs):
-    field = 'subtree_root'
+    field = 'idea'
     dat = defaultdict(list)
 
     for nr in set(df['num_requested']):
@@ -112,7 +112,8 @@ def plot_model_per_question(df, n_iter, n_chains):
 
     ax.legend()
     
-    plt.show()
+    fig.savefig('figures/rate_model_questions', dpi=600)
+    #plt.show()
 
 
 def plot_line_and_hpd(ax, rate, min_rate, max_x, line_style, **kwargs):
@@ -162,6 +163,8 @@ def filter_today(df):
     return df
  
 if __name__ == '__main__':
+    print(os.path.basename(__file__))
+
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, ifs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
@@ -171,11 +174,10 @@ if __name__ == '__main__':
 
     dat = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
-
-    view_fit(df, 'subtree_root', param_walks[0])
-    plot_model_per_question(df, n_iter, n_chains)
-
     post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])
+    view_fit(df, 'idea', param_walks[0])
+
+    plot_model_per_question(df, n_iter, n_chains)
     
     def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
         return post_rate_param[0] > posterior[1] and post_rate_param[0] < posterior[2]

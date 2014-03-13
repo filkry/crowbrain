@@ -1,7 +1,7 @@
 import format_data, modeling
 import simulate_error_tree as se
 import networkx as nx
-import json
+import json, os
 import jinja2
 import subprocess as sp
 
@@ -77,6 +77,7 @@ def render_forest(idea_forest, idf, output_file, temp_directory):
 
 
 if __name__ == '__main__':
+    print(os.path.basename(__file__))
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
