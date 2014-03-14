@@ -125,6 +125,7 @@ def gen_model_data(df, rmdf, cdf, ifs):
 def view_fit(df, field, la, dat):
     rate_array = la['rate']
     p_rates = [rate_array[:, i] for i in range(rate_array.shape[1])]
+
     sorted_rates = sorted(p_rates, key=np.mean)
 
     min_rate = np.mean(la['min_rate'])

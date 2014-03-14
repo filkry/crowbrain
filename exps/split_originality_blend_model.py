@@ -213,7 +213,7 @@ if __name__ == '__main__':
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
     init_vals = view_fit(dat, param_walks[0])
 
-    plot_model_per_question(df, n_iter, n_chains, init_vals)
+    #plot_model_per_question(df, n_iter, n_chains, init_vals)
 
     post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])
 

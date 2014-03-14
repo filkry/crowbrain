@@ -81,7 +81,7 @@ def view_fit(df, field, la):
 
     plot_model(rate, min_rate, df, field)
 
-def plot_model_per_question(df, n_iter, n_chains):
+def plot_model_per_question(df, n_iter, n_chains, init_params):
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
 
@@ -93,7 +93,8 @@ def plot_model_per_question(df, n_iter, n_chains):
         qcdf = df[df['question_code'] == qc]
         dat = gen_model_data(qcdf, None, None, None)
         real_max_x = max(real_max_x, max(dat['x']))
-        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter,
+                n_chains, init_params)
 
         rate = mystats.mean_and_hpd(param_walks[0]['rate'])
         min_rate = mystats.mean_and_hpd(param_walks[0]['min_rate'])
@@ -163,13 +164,13 @@ def filter_today(df):
     return df
  
 if __name__ == '__main__':
-    print(os.path.basename(__file__))
+    print('\033[1m' + os.path.basename(__file__) + '\033[0m')
 
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, ifs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
 
-    n_iter = 1500
+    n_iter = 3000
     n_chains = 3
 
     dat = gen_model_data(df, rmdf, cdf, ifs)
@@ -177,7 +178,12 @@ if __name__ == '__main__':
     post_rate_param = mystats.mean_and_hpd(param_walks[0]['rate'])
     view_fit(df, 'idea', param_walks[0])
 
-    plot_model_per_question(df, n_iter, n_chains)
+    init_params = {
+            'rate': post_rate_param[0],
+            'min_rate': mystats.mean_and_hpd(param_walks[0]['min_rate'])[0],
+            }
+
+    plot_model_per_question(df, n_iter, n_chains, init_params)
     
     def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
         return post_rate_param[0] > posterior[1] and post_rate_param[0] < posterior[2]
