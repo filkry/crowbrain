@@ -10,7 +10,7 @@ def anal_string(min_received, n_chains, n_iter, predictions):
     anal_string="""The model was fit only to participants who generated %i or greater ideas, as fewer responses were insufficient for the model to achieve convergence. The fit model is shown in Figure~\\ref{fig:bernoulli_decay_participant_model_example}, for a subset of question and number of responses requested conditions, as a single fit for all real data lines has no meaning in this context. The model converned in %i chains of %i iterations.
 The model was fit using Stan, and the Stan language model specification is given in Appendix~\\ref{sec:decaying_bernoulli_part}.
 
-In this model, the fit line is non-continuous (but still contiguous) - different participants ``bump'' or ``flatten'' the rate of idea generation as they contribute. While this model is less general - we do not expect to always receive participants with a similar distribution of decay parameters - by examining the posterior distributions of rate parameters, judgments can be made as to the distribution of ``quality'' brainstormers. Figure~\\ref{fig:bernoulli_decay_participant_posteriors} plots the posterior distributions over the decay parameters for the most and least productive participants.
+In this model, the fit line is non-continuous (but still contiguous) - different participants ``bump'' or ``flatten'' the rate of idea generation as they contribute. While this model is less general - we do not expect to always receive participants with a similar distribution of decay parameters - by examining the posterior distributions of rate parameters, judgments can be made as to the distribution of ``quality'' brainstormers. Figure~\\ref{fig:bernoulli_decay_participant_posteriors} plots the posterior distributions over the decay parameters for the most and least productive participants in each question condition.
 
 As can be seen by the non-overlapping HPDs, the most productive participant has their rate of idea generation decay significantly less than the least productive participant. This means that variations in individual ability account for a significant portion of the variation in the number of ideas produced. In this case, the most productive participant would produce an expected %i more novel ideas in a solo run of 100 instances than the least productive participant.
 This gap widens further to %i additional novel ideas out of 100 when the same participants are contributing to a cumulative brainstorming pool that has already received 500 instances.
@@ -18,7 +18,6 @@ These large differences in quantity of ideas generated provide motivation for th
 
     return anal_string % (min_received, n_chains, n_iter,
             predictions[0] - predictions[1], predictions[2] - predictions[3])
-
 
 model_string = """
 data {
@@ -96,6 +95,7 @@ def get_worker_ints(df, next_worker_int, worker_ints):
 def gen_model_data(df, rmdf, cdf, ifs):
     field = 'idea'
     dat = defaultdict(list)
+    qcs = []
 
     cur_worker_int = 1
     worker_ints = dict()
@@ -111,6 +111,7 @@ def gen_model_data(df, rmdf, cdf, ifs):
 
             dat['novel'].extend(uniques_diffs)
             dat['x'].extend(range(len(uniques_diffs)))
+            qcs.extend([qc for i in range(len(uniques_diffs))])
 
             cur_worker_int, worker_ints, df_wints = get_worker_ints(qcdf, cur_worker_int, worker_ints)
             dat['participant'].extend(df_wints)
@@ -120,9 +121,9 @@ def gen_model_data(df, rmdf, cdf, ifs):
             'novel': dat['novel'],
             'participant': dat['participant'],
             'M': cur_worker_int - 1,
-            'N': len(dat['x'])}
+            'N': len(dat['x'])}, qcs
 
-def view_fit(df, field, la, dat):
+def view_fit(df, field, la, dat, qcs):
     rate_array = la['rate']
     p_rates = [rate_array[:, i] for i in range(rate_array.shape[1])]
 
@@ -140,7 +141,7 @@ def view_fit(df, field, la, dat):
     print("Number of ideas generated with low decay rate (from 500):", prediction_low_decay[-1])
     print("Number of ideas generated with high decay rate (from 500):", prediction_high_decay[-1])
 
-    plot_rate_posteriors(p_rates)
+    plot_rate_posteriors(p_rates, qcs, dat['participant'])
 
     plot_cumulative_model(df, dat, p_rates, mystats.mean_and_hpd(la['min_rate'], 0.95), field)
 
@@ -160,6 +161,7 @@ def index_starting_at(l, target, start):
 
 def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
     fig = plt.figure(figsize=(8,10))
+    fig.subplots_adjust(hspace=4)
 
     condition_index = 0 
     # for each of the first 6 combinations
@@ -219,30 +221,44 @@ def add_hpd_bar(ax, left, right, y, linewidth=2, edge_height = 200):
     ax.plot([left, left], [y + heh, y - heh], color='k', linewidth=linewidth)
     ax.plot([right, right], [y + heh, y - heh], color='k', linewidth=linewidth)
 
-def plot_rate_posteriors(p_rates):
-    sorted_rates = sorted(p_rates, key=np.mean)
-    #quartiles = n_tiles(sorted_rates, 4)
-    #quartiles_flat = [reduce(lambda x, y: x.extend(y), quartile)
-    #        for quartile in quartiles]
+def plot_rate_posteriors(p_rates, qcs, parts):
+    fig = plt.figure(figsize=(8,10))
+    fig.subplots_adjust(hspace=.5)
 
-    fig = plt.figure(figsize=(8,3))
-    ax = fig.add_subplot(111)
-    #for i, quartile in enumerate(quartiles_flat):
-    #    ax.hist(quartiles_flat, bins=20, alpha=0.5, label="%ith quartile" % (i+1))
+    first_ax = None
+    for i, qc in enumerate(set(qcs)):
+        if first_ax is None:
+            ax = fig.add_subplot(4, 1, i+1)
+            first_ax = ax
+        else:
+            ax = fig.add_subplot(4, 1, i+1, sharex=first_ax, sharey=first_ax)
+            #ax.set_xticklabels([])
 
-    # Plot highest and lowest rates
-    ax.hist(sorted_rates[0], bins=20, alpha=0.75, label="fastest decay")
-    ax.hist(sorted_rates[-1], bins=20, alpha=0.75, label="slowest decay")
+        qc_parts = set()
+        for pqc, part in zip(qcs, parts):
+            if pqc == qc:
+                qc_parts.add(part)
 
-    fast_hpd = mystats.mean_and_hpd(sorted_rates[0], 0.95)
-    slow_hpd = mystats.mean_and_hpd(sorted_rates[-1], 0.95)
-    add_hpd_bar(ax, fast_hpd[1], fast_hpd[2], 500)
-    add_hpd_bar(ax, slow_hpd[1], slow_hpd[2], 500)
+        qcp_rates = [pr for i, pr in enumerate(p_rates) if i in qc_parts]
+        
+        sorted_rates = sorted(qcp_rates, key=np.mean)
 
-    ax.set_xlabel("rate parameter value")
-    ax.set_ylabel("number of samples")
+        # Plot highest and lowest rates
+        ax.hist(sorted_rates[0], bins=10, alpha=0.75,
+                label="fastest decay")
+        ax.hist(sorted_rates[-1], bins=10, alpha=0.75,
+                label="slowest decay")
+
+        fast_hpd = mystats.mean_and_hpd(sorted_rates[0], 0.95)
+        slow_hpd = mystats.mean_and_hpd(sorted_rates[-1], 0.95)
+        add_hpd_bar(ax, fast_hpd[1], fast_hpd[2], 500)
+        add_hpd_bar(ax, slow_hpd[1], slow_hpd[2], 500)
+
+        ax.set_xlabel("rate parameter value")
+        ax.set_ylabel("number of samples")
     #ax.set_xlim((-0.015, 0))
-    ax.legend()
+        ax.legend(loc=2)
+        ax.set_title(qc)
 
     #plt.show()
     fig.savefig('figures/bernoulli_decay_participant_posteriors', dpi=600)
@@ -267,10 +283,10 @@ if __name__ == '__main__':
     df, rmdf, cdf, cfs = modeling.get_redundant_data(ifs, idf)
     df = df[df['num_received'] >= min_received]
 
-    dat = gen_model_data(df, rmdf, cdf, ifs)
+    dat, qcs = gen_model_data(df, rmdf, cdf, ifs)
     param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
 
-    predictions = view_fit(df, 'idea', param_walks[0], dat)
+    predictions = view_fit(df, 'idea', param_walks[0], dat, qcs)
 
     with open('tex/bernoulli_decay_participant_anal.tex', 'w') as f:
         print(anal_string(min_received, n_chains, n_iter, predictions), file=f)
