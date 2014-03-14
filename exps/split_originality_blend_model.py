@@ -8,12 +8,12 @@ from collections import defaultdict, OrderedDict
 def anal_string(n_chains, n_iter, split_post, sim_passes):
     anal_string = """This model was fit using Stan (the full model specification in Stan language is given in Appendix~\\ref{sec:novelty_run_model}). The resulting model converged in %i chains in %i iterations. The fit is given in Figure~\\ref{fig:idea_oscore_blend_fit} 
 
-The resulting mean for the $s$ parameter (the point at which idea stop increasing in novelty) was %i. The HDI was (%i, %i), the bounds of which include neither 0 nor 100, such that we reject the hypothesis that the novelty of ideas is either stagnant nor grows for the entirety of the brainstorming run.
+The resulting mean for the $s$ parameter (the point at which idea stop increasing in novelty) was %i. The HDI was (%i, %i), the bounds of which include neither 0 nor 100, suggesting that the distribution of novelty is better described by a mixture model than a constant. Furthermore, the second model produces significantly more novel ideas, suggesting that the novelty of ideas does increase over time.
 This result is surprising in that it suggests that participants do not run out of novel ideas, but rather run out of common ideas after which they reach a period of extended novelty.
 
 This split point found under error simulation falls within the (%i , %i) HDI in %i of 10 simulations.
 
-As a result, I am able to present an empirically-derived guideline for those performing brainstorming tasks on microtask marketplaces: to receive the most novel ideas, ask participants for at least %i ideas."""
+As a result, I am able to present an empirically-derived guideline for those performing brainstorming tasks on microtask marketplaces: to receive the most novel ideas, ask participants for at least %i responses."""
 
     return anal_string % (n_chains, n_iter, int(split_post[0]), int(split_post[1]),
             int(split_post[2]), int(split_post[1]), int(split_post[2]), sim_passes,

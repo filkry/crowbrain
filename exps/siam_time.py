@@ -6,14 +6,14 @@ import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
 def anal_string(n_chains, n_iter, mu_wthn_post, mu_btwn_post, sim_passes):
-    anal_string = """The models were fit, the result of which is given in Figure~\\ref{fig:idea_generation_time_fit}. The full model specification is given in Appendix~\\ref{sec:idea_time_model}. Sampling converged across %i chains in %i iterations. The mean for time within-category ($\mu_\\text{within-category}$) was %0.2f in log space (%0.2f seconds, HDI %0.2f-%0.2f). The mean for time between-category ($\mu_\\text{between-category}$) was %0.2f (%0.2f seconds, HDI %0.2f-%0.2f).
-As visible in Figure~\\ref{fig:idea_generation_time_fit}, these HDIs are non-overlapping, so I reject the null hypothesis that the within-category and between-category instance generation take the same time. Furthermore, this null hypothesis rejection occured in %i of 10 tests under error simulation. In fact, between-category instance generation took an average of %0.2f seconds longer than within-category, which is consistent with the Nijstad and Stoebe finding of 6-12 seconds."""
+    anal_string = """The models was fit for both within-category and between-category consecutive instances, the result of which is given in Figure~\\ref{fig:idea_generation_time_fit}. The full model specification is given in Appendix~\\ref{sec:idea_time_model}. Sampling converged across %i chains in %i iterations. The mean for time within-category ($\mu_\\text{within-category}$) was %0.2f (HDI %0.2f-%0.2f). The mean for time between-category ($\mu_\\text{between-category}$) was %0.2f (HDI %0.2f-%0.2f).
+As visible in Figure~\\ref{fig:idea_generation_time_fit}, these HDIs are non-overlapping, with between-category idea generation taking significantly more time. This relationship holds in %i of 10 tests under error simulation. Between-category instance generation took an average of %0.2f seconds longer than within-category. This is inconsistent with the Nijstad and Stoebe finding of 6-12 seconds. This suggests that some property of brainstorming in microtask marketplaces either reduces the impact of category-switching or increases the cost of generating each idea. Further work is necessary to disambiguate these influences."""
 
     wthn_mu_sec = math.exp(mu_wthn_post[0])
     btwn_mu_sec = math.exp(mu_btwn_post[0])
     longer = btwn_mu_sec - wthn_mu_sec 
-    return anal_string % (n_chains, n_iter, mu_wthn_post[0], wthn_mu_sec,
-            mu_wthn_post[1], mu_wthn_post[2], mu_btwn_post[1], btwn_mu_sec,
+    return anal_string % (n_chains, n_iter, mu_wthn_post[0], 
+            mu_wthn_post[1], mu_wthn_post[2], mu_btwn_post[1], 
             mu_btwn_post[1], mu_btwn_post[2], sim_passes, longer)
 
 model_string = """
