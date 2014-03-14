@@ -100,9 +100,9 @@ def gen_model_data(df, rmdf, cdf, ifs):
     cur_worker_int = 1
     worker_ints = dict()
 
-    for nr in set(df['num_requested']):
+    for nr in sorted(list(set(df['num_requested']))):
         nrdf = df[df['num_requested'] == nr]
-        for qc in set(df['question_code']):
+        for qc in sorted(list(set(df['question_code']))):
             qcdf = nrdf[nrdf['question_code'] == qc]
             uniques_counts = gen_uniques_counts(qcdf, field)
 
@@ -161,10 +161,10 @@ def index_starting_at(l, target, start):
 
 def plot_cumulative_model(df, dat, p_rates, min_rate_hpd, field):
     fig = plt.figure(figsize=(8,10))
-    fig.subplots_adjust(hspace=4)
 
     condition_index = 0 
     # for each of the first 6 combinations
+    #print(dat['x'][1000:1100])
     for i in range(1, 7):
         ax = fig.add_subplot(3, 2, i)
 
