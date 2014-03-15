@@ -462,6 +462,9 @@ def table_error_rates(idea_forests):
         judges = set()
 
         for judge, n1id, n2id, bin1, bin2, rel, n1, n2, ex1, ex2 in culled:
+            if rel == '?':
+                continue
+
             judges.add(judge)
             judge_0_count += int(judge == 0)
             total += 1
@@ -472,7 +475,7 @@ def table_error_rates(idea_forests):
             common_parent_violations += int(test_violation(guess, rel, 'artificial_parent'))
             non_equivalence_violations += int(test_violation(guess, rel, 'single_node_per_idea'))
 
-        eq_hpd = mystats.beta_bernoulli_posterior(equivalence_violations, total)
+        eq_hpd = mystats.beta_bernoulli_posterior(equivalence_violations, instance_totals)
         gen_hpd = mystats.beta_bernoulli_posterior(generalization_violations, total)
         cp_hpd = mystats.beta_bernoulli_posterior(common_parent_violations, total)
         ne_hpd = mystats.beta_bernoulli_posterior(non_equivalence_violations, total)
@@ -516,5 +519,5 @@ if __name__ == '__main__':
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
-    #table_error_rates(cfs)
+    table_error_rates(cfs)
 
