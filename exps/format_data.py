@@ -461,11 +461,14 @@ def do_format_data(processed_data_folder, filter_instances = None):
     # CLUSTER DATA
     # ========================================================
 
-    dump_csvs(processed_data_folder, idf)
+    #dump_csvs(processed_data_folder, idf)
     return idf, cluster_forests
 
 if __name__ == "__main__":
     idf, cfs = do_format_data("/home/fil/enc_projects/crowbrain/processed_data")
     df, rmdf, clusters_df, ann_cfs = mk_redundant(idf, cfs)
+
+    df.to_csv('ipython_output/instances.csv')
+    clusters_df.to_csv('ipython_output/trees.csv')
     
     print(df)

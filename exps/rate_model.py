@@ -126,10 +126,14 @@ def filter_today(df):
     #df = filter_match_data_size(df)
     return df
  
+import sys
 if __name__ == '__main__':
     print(os.path.basename(__file__))
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
+
+    sys.exit(0)
+
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
     n_iter = 1500
