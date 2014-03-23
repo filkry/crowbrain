@@ -6,6 +6,7 @@ import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
 def analysis_tex(n_chains, n_iterations, sim_passes, rate_posterior):
+    print(rate_posterior[0])
     analysis_latex = """The model fit was fit to the campaign quantities conditioned on question asked $\\times$ number of responses requested. The result is given in Figure~\\ref{fig:exponential_model_example}. The model converged in all of %i chains after %i iterations. The real data campaigns, which were used to fit the model, are shown as solid black lines. These values were generated for each campaign by ordering all instances first by HIT submission time and then by order in the brainstorming run, and then taking the cumulative \\emph{idea} count at each point.
 The dotted line represents the fit model, the shaded region around which is the 95\\%% credible interval for the fit. Finally, a line representing linear growth is given along the diagonal. From this visualization, it is clear that the credible interval does not include the diagonal line, and the hypothesis stating that the growth rate is linear is rejected.
 The mean for the rate parameter is %0.2f, (HDI %0.2f-%0.2f), confirming the visual evidence. Thus, the rate of idea generation over time appears to decrease exponentially as a function of the order in which the instance was received. 
@@ -13,8 +14,10 @@ The mean for the rate parameter is %0.2f, (HDI %0.2f-%0.2f), confirming the visu
 The rejection of the linear hypothesis is also rejected under the error simulation process in %i out of 10 simulations.
 """
 
-    return analysis_latex % (n_chains, n_iterations, sim_passes,
-            rate_posterior[0], rate_posterior[1], rate_posterior[2])
+    return analysis_latex % (n_chains, n_iterations,
+            rate_posterior[0],
+            rate_posterior[1], rate_posterior[2],
+            sim_passes)
 
 model_string = """
 data {
@@ -136,8 +139,6 @@ if __name__ == '__main__':
     print(os.path.basename(__file__))
     processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
-
-    sys.exit(0)
 
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
