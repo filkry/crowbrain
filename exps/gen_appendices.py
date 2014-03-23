@@ -12,7 +12,8 @@ def print_model(f, model_string, title, label):
 
 if __name__ == '__main__':
     with open('tex/model_appendix.tex', 'w') as f:
-        print('\\chapter{Stan specification for models}\n\n', file=f)
+        print('\\chapter{Stan specification for models}', file=f)
+        print('\\label{app:models}\n\n', file=f)
 
         print_model(f, rate_model.model_string, 'Exponential decay model',
                 'exponential_decay')
