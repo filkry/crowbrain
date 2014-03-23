@@ -230,12 +230,8 @@ def add_counts(dest_dict, src_dict):
       dest_dict[t] = src_dict[t]
     else:
       dest_dict[t] = dest_dict[t] + src_dict[t]
-
-# Assumes a sentence is passed in. The include_bi/trigrams is whether to include those in the bag of words returned
-# Filter stopwords is whether to filter out stopwords from the stems and bag of words. Uses NLTK's stopword list
-# Bag of words includes synonyms and hypernyms
-# Returns (stems, bigrams, trigrams, bag_of_words)
-def extract_features(sentence, correct_spelling, include_bigrams, include_trigrams, filter_stopwords=False):
+  
+def tokenize_sentence(sentence, correct_spelling):
   abstracted_tokens = []
   #sentence = sentence.encode('utf-8')
   got_first_token = False
@@ -250,6 +246,14 @@ def extract_features(sentence, correct_spelling, include_bigrams, include_trigra
   tokens = no_punct_tokenize(sentence)
   if correct_spelling:
     tokens = [get_best_spelling(t) for t in tokens]
+  return abstracted_tokens, tokens
+
+# Assumes a sentence is passed in. The include_bi/trigrams is whether to include those in the bag of words returned
+# Filter stopwords is whether to filter out stopwords from the stems and bag of words. Uses NLTK's stopword list
+# Bag of words includes synonyms and hypernyms
+# Returns (stems, bigrams, trigrams, bag_of_words)
+def extract_features(sentence, correct_spelling, include_bigrams=False, include_trigrams=False, filter_stopwords=False, include_nyms=True):
+  abstracted_tokens, tokens = tokenize_sentence(sentence, correct_spelling)
   pos_tags = nltk.pos_tag(tokens) # TODO: Validate. This may be thrown off a bit by there being no punctuation (e.g., if there are multiple sentences)
 
   pos_tags = [(word, tag) for word, tag in pos_tags if ('JJ' in tag or 'NN' in tag or 'RB' in tag or 'VB' in tag)]
@@ -267,7 +271,11 @@ def extract_features(sentence, correct_spelling, include_bigrams, include_trigra
   bigrams = set(nltk.bigrams(stems))
   trigrams = set(nltk.trigrams(stems))
   
-  stemmed_everything = list(set(stems + [stemmer.stem(t) for t in (synonyms + hypernyms)]))
+  if include_nyms:
+      stemmed_everything = list(set(stems + [stemmer.stem(t) for t in (synonyms + hypernyms)]))
+  else:
+      stemmed_everything = list(set(stems))
+
   bag_words = set(stemmed_everything + abstracted_tokens)
   if include_bigrams:
     bag_words = bag_words.union(bigrams)

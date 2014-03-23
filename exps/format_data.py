@@ -364,7 +364,19 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
 
           
 
-    
+def add_worker_nums(adf):    
+    next_wn = 0
+    wns = dict()
+    wn_row = pd.Series(index=adf.index)
+    for ix in adf.index:
+        wid = adf['worker_id'][ix]
+        if wid not in wns:
+            wns[wid] = next_wn
+            next_wn += 1
+        wn_row[ix] = wns[wid]
+
+    adf['worker_num'] = wn_row
+    return adf
 
 
 def do_format_data(processed_data_folder, filter_instances = None):
@@ -398,6 +410,9 @@ def do_format_data(processed_data_folder, filter_instances = None):
        
     # Read in the main processed data files
     idf_base = read_base_data(base_data_dirs)
+
+    # Add worker numbers
+    idf_base = add_worker_nums(idf_base)
 
     qc_conds = set(idf_base['question_code'])
 
@@ -446,11 +461,14 @@ def do_format_data(processed_data_folder, filter_instances = None):
     # CLUSTER DATA
     # ========================================================
 
-    dump_csvs(processed_data_folder, idf)
+    #dump_csvs(processed_data_folder, idf)
     return idf, cluster_forests
 
 if __name__ == "__main__":
     idf, cfs = do_format_data("/home/fil/enc_projects/crowbrain/processed_data")
     df, rmdf, clusters_df, ann_cfs = mk_redundant(idf, cfs)
+
+    df.to_csv('ipython_output/instances.csv')
+    clusters_df.to_csv('ipython_output/trees.csv')
     
     print(df)
