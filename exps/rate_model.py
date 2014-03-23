@@ -100,17 +100,22 @@ def plot_model(y_scale_hpd, rate_hpd, rate_mean, df, field):
     ax.fill_between(xs, bottom_ys, top_ys, color='g', alpha=0.25)
 
     # plot the line for each condition
-    for name, adf in df.groupby(['question_code', 'num_requested']):
+    for i, (name, adf) in enumerate(df.groupby(['question_code', 'num_requested'])):
         ys = gen_uniques_counts(adf, field)
-        ax.plot(xs[:len(ys)], ys, '-', color='k')
+        if i == 0:
+            ax.plot(xs[:len(ys)], ys, '-', color='k', label='actual campaigns')
+        else:
+            ax.plot(xs[:len(ys)], ys, '-', color='k')
 
     # plot the model line
     ys = [model_predict(x, y_scale_hpd[0], rate_mean) for x in xs]
-    ax.plot(xs[:len(ys)], ys, '--', color='k')
+    ax.plot(xs[:len(ys)], ys, '--', color='k', label='model fit')
 
     # plot the 1:1 line
     ys = [x for x in xs]
-    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+    ax.plot(xs, ys, '-.', color='k', alpha=0.5, label='ideal')
+
+    ax.legend(loc='upper left')
 
     #plt.show()
     fig.savefig('figures/exponential_model_example', dpi=600)
@@ -142,10 +147,10 @@ if __name__ == '__main__':
 
     rate_post = mystats.mean_and_hpd(param_walks[0]['rate'])
 
-    #sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
-    #        gen_model_data, hyp_test_exclude_one, cfs, idf)
-    #print("Exclude one hypothesis held in %i/10 cases" % sim_passes)
-    sim_passes = 100 
+    sim_passes = modeling.simulate_error_hypothesis(10, model_string, n_iter, n_chains,
+            gen_model_data, hyp_test_exclude_one, cfs, idf)
+    print("Exclude one hypothesis held in %i/10 cases" % sim_passes)
+    #sim_passes = 100 
 
     with open('tex/exp_model_anal.tex', 'w') as f:
         print(analysis_tex(n_chains, n_iter, sim_passes, rate_post), file=f)

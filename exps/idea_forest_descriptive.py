@@ -106,7 +106,7 @@ def gen_counts_table(df):
         res.append('%s & %i & %i (%0.2f) & %i (%0.2f) \\\\' % (qc_label, n_instances,
             n_nodes, n_nodes / n_instances, n_trees, n_trees/n_instances))
     res.extend(['\\hline', '\\end{tabular}',
-        '\\caption{Descriptive statistics for size of idea forests}',
+        '\\caption[Descriptive statistics for size of idea forests]{Descriptive statistics for size of idea forests. The brackets indicate the same value normalized by the number of instances collected.}',
         '\\label{tab:forest_descriptive_statistics}', '\\end{table}'])
 
     with open('tex/forests_counts_table.tex', 'w') as f:

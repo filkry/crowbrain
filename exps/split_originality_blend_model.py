@@ -217,18 +217,18 @@ if __name__ == '__main__':
 
     post_split_param = mystats.mean_and_hpd(param_walks[0]['split'])
 
-    #def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
-    #    return post_split_param[0] > posterior[1] and post_split_param[0] < posterior[2]
+    def hyp_fn(posterior, edf, ermdf, ecdf, eifs):
+        return post_split_param[0] > posterior[1] and post_split_param[0] < posterior[2]
 
-    #def posterior_fn(edf, ermdf, ecdf, eifs):
-    #    dat = gen_dat(edf, ermdf, ecdf, eifs)
-    #    param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
-    #    return mystats.mean_and_hpd(param_walks[0]['split'])
+    def posterior_fn(edf, ermdf, ecdf, eifs):
+        dat = gen_dat(edf, ermdf, ecdf, eifs)
+        param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
+        return mystats.mean_and_hpd(param_walks[0]['split'])
 
-    #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
-    #        hyp_fn, idf, cfs)
-    #print("split posterior in HDI in %i/10 simulations" % sim_passes)
+    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+            hyp_fn, idf, cfs)
+    print("split posterior in HDI in %i/10 simulations" % sim_passes)
 
-    sim_passes = 100
+    #sim_passes = 100
     with open('tex/split_originality_blend_anal.tex', 'w') as f:
         print(anal_string(n_chains, n_iter, post_split_param, sim_passes), file=f)

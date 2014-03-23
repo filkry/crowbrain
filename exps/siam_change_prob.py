@@ -59,10 +59,10 @@ if __name__ == '__main__':
     theta_post = posterior_fn(df, rmdf, cdf, cfs)
     view_model_fit(theta_post, cdf)
     
-    #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
-    #    hyp_test_greater_chance, bidf, cfs)
-    #print("Greater than chance hypothesis held in %i/10 cases" % sim_passes)
-    sim_passes = 100
+    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+        hyp_test_greater_chance, bidf, cfs)
+    print("Greater than chance hypothesis held in %i/10 cases" % sim_passes)
+    #sim_passes = 100
 
     roots = cdf[cdf['is_root'] == 1]
     p_consec = sum(pow(p, 2) for p in roots['subtree_probability'])

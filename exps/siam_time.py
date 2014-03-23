@@ -153,10 +153,10 @@ if __name__ == '__main__':
     plot_fit(posterior, btwn_dat, wthn_dat)
     #view_model_fit(idf, 'idea', param_walks[0])
 
-    #sim_passes = modeling.simulate_error_hypothesis_general(10,
-    #    posterior_fn, hyp_test_between_greater, idf, cfs)
-    #print("Between greater hypothesis held in %i/10 cases" % sim_passes)
-    sim_passes = 100
+    sim_passes = modeling.simulate_error_hypothesis_general(10,
+        posterior_fn, hyp_test_between_greater, idf, cfs)
+    print("Between greater hypothesis held in %i/10 cases" % sim_passes)
+    #sim_passes = 100
 
     with open('tex/siam_time_anal.tex', 'w') as f:
         print(anal_string(n_chains, n_iter, wthn_mu_post, btwn_mu_post,

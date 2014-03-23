@@ -193,10 +193,10 @@ if __name__ == '__main__':
         param_walks = modeling.compile_and_fit(model_string, dat, n_iter, n_chains)
         return mystats.mean_and_hpd(param_walks[0]['rate'])
 
-    #sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
-    #        hyp_fn, idf, cfs)
-    #print("rate posterior in HDI in %i/10 simulations" % sim_passes)
-    sim_passes = 100
+    sim_passes = modeling.simulate_error_hypothesis_general(10, posterior_fn,
+            hyp_fn, idf, cfs)
+    print("rate posterior in HDI in %i/10 simulations" % sim_passes)
+    #sim_passes = 100
 
     with open('tex/bernoulli_decay_model_anal.tex', 'w') as f:
         print(anal_string(n_chains, n_iter, post_rate_param, sim_passes),
