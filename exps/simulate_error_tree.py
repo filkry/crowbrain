@@ -488,7 +488,8 @@ def table_error_rates(idea_forests):
 
     for qc in idea_forests.keys():
         eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
-        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (qc,
+        use_qc = qc if '_' not in qc else qc.replace('_', ' ')
+        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (use_qc,
             qc_judges[qc], qc_pairs[qc], eq_hpd[0], eq_hpd[1], eq_hpd[2], 
             gen_hpd[0], gen_hpd[1], gen_hpd[2])])
 
@@ -496,7 +497,8 @@ def table_error_rates(idea_forests):
 
     for qc in idea_forests.keys():
         eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
-        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (qc,
+        use_qc = qc if '_' not in qc else qc.replace('_', ' ')
+        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (use_qc,
             qc_judges[qc], qc_pairs[qc], cp_hpd[0], cp_hpd[1], cp_hpd[2], 
             ne_hpd[0], ne_hpd[1], ne_hpd[2])])
 
