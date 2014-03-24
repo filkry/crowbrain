@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
-def anal_string():
-    anal_string = """This model was compared to the exponential decay model by combining the two in a mixture model with a mixing component $\lambda$ over their liklihood.
+def anal_string(lambda_post):
+    anal_string = """To test this, the Bernoulli decay model was compared to the exponential model by combining the two in a mixture model with a mixing component $\lambda$ over their liklihood.
 A full specification of the Stan-language mixture model is given in Appendix~\ref{sec:exp_bern_comp}.
-The posterior of the mixture component was TODO (HDI ) in favour of the bernoulli decay model. This HDI excludes 0.5. This implies... TODO"""
+The posterior of the mixture component was %0.2f (HDI %0.2f-%0.2f) in favour of the Bernoulli decay model. This HDI excludes 0.5. This implies the Bernoulli decay model better describes the data gathered. Thus, the model not only encodes a generative process for idea generation in line with intuition, but this model describes the data at least as well as the more general exponential model. The increased descriptive power will next be leveraged to examine the extend to which individual ability affects quantity outcomes.""" % lambda_post[0]
 
     return anal_string
 
@@ -126,5 +126,11 @@ if __name__ == '__main__':
             )
             #initial_values)
 
+    lambda_post = mystats.mean_and_hpd(param_walks[0]['lambda'])
+
     view_fit(df, 'idea', param_walks[0])
+
+    with open('tex/bernoulli_decay_comparison_anal.tex', 'w') as f:
+        print(analysis_tex(lambda_post), file=f)
+
 

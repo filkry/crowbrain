@@ -14,7 +14,7 @@ In this model, the fit line is non-continuous (but still contiguous) - different
 
 As can be seen by the non-overlapping HPDs, the most productive participant has their rate of idea generation decay significantly less than the least productive participant. This means that variations in individual ability account for a significant portion of the variation in the number of ideas produced. In this case, the most productive participant would produce an expected %i more novel ideas in a solo run of 100 instances than the least productive participant.
 This gap widens further to %i additional novel ideas out of 100 when the same participants are contributing to a cumulative brainstorming pool that has already received 500 instances.
-These large differences in quantity of ideas generated provide motivation for the future exploration of interventions in the crowd brainstorming space."""
+"""
 
     return anal_string % (min_received, n_chains, n_iter,
             predictions[0] - predictions[1], predictions[2] - predictions[3])

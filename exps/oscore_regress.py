@@ -2,7 +2,8 @@ import nlp
 import pandas as pd
 import nltk
 from nltk.corpus import wordnet as wn
-import re, format_data, os
+import re, format_data, os, sys
+import random
 from modeling import get_redundant_data, read_or_gen_cache, hash_instance_df, hash_string
 from multiprocessing import Pool
 
@@ -100,13 +101,13 @@ def run_wn_sim_scores(rdf):
         return scores
 
     worker_id = rdf['worker_id'].iloc[0]
-    print("Computing run wordnet similarity for worker %s" % worker_id)
     qc = rdf['question_code'].iloc[0]
     hsh = '%s_%s.wordnetworkersimscores' % (worker_id, qc)
     return read_or_gen_cache(hsh, real_compute)
 
 def runs_wn_sim_scored(rdfs):
-    for rdf in rdfs:
+    for i, rdf in enumerate(rdfs):
+        print("Computing run wordnet similarity scores for worker %i/%i" % (i, len(rdfs)))
         run_wn_sim_scores(rdf)
 
 def filter_today(df):
@@ -135,11 +136,16 @@ if __name__ == '__main__':
     all_runs = []
     for name, run in df.groupby(['worker_id', 'num_requested', 'question_code']):
         all_runs.append(run)
+    #random.shuffle(all_runs)
 
     n_processes = 8
-    run_chunks = list(chunks(all_runs, n_processes))
+    #run_chunks = list(chunks(all_runs, int(len(all_runs)/ n_processes)))
 
     p = Pool(n_processes)
-    p.map(runs_wn_sim_scored, run_chunks)
+    #p.map(runs_wn_sim_scored, run_chunks)
+
+    num_tasks = len(all_runs)
+    for i, _ in enumerate(p.imap_unordered(run_wn_sim_scores, all_runs), 1):
+        sys.stderr.write('\rdone {0:%}'.format(i/num_tasks))
     
 
