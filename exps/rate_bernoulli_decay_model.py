@@ -142,17 +142,22 @@ def plot_model(rate, min_rate, df, field):
     ax.set_ylim(0, max_x)
 
     # plot the line for each condition
-    for name, adf in df.groupby(['question_code', 'num_requested']):
+    for i, (name, adf) in enumerate(df.groupby(['question_code', 'num_requested'])):
         ys = gen_uniques_counts(adf, field)
-        ax.plot(xs[:len(ys)], ys, '-', color='k')
+        if i == 0:
+            ax.plot(xs[:len(ys)], ys, '-', color='k', label='actual campaigns')
+        else:
+            ax.plot(xs[:len(ys)], ys, '-', color='k')
 
-    plot_line_and_hpd(ax, rate, min_rate, max_x, '--')
+    kwargs = {'label': 'model fit'}
+    plot_line_and_hpd(ax, rate, min_rate, max_x, '--', **kwargs)
 
     # plot the 1:1 line
     ys = [x for x in xs]
-    ax.plot(xs, ys, '--', color='k', alpha=0.5)
+    ax.plot(xs, ys, '-.', color='k', alpha=0.5, label='ideal')
 
 
+    ax.legend(loc='upper left')
     fig.savefig('figures/bernoulli_decay_model_example', dpi=600)
     #plt.show()
 
