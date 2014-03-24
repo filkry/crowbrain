@@ -6,10 +6,12 @@ import stats_fns as mystats
 from collections import defaultdict, OrderedDict
 
 def anal_string(n_chains, n_iterations, rate_hdi, sim_passes):
-    anal_string = """The model was fit to campaign conditioned on question asked $\\times$ number of responses requested. The fit model is shown in Figure~\\ref{fig:bernoulli_decay_model_example}, converging in %i chains after %i iterations each. In this case, the rate model is fit to the difference in the campaign lines at each instance, resulting in a sequence in which 1 represents a novel idea. The expected cumulative count is recovered as described to provide a graphical representation of model fit that is comparable to that of the exponential model.
+    anal_string = """
+    The model was fit to the the data for each campaign, where each question asked and number of responses requested condition corresponded to a distinct campaign.
+    The fit model is shown in Figure~\\ref{fig:bernoulli_decay_model_example}, converging in %i chains after %i iterations each. In this case, the rate model is fit to the difference in the campaign lines at each instance, resulting in a sequence in which 1 represents a novel idea. The expected cumulative count is recovered as described to provide a graphical representation of model fit that is comparable to that of the exponential model.
 The model was fit using Stan, and the Stan language model specification is given in Appendix~\\ref{sec:decaying_bernoulli}.
 
-The posterior rate parameter is %0.4f (HDI %0.4f, %0.4f), which is within the posterior HDIs for the same model fit under error simulation in %i out of 10 simulations. This confirms that the model decays as shown in the previous model, however it is still of interest whether the improved encoding of the Bernoulli variable results in a better model overall."""
+The posterior rate parameter is %0.4f (HDI %0.4f, %0.4f), which is within the posterior HDIs for the same model fit under error simulation in %i out of 10 simulations. This is consistent with the assumption of exponential decay. Furthermore, because this model encodes a more accurate representation of the brainstorming process, it is expected that it better describes the data set."""
 
     return anal_string % (n_chains, n_iterations, rate_hdi[0], rate_hdi[1],
             rate_hdi[2], sim_passes)
