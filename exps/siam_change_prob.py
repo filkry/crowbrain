@@ -7,7 +7,7 @@ from collections import defaultdict, OrderedDict
 
 def anal_string(theta_post, p_same):
     anal_string = """Fitting this model with an uniform beta prior (using an analytical solution rather than a sampling approach), the posterior mean for $\\theta$ is %0.2f (HDI %0.2f-%0.2f). 
-For the brainstorming corpus across all questions, $p(x_i = x_{i+1}) = %0.2f$. This is well below the lower bound of the $\\theta$ HDI, allowing the rejection of the null hypothesis that category-following is no more likely than would be explained by random chance. This is consistent with the findings of Nijstad and Stroebe, and supports the concept that individuals work within categories of connected ideas and do not generate uniformly random ideas.
+For the brainstorming corpus across all questions, $p(x_i = x_{i+1}) = %0.2f$. This is well below the lower bound of the $\\theta$ HDI, allowing the rejection of the null hypothesis that category-following is no more likely than would be explained by random chance. This is consistent with the findings of Nijstad and Stroebe, and supports the concept that individuals work within categories of connected ideas and do not generate uniformly random ideas. This finding supports the idea that the SIAM cognitive model of alternative image activation and idea generation phases applies in microtask marketplaces as well.
     """
 
     return anal_string % (theta_post[0], theta_post[1], theta_post[2],
@@ -69,4 +69,4 @@ if __name__ == '__main__':
     p_consec /= len(set(roots['question_code']))
 
     with open('tex/siam_change_anal.tex', 'w') as f:
-        print(anal_string(theta_post, p_consec), file=f)
+        print(anal_string(theta_post, p_consec, sim_passes), file=f)
