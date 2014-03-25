@@ -138,6 +138,10 @@ if __name__ == '__main__':
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 
+    for qc in set(df['question_code']):
+        qcdf= df[df['question_code'] == qc]
+        print(qc, len(set(qcdf['idea'])), len(set(qcdf['subtree_root'])))
+
     gen_riffs_table(df)
     gen_counts_table(df)
 
