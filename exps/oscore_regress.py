@@ -1,5 +1,6 @@
 import nlp
 import pandas as pd
+import scipy as sp
 import nltk
 from nltk.corpus import wordnet as wn
 import re, format_data, os, sys
@@ -105,10 +106,36 @@ def run_wn_sim_scores(rdf):
     hsh = '%s_%s.wordnetworkersimscores' % (worker_id, qc)
     return read_or_gen_cache(hsh, real_compute)
 
-def runs_wn_sim_scored(rdfs):
-    for i, rdf in enumerate(rdfs):
-        print("Computing run wordnet similarity scores for worker %i/%i" % (i, len(rdfs)))
-        run_wn_sim_scores(rdf)
+def run_sameidea_sim_scores(rdf):
+    assert(len(set(rdf['worker_id'])) == 1)
+    assert(len(rdf) > 0)
+
+    def real_compute():
+        scores = []
+        #pair_count = 0
+        for i, ix1 in enumerate(rdf.index[:-1]):
+            for ix2 in rdf.index[i+1:]:
+                i1 = rdf['idea'][ix1]
+                i2 = rdf['idea'][ix2]
+                c1 = rdf['subtree_root'][ix1]
+                c2 = rdf['subtree_root'][ix2]
+                #print("Computing answer pairing %i" % pair_count, end='\r')
+                #pair_count += 1
+                if i1 == i2:
+                    scores.append(1.0)
+                elif c1 == c2:
+                    scores.append(0.5)
+                else:
+                    scores.append(0)
+        assert(len(scores) > 0)
+        return scores
+
+    worker_id = rdf['worker_id'].iloc[0]
+    qc = rdf['question_code'].iloc[0]
+    hsh = '%s_%s.workersameideasimscores' % (worker_id, qc)
+    ret = read_or_gen_cache(hsh, real_compute)
+    assert(len(ret) > 0)
+    return ret
 
 def filter_today(df):
     #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
@@ -147,5 +174,18 @@ if __name__ == '__main__':
     num_tasks = len(all_runs)
     for i, _ in enumerate(p.imap_unordered(run_wn_sim_scores, all_runs), 1):
         sys.stderr.write('\rdone {0:%}'.format(i/num_tasks))
-    
 
+    p = Pool(n_processes)
+    for j, _ in enumerate(p.imap_unordered(run_sameidea_sim_scores, all_runs), 1):
+        sys.stderr.write('\rdone {0:%}'.format(j/num_tasks))
+    
+    same_idea = []
+    score = []
+    for rdf in all_runs:
+        wn_scores = run_wn_sim_scores(rdf)
+        si_scores = run_sameidea_sim_scores(rdf)
+        assert(len(wn_scores) == len(si_scores))
+        same_idea.extend(si_scores)
+        score.extend(wn_scores)
+
+    print("Pearson R of wordnet and idea forest similarity:", sp.stats.pearsonr(same_idea, score))
