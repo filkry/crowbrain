@@ -138,8 +138,8 @@ def view_fit(df, field, la, dat, qcs):
 
     prediction_low_decay_500 = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[-1]), min_rate, 500)
     prediction_high_decay_500 = model_integral_predict_fixed_decay(100, np.mean(sorted_rates[0]), min_rate, 500)
-    print("Number of ideas generated with low decay rate (from 500):", prediction_low_decay[-1])
-    print("Number of ideas generated with high decay rate (from 500):", prediction_high_decay[-1])
+    print("Number of ideas generated with low decay rate (from 500):", prediction_low_decay_500[-1])
+    print("Number of ideas generated with high decay rate (from 500):", prediction_high_decay_500[-1])
 
     plot_rate_posteriors(p_rates, qcs, dat['participant'])
 
