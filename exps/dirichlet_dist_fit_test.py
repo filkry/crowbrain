@@ -12,10 +12,10 @@ data {
     int R; // number of runs
     int<lower=1, upper=K> cat[N]; // which category each instance is
     int<lower=1, upper=R> run[N]; // which run each instance is
+    vector<lower=0,upper=1>[K] alpha; // category prior
 }
 
 parameters {
-    simplex[K] alpha;
     simplex[K] theta[R]; // category prevalence
 }
 
@@ -57,6 +57,8 @@ def gen_data(df, rmdf, clusters_df, idea_forest):
     cat = categorical_series(adf['subtree_root'])
     run = categorical_series(adf['worker_id'])
 
+    alpha_prior = np.bincount(list(cat))[1:] / len(cat)
+
     adf['category_oneid'] = cat
     adf['run_oneid'] = run
 
@@ -66,6 +68,7 @@ def gen_data(df, rmdf, clusters_df, idea_forest):
             'K': K,
             'cat': [int(c) for c in cat],
             'run': [int(r) for r in run],
+            'alpha': alpha_prior,
     }
 
     return adf, dat
@@ -78,7 +81,7 @@ def plot_fit():
     raise NotImplementedError
 
 def filter_today(df):
-    #df = df[(df['question_code'] == 'iPod') | (df['question_code'] == 'turk')]
+    df = df[(df['question_code'] == 'iPod')]# | (df['question_code'] == 'turk')]
     df = format_data.filter_repeats(df)
     #df = filter_match_data_size(df)
     return df
