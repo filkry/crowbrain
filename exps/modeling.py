@@ -24,7 +24,8 @@ def read_or_gen_cache(file_name, gen_fn):
         pickle.dump(dat, open(full_file_name, 'wb'))
         return dat
 
-def fit_and_extract(model, dat, iter, chains, init_params):
+def fit_and_extract(model, dat, iter, chains, init_params,
+        manual_convergence_check = True):
     if init_params is None:
         fit = model.sampling(data=dat, iter=iter, chains=chains)
     else:
@@ -34,8 +35,9 @@ def fit_and_extract(model, dat, iter, chains, init_params):
     las = (fit.extract(permuted=True), fit.extract(permuted=False))
 
     print(len(fit.flatnames),  las[1].shape[2])
-    for name, index in zip(fit.flatnames, range(las[1].shape[2])):
-        plot_convergence(las[1], name, index)
+    if manual_convergence_check:
+        for name, index in zip(fit.flatnames, range(las[1].shape[2])):
+            plot_convergence(las[1], name, index)
 
     return las
 
@@ -66,7 +68,8 @@ def hash_instance_df(df):
     # TODO: assure this is deterministic
     return hash_string(''.join(a for a in df['answer']))
 
-def compile_and_fit(model_string, dat, n_iter, n_chains, init_params = None):
+def compile_and_fit(model_string, dat, n_iter, n_chains, init_params = None,
+        manual_convergence_check = True):
     model = read_or_gen_cache("%s.stanmodel" % hash_string(model_string),
         lambda: pystan.StanModel(model_code=model_string))
 
@@ -78,7 +81,8 @@ def compile_and_fit(model_string, dat, n_iter, n_chains, init_params = None):
             (hash_string(model_string), hash_dict(dat), n_iter, n_chains)
 
     param_walks = read_or_gen_cache(pw_cache,
-        lambda: fit_and_extract(model, dat, n_iter, n_chains, init_params))
+        lambda: fit_and_extract(model, dat, n_iter, n_chains, init_params,
+            manual_convergence_check = manual_convergence_check))
 
     return param_walks
 
