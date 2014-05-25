@@ -17,7 +17,7 @@ import coverage
 import title
 import IdeaTreeModel, IdeaListModel, IdeaTreeNodeListModel
 
-db_file_name = '/home/fil/Dropbox/clusters.db'
+db_file_name = '/home/fil/scratch/jamie_db.db'
 
 def coverage_prompt(node1, node2):
     dialog = QtGui.QDialog()

@@ -3,6 +3,8 @@ import sqlite3 as db
 import pickle
 from IdeaTreeNode import IdeaTreeNode
 from PySide import QtCore
+from collections import deque
+from text_fns import extract_idea_ids_from_text, get_line_indent
 
 def get_current_time():
   return datetime.datetime.now()
@@ -371,6 +373,8 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
                         WHERE  clusters.question_code = ?""",
                      (self.question_code,))
       for c, p, l in cursor.fetchall():
+        if self.question_code == 'charity':
+            print(c, p)
         cwriter.writerow([self.question_code, c, p, l])
 
     with open("%s_%s.csv" % (filename, self.question_code), 'w') as fout:
@@ -380,8 +384,9 @@ class IdeaTreeModel(QtCore.QAbstractItemModel):
 
       cursor.execute("""SELECT ideas.id, idea_clusters.cluster_id, idea, idea_num,
                                worker_id, post_date, num_ideas_requested
-                        FROM ideas INNER JOIN idea_clusters
-                        ON ideas.id = idea_clusters.idea_id
+                        FROM ideas
+			INNER JOIN used_ideas ON ideas.id = used_ideas.idea_id
+			INNER JOIN idea_clusters ON ideas.id = idea_clusters.idea_id
                         WHERE ideas.question_code = ?""",
                      (self.question_code,))
       for iid, cid, i, num, wid, date, nr in cursor.fetchall():

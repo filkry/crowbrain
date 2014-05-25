@@ -1,3 +1,5 @@
+import re
+
 def get_line_indent(l):
   depth_count = 0
   l = l.strip()

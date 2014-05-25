@@ -61,7 +61,7 @@ class IdeaListModel(QtCore.QAbstractListModel):
 
   def resolve(self, idea_tree_model):
     # fix lost ideas
-    real_used_ids = idea_tree_model.root.get_ids()
+    real_used_ids = [id for (idea, id, time) in idea_tree_model.root.get_all_ideas()]
 
     lost = []
     cursor = self.conn.cursor()

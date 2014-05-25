@@ -315,9 +315,9 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
 
         f = ann_cluster_forests[qc]
         total = len(set(sub_df['idea']));
-        #for i, idea in enumerate(f.nodes()):
-        for i, idea in enumerate(set(sub_df['idea'])):
-            assert(idea in f.nodes())
+        for i, idea in enumerate(f.nodes()):
+        #for i, idea in enumerate(set(sub_df['idea'])):
+            #assert(idea in f.nodes())
 
             print("mk_redundant_cluster_df_helper: %i/%i for %i instances" % (i+1, total, len(idf)), end='\r')
             nd = f.node[idea]
@@ -351,6 +351,7 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
             fields['num_instances'].append(len(instance_df))
             fields['num_workers'].append(len(set(instance_df['worker_id'])))
         print("")
+
     clusters_df = pd.DataFrame(
         {key: pd.Series(fields[key]) for key in fields})
 
@@ -360,9 +361,6 @@ def mk_redundant_cluster_df_helper(idf, ann_cluster_forests):
         assert(ios >= 0 and ios <= 1)
 
     return clusters_df
-            
-
-          
 
 def add_worker_nums(adf):    
     next_wn = 0
@@ -471,4 +469,7 @@ if __name__ == "__main__":
     df.to_csv('ipython_output/instances.csv')
     clusters_df.to_csv('ipython_output/trees.csv')
     
-    print(df)
+    for p in set(clusters_df['parent']):
+        if p == -1:
+            continue
+        assert(len(clusters_df[clusters_df['idea'] == p]) > 0)
