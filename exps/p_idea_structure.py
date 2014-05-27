@@ -31,6 +31,27 @@ def gen_dat(freqs):
     return {'rrank': rank,
             'N': len(rank)}
 
+def gen_uniques_counts(series):
+    uniques = set()
+    
+    counts = []
+    for thing in series:
+        uniques.add(thing)
+        counts.append(len(uniques))
+    return counts
+
+def plot_real_cum(ax, df, field, **kwargs):
+    adf = df.sort(columns=['submit_datetime', 'answer_num'], ascending=[1, 1])
+    series = adf[field]
+    counts = gen_uniques_counts(series)
+    xs = range(len(counts))
+    ax.plot(xs, counts, **kwargs)
+
+def plot_sim_cum(ax, rnge, sample_fn, **kwargs):
+    series = [sample_fn() for x in rnge]
+    counts = gen_uniques_counts(series)
+    ax.plot(rnge, counts, **kwargs)
+
 def plot_dist(ax, max_x, dist_fn):
     xs = range(1, max_x)
     ys = [dist_fn(x) for x in xs]
@@ -120,12 +141,19 @@ if __name__ == '__main__':
 
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111)
-    pareto_fn = lambda x: pareto.pdf(x, post_alpha_param[0])
-    zipf_fn = lambda x: zipf.pmf(x, 1.03)
+    pareto_pdf = lambda x: pareto.pdf(x, post_alpha_param[0])
 
     #print(list([(z, zipf.pmf(1, z)) for z in np.arange(1.01, 2.00, 0.01)]))
 
-    plot_freqs_against_dist(ax, freqs, zipf_fn)
+    plot_freqs_against_dist(ax, freqs, pareto_pdf)
+
+    #plot_real_cum(ax, df, 'idea', color='k')
+    #for sim_color in ['r', 'b', 'g']:
+    #    plot_sim_cum(ax, range(3500),
+    #            lambda: int(pareto.rvs(post_alpha_param[0])),
+    #            color=sim_color)
+    #ax.set_xlabel('number of ideas sampled')
+    #ax.set_ylabel('number of unique ideas')
 
     #print(post_alpha_param[0])
     plt.show()
