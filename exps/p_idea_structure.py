@@ -3,6 +3,7 @@ import numpy as np
 import re, pystan, format_data, modeling, os
 import matplotlib.pyplot as plt
 import stats_fns as mystats
+import random
 from collections import defaultdict, OrderedDict
 from scipy.stats import pareto, zipf
 
@@ -84,14 +85,6 @@ def plot_log_log_zipf(df):
     
     plt.show()
 
-def estimate_r(series):
-    rs = []
-    for prev_s, s in zip(series[:-1], series[1:]):
-        rs.append(s / prev_s)
-
-    #print(rs[:100])
-    return np.mean(rs)
-
 def idea_freqs(df):
     icounts = defaultdict(int)
     ideas = df['idea']
@@ -101,22 +94,75 @@ def idea_freqs(df):
     freqs = sorted(icounts.values(), reverse=True)
     return freqs
 
-
-def plot_empirical_p_idea(df):
+def plot_empirical_p_idea(ax, df):
     freqs = idea_freqs(df)
-    vals = [v/len(vals) for v in freqs] # normalize to sum to 1
 
-    fig = plt.figure(figsize=(8,8))
-    ax = fig.add_subplot(111)
-    ax.bar(range(len(vals)), vals, color='r', alpha=0.25)
+    total_freq = sum(freqs)
+    norm_freqs = [f / total_freq for f in freqs]
 
-    r = estimate_r(vals)
-    print("Estimated r=%f" % r)
-    #plot_geometric_series(ax, 0.05, 0.95, 1200)
-    plot_geometric_series(ax, 0.05, r, 1200)
+    max_x = len(norm_freqs) + 1
+    ax.bar(range(1, max_x), norm_freqs, color='r', alpha=0.25)
 
+def plot_freqs_dists_btwn_nconds(df):
+    fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, sharey=True)
+    for i, nr in enumerate(set(df.num_requested)):
+        sdf = df[df['num_requested'] == nr]
+        ax = axes[i % 2, i % 3]
+        ax.set_title(nr)
+
+        freqs = idea_freqs(sdf)
+        pdf, sample_fn = fit_pdf_and_sampling_fn(sdf)
+        plot_freqs_against_dist(ax, freqs, pdf)
+
+    fig.tight_layout()
     plt.show()
 
+def filter_match_data_size(df):
+    nr_conds = set(df['num_requested'])
+    
+    keep_indices = []
+    
+    for nr in nr_conds:
+        sub_df = df[df['num_requested'] == nr]
+        
+        questions = sub_df.groupby('question_code')
+        least_runs = min(len(qdf.groupby(['worker_id', 'accept_datetime', 'submit_datetime']))
+                            for name, qdf in questions)
+        
+        for qc in set(sub_df['question_code']):
+            ssub_df = sub_df[sub_df['question_code'] == qc]
+            runs = list(ssub_df.groupby(['worker_id', 'accept_datetime', 'submit_datetime']))
+            runs = random.sample(runs, least_runs)
+            
+            for ix, (name, run) in enumerate(runs):
+                keep_indices.extend(run.index)
+                
+    new_df = df.select(lambda x: x in keep_indices)
+    
+    return new_df
+
+def fit_pdf_and_sampling_fn(df):
+    freqs = idea_freqs(df)
+    dat = gen_dat(freqs)
+    param_walks = modeling.compile_and_fit(model_string, dat, 3000, 3)
+    post_alpha_param = mystats.mean_and_hpd(param_walks[0]['alpha'])
+
+    return (lambda x: pareto.pdf(x, post_alpha_param[0]),
+            lambda: int(pareto.rvs(post_alpha_param[0])))
+
+def plot_sim_cum_cross_nconds(df):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    colors = ['b', 'g', 'r', 'c', 'm', 'y']
+    for i,nr in enumerate(set(df.num_requested)):
+        sdf = df[df['num_requested'] == nr]
+        pdf, sample_fn = fit_pdf_and_sampling_fn(sdf)
+
+        plot_real_cum(ax, sdf, 'idea', color=colors[i])
+        plot_sim_cum(ax, range(len(sdf)), sample_fn,
+                color=colors[i], linestyle='--', label=str(nr))
+
+    ax.legend(loc='upper left')
 
 def filter_today(df):
     df = df[(df['question_code'] == 'iPod')]# | (df['question_code'] == 'turk')]
@@ -134,19 +180,10 @@ if __name__ == '__main__':
     #plot_empirical_p_idea(df)
     #plot_log_log_zipf(df)
 
-    freqs = idea_freqs(df)
-    dat = gen_dat(freqs)
-    param_walks = modeling.compile_and_fit(model_string, dat, 3000, 3)
-    post_alpha_param = mystats.mean_and_hpd(param_walks[0]['alpha'])
+    # Plot a distribution fit againt the empirical frequencies
+    #plot_freqs_against_dist(ax, freqs, pareto_pdf)
 
-    fig = plt.figure(figsize=(8,8))
-    ax = fig.add_subplot(111)
-    pareto_pdf = lambda x: pareto.pdf(x, post_alpha_param[0])
-
-    #print(list([(z, zipf.pmf(1, z)) for z in np.arange(1.01, 2.00, 0.01)]))
-
-    plot_freqs_against_dist(ax, freqs, pareto_pdf)
-
+    # Plot cumulative number of ideas of both empirical data and a fit distribution
     #plot_real_cum(ax, df, 'idea', color='k')
     #for sim_color in ['r', 'b', 'g']:
     #    plot_sim_cum(ax, range(3500),
@@ -155,6 +192,8 @@ if __name__ == '__main__':
     #ax.set_xlabel('number of ideas sampled')
     #ax.set_ylabel('number of unique ideas')
 
-    #print(post_alpha_param[0])
+    #plot_freqs_dists_btwn_nconds(df)
+
+    plot_sim_cum_cross_nconds(df)
     plt.show()
 
