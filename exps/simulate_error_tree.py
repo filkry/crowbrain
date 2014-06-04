@@ -42,7 +42,7 @@ def validity_test_results(question_code):
     """
     Load the results of the validity judging task
     """
-    processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
+    processed_data_folder = os.path.expanduser('~/enc_projects/crowbrain/processed_data')
     survey_results = "%s/validity_survey_%s/data.csv" % (processed_data_folder, question_code)
     with open(survey_results, 'r') as f:
         reader = csv.reader(f, delimiter=',')
@@ -440,7 +440,7 @@ def gen_sym_tree_data(instance_df, idea_forests):
 
 
 def table_error_rates(idea_forests):
-    res = ['\\begin{table}', '\\centering', '\\begin{tabular}{| r l l | l l |}']
+    res = ['\\begin{table*}', '\\centering', '\\begin{tabular}{| r l l | l l l l |}']
             
     qc_vios = dict()
     qc_judges = dict()
@@ -484,27 +484,20 @@ def table_error_rates(idea_forests):
         qc_judges[qc] = len(judges)
         qc_pairs[qc] = judge_0_count
 
-    res.extend(['\\hline \\textbf{constraint} & \\textbf{judges} & \\textbf{pairs} & equivalence & generalization \\\\ \\hline',])
+    res.extend(['\\hline \\textbf{constraint} & \\textbf{judges} & \\textbf{pairs} & equivalence & generalization & common parent & non-equivalence \\\\ \\hline',])
 
     for qc in idea_forests.keys():
         eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
         use_qc = qc if '_' not in qc else qc.replace('_', ' ')
-        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (use_qc,
+        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f)  & %0.2f (%0.2f, %0.2f)  & %0.2f (%0.2f, %0.2f) \\\\' % (use_qc,
             qc_judges[qc], qc_pairs[qc], eq_hpd[0], eq_hpd[1], eq_hpd[2], 
-            gen_hpd[0], gen_hpd[1], gen_hpd[2])])
+            gen_hpd[0], gen_hpd[1], gen_hpd[2],
+            cp_hpd[0], cp_hpd[1], cp_hpd[2],
+            ne_hpd[0], ne_hpd[1], ne_hpd[2],
+            )])
 
-    res.extend(['\\hline \\textbf{constraint} & \\textbf{judges} & \\textbf{pairs} & common parent & non-equivalence \\\\ \\hline',])
-
-    for qc in idea_forests.keys():
-        eq_hpd, gen_hpd, cp_hpd, ne_hpd = qc_vios[qc]
-        use_qc = qc if '_' not in qc else qc.replace('_', ' ')
-        res.extend(['%s & %i & %i & %0.2f (%0.2f, %0.2f) & %0.2f (%0.2f, %0.2f) \\\\' % (use_qc,
-            qc_judges[qc], qc_pairs[qc], cp_hpd[0], cp_hpd[1], cp_hpd[2], 
-            ne_hpd[0], ne_hpd[1], ne_hpd[2])])
-
-    # CONTINUE FROM HERE: need end of table in res
-    res.extend(['\\hline', '\\end{tabular}', '\\caption{Idea forest error rates}',
-        '\\label{tab:judge_results}', '\\end{table}'])
+    res.extend(['\\hline', '\\end{tabular}', '\\caption{Idea forest error rates.}',
+        '\\label{tab:judge_results}', '\\end{table*}'])
 
     with open('tex/error_rates_table.tex', 'w') as f:
         print('\n'.join(res), file=f)
@@ -517,7 +510,7 @@ def filter_today(df):
  
 if __name__ == '__main__':
     print(os.path.basename(__file__))
-    processed_data_folder = '/home/fil/enc_projects/crowbrain/processed_data'
+    processed_data_folder = os.path.expanduser('~/enc_projects/crowbrain/processed_data')
     idf, cfs = format_data.do_format_data(processed_data_folder, filter_today)
     df, rmdf, cdf, cfs = modeling.get_redundant_data(cfs, idf)
 

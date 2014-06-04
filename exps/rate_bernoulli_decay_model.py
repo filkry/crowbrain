@@ -38,11 +38,20 @@ model {
 }
 """
 
-def model_integral_predict(max_x, rate, min_rate):
+def model_integral_predict(max_x, decay, min_rate):
     ys = [0]
     for x in range(1, max_x):
-        ys.append(ys[-1] + min_rate + math.exp(rate * x) * (1- min_rate))
+        ys.append(ys[-1] + min_rate + math.exp(decay * x) * (1- min_rate))
     return ys
+
+def expected_difference(decay1_post, rate1_post, decay2_post,
+        rate2_post, n_ideas):
+    predict_1 = model_integral_predict(n_ideas, decay1_post[0],
+            rate1_post[0])
+    predict_2 = model_integral_predict(n_ideas, decay2_post[0],
+            rate2_post[0])
+    return int(abs(predict_1[n_ideas-1] - predict_2[n_ideas-1]))
+
 
 def gen_uniques_counts(adf, field):
     adf = adf.sort(columns=['submit_datetime', 'answer_num'], ascending=[1, 1])
@@ -118,6 +127,18 @@ def plot_model_per_question(df, n_iter, n_chains, init_params):
     fig.savefig('figures/rate_model_questions', dpi=600)
     #plt.show()
 
+def plot_data_cum(ax, dat, **kwargs):
+    prev_x = 0
+    cum = 0
+    ys = []
+    for x, novel in zip(dat['x'], dat['novel']):
+        if x < prev_x: # reached the end of a campaign
+            ax.plot(range(len(ys)), ys, **kwargs)
+            cum = 0
+            ys = []
+        cum += novel
+        ys.append(cum)
+        prev_x = x
 
 def plot_line_and_hpd(ax, rate, min_rate, max_x, line_style, **kwargs):
     xs = range(max_x)
@@ -129,7 +150,7 @@ def plot_line_and_hpd(ax, rate, min_rate, max_x, line_style, **kwargs):
 
     # plot the model line
     ys = model_integral_predict(max_x, rate[0], min_rate[0])
-    ax.plot(xs[:len(ys)], ys, line_style, color='k', **kwargs)
+    ax.plot(xs[:len(ys)], ys, line_style, **kwargs)
 
 def plot_model(rate, min_rate, df, field):
     fig = plt.figure(figsize=(8, 8))
